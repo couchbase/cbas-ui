@@ -1,0 +1,268 @@
+#currentUI {
+  margin: 0;
+  padding: 0;
+}
+#query_wrapper {}
+#query_header {
+  min-height: 2rem;
+  margin-bottom: .5rem;
+}
+#query_editor {
+  overflow: auto;
+  background-color: #f6f7f9;
+  padding: 1.5rem;
+}
+#query_editor * {
+  line-height: 1.4rem !important;
+  font-size: 14px !important;
+}
+#query_footer {
+  margin-top: .5rem;
+}
+.qw-button-exec {
+  width: 7rem;
+  min-width: 7rem;
+}
+
+/* ACE editor overrides ------------------------ */
+.ace_gutter {
+  background-color: #f6f7f9 !important;
+}
+.ace_print-margin {
+  display: none !important;
+}
+.ace_keyword {
+  color: green !important;
+}
+.ace_active-line {
+  background-color: #eceff2 !important;
+}
+.ace_gutter-active-line {
+  background-color: #eceff2 !important;
+}
+
+/* summary of query results + status ----------- */
+#result_summary {
+  margin: 0 1rem;
+  text-align: left;
+  -webkit-box-flex: 1;
+  flex-grow: 1;
+}
+#result_summary span:not(.success):not(.error) {
+  white-space: nowrap;
+  color: #555;
+}
+#result_summary span:first-child {
+  margin-left: 0;
+}
+
+/* query results -------------------------------- */
+#result_header {
+  min-height: 2rem;
+  margin-top: 1.5rem;
+}
+/* the wrapper around ALL results views...followed by the specific views */
+#result_box {
+  background-color: #f6f7f9;
+  margin-top: .5rem;
+}
+/* the wrappers around the various results views --- */
+#result_editor,
+#result_table,
+#result_tree,
+#query_plan,
+#query_plan_text,
+#sidebar_body {
+  overflow: auto;
+}
+#result_tree {
+  padding: .5rem .5rem .5rem 0;
+}
+#query_plan {
+  padding: .5rem;
+}
+#result_editor { /* the wrapper around the JSON view */
+  background-color: #f6f7f9;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 1rem;
+}
+#result_editor * { /* JSON view wildcard style to capture all its children brutally */
+  line-height: 1.4rem !important;
+}
+.ajtd-row-matched-search {
+  background-color: #d9c5ff;
+}
+#show_anyway {
+  color: #cc2a2e;
+  font-size: .875rem;
+  padding: 1.5rem;
+}
+#show_anyway a {
+  display: block;
+  width: 100%;
+  text-align: right;
+}
+
+/* bucket inference sidebar -------------------- */
+#metadata {
+  -webkit-box-flex: 0;
+  flex: 0 0 auto;
+  padding-left: 2rem;
+}
+#sidebar_body {
+  border-left: 1px solid #d1d1d1;
+  padding: .25rem 0 .5rem 1rem;
+  white-space: nowrap;
+  overflow: auto;
+}
+#sidebar_body h5 {
+  line-height: 2rem;
+  font-weight: 600;
+  color: #000;
+}
+#sidebar_body .row {
+  line-height: 2rem;
+  margin-bottom: .25rem;
+  padding-right: .5rem;
+}
+#sidebar_body .icon {
+  cursor: pointer;
+  color: #555;
+}
+#sidebar_body ul {
+  margin: .25rem 0;
+  cursor: default;
+}
+#sidebar_body ul ul {
+  margin-left: .75rem;
+}
+#sidebar_body li {
+  list-style-type: none;
+}
+#sidebar_body  section {
+  border-width: 0;
+  margin-bottom: .5rem;
+}
+.schema .indexed {
+  color: #333;
+  font-weight: 600;
+}
+
+/* query history ------------------------ */
+.query-history-controls-inner {
+  margin: 0 .25rem;
+}
+#qw_history_table {
+  overflow: auto;
+  padding: 0 0 1rem 0;
+}
+#qw_history_dialog .panel-content .filter-input-group {
+  margin-bottom: 1rem;
+}
+#qw_history_table section {
+  margin: 0;
+  padding: 0;
+}
+#qw_history_table section:last-child {
+  border-width: 0;
+}
+#qw_history_table section:hover {
+  background-color: #ecf3fa;
+}
+#qw_history_table section span {
+  padding: .5rem 0;
+  min-height: 2rem;
+  cursor: pointer;
+  line-height: 1.3;
+}
+#qw_history_table section span.selected {
+  background-color: #ececec;
+}
+
+/* Tabular Document Editor ------------------- */
+#doc_editor_tabular .controls {
+  margin: .5rem 0 .5rem 0;
+  font-size: .875rem;
+}
+#doc_editor_tabular .controls > input {
+  margin: 0 2rem 0 .25rem;
+}
+#doc_editor_tabular .controls > input:last-child {
+  margin: 0 0 0 .25rem;
+  width: 100%;
+}
+#doc_editor_tabular .controls > select {
+  margin: 0 2rem 0 0;
+}
+#doc_editor_tabular .doc-editor-results {
+  overflow: auto;
+}
+
+.cbui-input.ng-invalid {
+  background-color: #f9e9ea; /* red-7 */
+}
+
+/* Buttons for the document editor */
+.flex-grow-1-25 {
+  flex-grow: 1.25;
+}
+.btn.qw-doc-editor {
+  min-width: 1rem;
+  padding: .5rem;
+  margin-right: .25rem;
+  border-radius: 4px;
+}
+.btn.qw-doc-editor[disabled] {
+  background-color: #d3ccd3;
+}
+.btn .qw-editor-btn {
+  vertical-align: top;
+  color: #fff;
+  font-size: inherit;
+}
+
+/* monitoring statistics --------------- */
+#query_stats {
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-pack: center;
+  justify-content: center;
+  -webkit-box-align: start;
+  align-items: flex-start;
+  position: fixed;
+  bottom: 0;
+  height: 120px;
+  overflow: hidden;
+  left: 0;
+  z-index: 10;
+  background-color: #fff;
+  border-top: 1px solid #d1d1d1;
+  width: 100vw;
+  padding: 1rem .5rem .5rem .5rem;
+  font-size: .75rem;
+  box-shadow: 0 -36px 28px -12px #fff;
+}
+#query_stats .column {
+  flex: 1 0 auto;
+  white-space: nowrap;
+  max-width: 240px;
+  padding: 0 2rem 0 0;
+  line-height: 1.8;
+}
+#query_stats .column.vertical-divider {
+  border-right: 1px solid #d1d1d1;
+}
+#query_stats .column.narrow {
+  flex: 0 1 0;
+}
+#query_stats .column.wide {
+  flex: 0 0 auto;
+  max-width: inherit;
+}
+#query_stats .column span {
+  display: inline-block;
+}
+#query_stats hr {
+  margin: .5rem 0;
+}

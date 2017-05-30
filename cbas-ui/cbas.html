@@ -1,0 +1,165 @@
+<div id="currentUI"
+   ng-controller="cwCbasController as qc"
+   ng-show="qc.validated.valid()"
+   class="row items-top">
+
+  <mn-element-cargo depot="actions" ng-if="qc.validated.valid()">
+    <div class="header-controls">
+      <input type="file" id="loadQuery" name="files" style="display:none" accept="text/plain">
+      <a href=""
+      ng-if="qc.fileSupport"
+      id="loadQueryButton"
+      ng-click="qc.load_query()"
+      class="outline"
+      onchange="console.log('changed files')">IMPORT</a>
+      <a href="" ng-click="qc.unified_save()">EXPORT</a>
+    </div>
+  </mn-element-cargo>
+
+<!-- wrapper for query editor and results -->
+  <div mn-spinner="queryInProgress" id="query_wrapper" class="width-9">
+<!-- query_box is the query editor -->
+    <div id="query_box">
+<!-- Editor "header row" -->
+      <div id="query_header" class="row">
+
+      <h4>Analytics Query Editor</h4>
+        <div class="query-history-controls">
+          <button
+             title="View previous queries/results" ng-click="qc.prev()"
+             qw-long-press="qc.historyMenu"
+             class="outline btn-small"
+             ng-disabled="!qc.hasPrev()">
+            &larr;
+          </button>
+          <span class="query-history-controls-inner">
+            <a class="link-heavy text-small" ng-click="qc.historyMenu()">history</a>
+            <small>({{qc.getCurrentIndex()}})</small>
+          </span>
+          <button
+             title="View subsequent queries/results"
+             ng-click="qc.next()"
+             qw-long-press="qc.historyMenu"
+             class="outline btn-small"
+             ng-disabled="!qc.hasNext()">
+            &rarr;
+          </button>
+        </div>
+      </div>
+    <!-- Ace editor -->
+      <div id="query_editor" ui-ace="qc.aceInputOptions"
+        ng-disabled="qc.executingQuery.busy"
+        ng-model="qc.lastResult.query">{{qc.renderPage()}}</div>
+
+    </div>
+
+<!-- wrapper under query editor for button and stats -->
+    <div id="query_footer" class="row">
+      <span class="nowrap">
+        <button ng-click="qc.query()" class="qw-button-exec">
+          <div ng-if="!qc.executingQuery.busy">Execute</div>
+          <div ng-if="qc.executingQuery.busy" class="icon-button">Cancel <span class="icon fa-spinner fa-spin fa-pulse"></span></div>
+        </button>
+        <button ng-disabled="qc.executingQuery.busy" ng-click="qc.query(true)" class="outline tight">
+           Explain
+           <span  ng-if="qc.executingQuery.busy" class="icon fa-spinner fa-spin fa-pulse"></span>
+        </button>
+      </span>
+
+<!-- query results stats -->
+      <div id="result_summary" ng-hide="qc.lastResult.hide" class="text-smaller">
+        <span
+          ng-class="{success: qc.status_success(), error: qc.status_fail()}"
+          class="semi-bold">
+          {{qc.lastResult.status}}</span>
+        <span> | elapsed: {{qc.lastResult.elapsedTime}} | </span>
+        <span>execution: {{qc.lastResult.executionTime}} | </span>
+        <span ng-if="qc.lastResult.mutationCount">mutations: {{qc.lastResult.mutationCount}} | </span>
+        <span ng-if="!qc.lastResult.mutationCount">count: {{qc.lastResult.resultCount}} | </span>
+        <span>size: {{qc.lastResult.resultSize}}</span>
+      </div>
+
+      <a href="" ng-if="qc.showOptions" ng-click="qc.options()" class="row">
+        <span class="icon fa-cog margin-right"></span>
+        <span class="text-smaller">Preferences</span>
+      </a>
+    </div>
+
+<!-- query results -->
+    <div id="result_header" class="row">
+      <h4>Analytics Query Results</h4>
+      <span class="pills">
+        <a ng-click="qc.selectTab(1)"
+           ng-class="{selected: qc.isSelected(1)}">JSON</a>
+        <a ng-click="qc.selectTab(2)"
+           ng-class="{selected: qc.isSelected(2)}">Table</a>
+        <a ng-click="qc.selectTab(3)"
+           ng-class="{selected: qc.isSelected(3)}">Tree</a>
+        <a ng-click="qc.selectTab(4)" ng-if="qc.isEnterprise"
+           ng-class="{selected: qc.isSelected(4)}">Plan</a>
+        <a ng-click="qc.selectTab(5)"
+           ng-class="{selected: qc.isSelected(5)}">Plan Text</a>
+      </span>
+    </div>
+
+    <div id="result_box">
+      <div id="show_anyway" ng-if="!qc.showBigDatasets && qc.dataTooBig()">
+        <div ng-bind-html="qc.getBigDataMessage()"> </div>
+        <a href="" ng-click="qc.setShowBigData(true)" class="text-medium link-heavy">Show anyway <span class="icon fa-angle-right"></span></a>
+      </div>
+      <div id="result_editor" ui-ace="qc.aceOutputOptions"
+        ng-if="qc.isSelected(1) && (!qc.dataTooBig() || qc.showBigDatasets)"
+        ng-model="qc.lastResult.result"></div>
+      <div id="result_table"
+        ng-if="qc.isSelected(2) && (!qc.dataTooBig() || qc.showBigDatasets)"
+        qw-json-table="qc.lastResult.data"></div>
+      <div id="result_tree"
+        ng-if="qc.isSelected(3) && (!qc.dataTooBig() || qc.showBigDatasets)"
+        qw-json-tree="qc.lastResult.data"></div>
+      <div id="query_plan" ng-if="qc.isSelected(4)"
+        qw-explain-viz="qc.lastResult.explainResult"></div>
+      <div id="query_plan_text" ng-if="qc.isSelected(5)"
+        ui-ace="qc.acePlanOptions"
+        ng-model="qc.lastResult.explainResultText"></div>
+    </div>
+  </div>
+
+<!-- bucket insights sidebar -->
+  <div ng-if="true" id="metadata" class="width-3">
+    <div ng-if="qc.qqs.bucket_errors"  id="sidebar_body">{{qc.qqs.bucket_errors}}</div>
+    <div ng-if="!qc.qqs.bucket_errors" id="sidebar_body">
+      <div class="row">
+        <h4>Bucket Insights</h4>
+          <a title="expand or contract sidebar"
+             ng-click="qc.toggleAnalysisSize()">
+            <span ng-if="!qc.analysisExpanded" class="icon fa-expand"></span>
+            <span ng-if="qc.analysisExpanded" class="icon fa-compress"></span>
+          </a>
+      </div>
+
+      <section>
+        <h5 title="Buckets with a primary index support all queries.">Fully Queryable Buckets</h5>
+        <span ng-repeat="bucket in qc.buckets"
+            ng-show="bucket.has_prim">
+            <div bucket-display="bucket"></div>
+        </span>
+      </section>
+
+      <section>
+        <h5 title="Buckets with only secondary indexes require a 'where' clause using indexed fields.">Queryable on Indexed Fields</h5>
+          <span ng-repeat="bucket in qc.buckets"
+            ng-show="!bucket.has_prim && bucket.has_sec">
+            <div bucket-display="bucket"></div>
+          </span>
+      </section>
+
+      <section>
+        <h5 title="Buckets with no index cannot be queried.">Non-Indexed Buckets</h5>
+          <span ng-repeat="bucket in qc.buckets"
+            ng-show="!bucket.has_prim && !bucket.has_sec">
+            <div bucket-display="bucket"></div>
+          </span>
+      </section>
+    </div>
+  </div>
+</div>
