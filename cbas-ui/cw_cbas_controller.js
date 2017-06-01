@@ -1099,7 +1099,7 @@
     //
 
     function updateValidNodes() {
-      qc.validNodes = mnPoolDefault.getUrlsRunningService(mnPoolDefault.latestValue().value.nodes, "n1ql", null);
+      qc.validNodes = mnPoolDefault.getUrlsRunningService(mnPoolDefault.latestValue().value.nodes, "cbas", null);
     }
 
     //
