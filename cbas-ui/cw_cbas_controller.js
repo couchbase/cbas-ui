@@ -2,7 +2,7 @@
 
   angular.module('cwCbas').controller('cwCbasController', cbasController);
 
-  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateQueryService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService'];
+  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService'];
 
   function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService) {
 

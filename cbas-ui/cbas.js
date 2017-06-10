@@ -27,7 +27,7 @@
           }
         },
         data: {
-          title: "CBAS"
+          title: "Analytics"
         }
       });
 
