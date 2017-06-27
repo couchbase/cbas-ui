@@ -2,9 +2,9 @@
 
   angular.module('cwCbas').factory('cwQueryService', getcwQueryService);
 
-  getcwQueryService.$inject = ['$rootScope','$q', '$uibModal', '$timeout', '$http', 'mnPendingQueryKeeper', 'validateQueryService', '$httpParamSerializer','cwConstantsService','qwQueryPlanService','mnPoolDefault','mnPools','mnAuthService', 'mnServersService'];
+  getcwQueryService.$inject = ['$rootScope','$q', '$uibModal', '$timeout', '$http', 'mnPendingQueryKeeper', 'validateCbasService', '$httpParamSerializer','cwConstantsService','qwQueryPlanService','mnPoolDefault','mnPools','mnAuthService', 'mnServersService'];
 
-  function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPendingQueryKeeper, validateQueryService, $httpParamSerializer,cwConstantsService,qwQueryPlanService,mnPoolDefault,mnPools,mnAuthService,mnServersService) {
+  function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPendingQueryKeeper, validateCbasService, $httpParamSerializer,cwConstantsService,qwQueryPlanService,mnPoolDefault,mnPools,mnAuthService,mnServersService) {
 
     var cwQueryService = {};
 
@@ -1492,7 +1492,7 @@
     $rootScope.$on("bucketUriChanged",updateBuckets);
 
     function updateBuckets(event,data) {
-      validateQueryService.getBucketsAndNodes(updateBucketsCallback);
+      validateCbasService.getBucketsAndNodes(updateBucketsCallback);
     }
 
     function updateBucketsCallback() {

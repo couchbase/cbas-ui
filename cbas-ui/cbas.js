@@ -55,14 +55,14 @@
       // to re-validate
       //
 
-//      $transitionsProvider.onFinish({
-//        from: "app.auth",
-//        to: "app.admin.**",
-//      }, function ($transition$, $state, $injector) {
-//        var injector = $injector || $transition$.injector();
-//        var qwQueryService = injector.get("qwQueryService");
-//        qwQueryService.updateBuckets();
-//      });
+      $transitionsProvider.onFinish({
+        from: "app.auth",
+        to: "app.admin.**",
+      }, function ($transition$, $state, $injector) {
+        var injector = $injector || $transition$.injector();
+        var cwQueryService = injector.get("cwQueryService");
+        cwQueryService.updateBuckets();
+      });
 
 //      mnPermissionsProvider.set("cluster.n1ql.meta!read"); // system catalogs
 //      mnPermissionsProvider.setBucketSpecific(function (name) {
@@ -79,8 +79,8 @@
     // a query node a reports back whether it is present.
 
     .factory('validateCbasService', function($http,mnServersService,mnPermissions, mnPoolDefault) {
-      var _checked = true;              // have we checked validity yet?
-      var _valid = true;                // do we have a valid query node?
+      var _checked = false;              // have we checked validity yet?
+      var _valid = false;                // do we have a valid query node?
       var _bucketsInProgress = false;    // are we retrieving the list of buckets?
       var _monitoringAllowed = false;
       var _clusterStatsAllowed = false;
@@ -111,34 +111,34 @@
         //console.log("Getting nodes and buckets, progress: " + _nodesInProgress + ", " + _bucketsInProgress);
 
         // make sure we only do this once at a time
-//        if (_bucketsInProgress)
-//         return;
-//
-//        //_valid = false;
-//        _checked = true;
-//        _otherStatus = null;
-//        _otherError = null;
-//        _bucketsInProgress = true;
-//
-//        // meanwhile issue a query to the local node get the list of buckets
-//        var queryData = {statement: "select keyspaces.name from system:keyspaces;"};
-//        $http.post("/_p/query/query/service",queryData)
-//        .then(function success(resp) {
-//          //var data = resp.data, status = resp.status;
-//          //console.log("Got bucket list data: " + JSON.stringify(data));
-//          mnPermissions.check().then(function() {
-//            updateValidBuckets();
-//            if (callback) callback();
-//          });
-//        },
-//        // Error from $http
-//        function error(resp) {
-//          var data = resp.data, status = resp.status;
-//          //console.log("Error getting keyspaces: " + JSON.stringify(data));
-//          _valid = false; _bucketsInProgress = false;
-//          _otherStatus = status;
-//          _otherError = data;
-//        });
+        if (_bucketsInProgress)
+         return;
+
+        _valid = false;
+        _checked = true;
+        _otherStatus = null;
+        _otherError = null;
+        _bucketsInProgress = true;
+
+        // meanwhile issue a query to the local node get the list of buckets
+        var queryData = {statement: "select 1;"};
+        $http.post("/_p/cbas/query/service",queryData)
+        .then(function success(resp) {
+          var data = resp.data, status = resp.status;
+          //console.log("Got bucket list data: " + JSON.stringify(data));
+          mnPermissions.check().then(function() {
+            updateValidBuckets();
+            if (callback) callback();
+          });
+        },
+        // Error from $http
+        function error(resp) {
+          var data = resp.data, status = resp.status;
+          //console.log("Error getting keyspaces: " + JSON.stringify(data));
+          _valid = false; _bucketsInProgress = false;
+          _otherStatus = status;
+          _otherError = data;
+        });
       }
 
       function updateValidBuckets() {
@@ -169,7 +169,7 @@
 //        //console.log("bucketStatsList: " + JSON.stringify(_bucketStatsList));
 //
 //        // all done
-//        _valid = true; _bucketsInProgress = false;
+        _valid = true; _bucketsInProgress = false;
       }
 
 

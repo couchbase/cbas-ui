@@ -1158,7 +1158,7 @@
       });
 
       // get the list of buckets
-      //qc.updateBuckets();
+      qc.updateBuckets();
 
       //$( "#resizable-2" ).resizable({
       //  animate: true
