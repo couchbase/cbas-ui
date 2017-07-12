@@ -1105,13 +1105,9 @@
         newResult.explainResult = {};
         newResult.explainResultText = "";
       }
-
-      //
-      // if they wanted only an explain, we're done
-      //
-
-      if (!queryIsExplain && explainOnly)
-        return(explain_promise);
+      if (!queryIsExplain && explainOnly) {
+         queryText = "explain " + queryText;
+      }
 
       //console.log("submitting query: " + JSON.stringify(cwQueryService.currentQueryRequest));
 
@@ -1194,10 +1190,23 @@
           newResult.mutationCount = data.metrics.mutationCount;
         newResult.resultSize = data.metrics.resultSize;
         if (data.rawJSON)
-          newResult.result = data.rawJSON;
+          newResult.result = angular.toJson(JSON.parse(data.rawJSON), true);
         else
           newResult.result = angular.toJson(result, true);
         newResult.data = result;
+
+        if(explainOnly || queryIsExplain) {
+          newResult.explainResultText = newResult.data[0];
+          newResult.result = null;
+          newResult.data = null;
+          // select Plan Text tab
+          cwQueryService.selectTab(5);
+        } else {
+          if(cwQueryService.isSelected(5)) {
+            // if Plan Text tab is selected, select JSON tab
+            cwQueryService.selectTab(1);
+          }
+        }
         newResult.requestID = data.requestID;
 
         // did we get query timings in the result? If so, update the plan
