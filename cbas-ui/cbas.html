@@ -131,36 +131,26 @@
     <div ng-if="!qc.qqs.bucket_errors" id="sidebar_body">
       <div class="row">
         <h4>Bucket Insights</h4>
-          <a title="expand or contract sidebar"
-             ng-click="qc.toggleAnalysisSize()">
-            <span ng-if="!qc.analysisExpanded" class="icon fa-expand"></span>
-            <span ng-if="qc.analysisExpanded" class="icon fa-compress"></span>
+          <a title="Refresh bucket insights"
+             ng-click="qc.updateBuckets()">
+            <span ng-if="true" class="icon fa-refresh"></span>
           </a>
       </div>
 
       <section>
-        <h5 title="Buckets with a primary index support all queries.">Fully Queryable Buckets</h5>
-        <span ng-repeat="bucket in qc.buckets"
-            ng-show="bucket.has_prim">
-            <div bucket-display="bucket"></div>
-        </span>
+        <h5 title="Available buckets">{{qc.analysisFirstSection}}</h5>
+        <ul ng-repeat="bucket in qc.buckets">
+            <ul>{{bucket.id}}</ul>
+        </ul>
       </section>
 
       <section>
-        <h5 title="Buckets with only secondary indexes require a 'where' clause using indexed fields.">Queryable on Indexed Fields</h5>
-          <span ng-repeat="bucket in qc.buckets"
-            ng-show="!bucket.has_prim && bucket.has_sec">
-            <div bucket-display="bucket"></div>
-          </span>
+        <h5 title="Avaiable shadow datasets">{{qc.analysisSecondSection}}</h5>
+          <ul ng-repeat="shadow in qc.shadows">
+            <ul>{{shadow.id}}</ul>
+          </ul>
       </section>
 
-      <section>
-        <h5 title="Buckets with no index cannot be queried.">Non-Indexed Buckets</h5>
-          <span ng-repeat="bucket in qc.buckets"
-            ng-show="!bucket.has_prim && !bucket.has_sec">
-            <div bucket-display="bucket"></div>
-          </span>
-      </section>
     </div>
   </div>
 </div>

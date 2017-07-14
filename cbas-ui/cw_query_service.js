@@ -68,6 +68,7 @@
 
     cwQueryService.buckets = [];
     cwQueryService.bucket_names = [];
+    cwQueryService.shadows = [];
     cwQueryService.indexes = [];
     cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
     cwQueryService.getSchemaForBucket = getSchemaForBucket;   // get schema
@@ -1517,32 +1518,28 @@
         // remember the counts of each bucket so the screen doesn't blink when recomputing counts
         var bucket_counts = {};
         for (var i=0; i < cwQueryService.buckets.length; i++) {
-
           bucket_counts[cwQueryService.buckets[i].id] = cwQueryService.buckets[i].count;
         }
 
-        // initialize the data structure for holding all the buckets
+        // initialize the data structure for holding all the buckets and shadows
         cwQueryService.buckets.length = 0;
+        cwQueryService.shadows.length = 0;
         cwQueryService.bucket_errors = null;
         cwQueryService.bucket_names.length = 0;
         cwQueryService.autoCompleteTokens = {};
 
-        if (data && data.results) for (var i=0; i< data.results.length; i++) {
-          var bucket = data.results[i];
-          bucket.expanded = false;
-          bucket.schema = [];
-          //bucket.passwordNeeded = cwConstantsService.sendCreds; // only need password if creds supported
-          bucket.indexes = [];
-          bucket.validated = !validateQueryService.validBuckets ||
-            _.indexOf(validateQueryService.validBuckets(),bucket.id) != -1 ||
-            _.indexOf(validateQueryService.validBuckets(),".") != -1;
-          bucket.count = bucket_counts[bucket.id];
-          //console.log("Got bucket: " + bucket.id + ", valid: " + bucket.validated);
-          if (bucket.validated) {
-            cwQueryService.buckets.push(bucket); // only include buckets we have access to
-            cwQueryService.bucket_names.push(bucket.id);
+        if (data && data.results) {
+          for (var i = 0; i < data.results.length; i++) {
+            var record = data.results[i];
+            if (record.is_shadow) {
+              cwQueryService.shadows.push(record);
+              addToken(record.id, "shadow");
+            } else if (record.is_bucket) {
+              cwQueryService.buckets.push(record);
+              cwQueryService.bucket_names.push(record.id);
+              addToken(record.id, "bucket");
+            }
           }
-          addToken(bucket.id,"bucket");
         }
 
         refreshAutoCompleteArray();
@@ -1626,6 +1623,7 @@
           error = error + ", contacting query service returned status: " + status;
 
         cwQueryService.buckets.length = 0;
+        cwQueryService.shadows.length = 0;
         cwQueryService.autoCompleteTokens = {};
         cwQueryService.bucket_errors = error;
         logWorkbenchError(error);

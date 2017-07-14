@@ -47,16 +47,15 @@
     // 'has_sec' indicating secondary indexes. For a different system, just make sure
     // the returned schema has 'id' and 'has_prim'.
     cwConstantsService.keyspaceQuery =
-      "select BucketName as id, true as has_prim from Metadata.`Bucket` union all " +
-      "select DatasetName as id, true as has_sec from Metadata.`Dataset` where BucketName is not missing;";
+      "select Name as id, true as is_bucket from Metadata.`Bucket` union all " +
+      "select DatasetName as id, true as is_shadow from Metadata.`Dataset` where BucketName is not missing;";
 
     // should we permit schema inquiries in the bucket analysis pane?
     cwConstantsService.showSchemas = false;
 
     // labels for different types of buckets in the analysis pane
-    cwConstantsService.fullyQueryableBuckets = "Buckets";
-    cwConstantsService.queryOnIndexedBuckets = "Shadow Data Sets";
-    cwConstantsService.nonIndexedBuckets = "";
+    cwConstantsService.analysisFirstSection = "Buckets";
+    cwConstantsService.analysisSecondSection = "Shadow Datasets";
 
     //
     //

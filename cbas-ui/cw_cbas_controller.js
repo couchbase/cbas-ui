@@ -20,6 +20,7 @@
     //
 
     qc.buckets = cwQueryService.buckets;                // buckets on cluster
+    qc.shadows = cwQueryService.shadows;                // shadow datasets on cluster
     qc.gettingBuckets = cwQueryService.gettingBuckets;  // busy retrieving?
     qc.updateBuckets = cwQueryService.updateBuckets;    // function to update
     qc.lastResult = cwQueryService.getResult(); // holds the current query and result
@@ -156,9 +157,8 @@
 
     //
     // labels for bucket analysis pane
-    qc.fullyQueryableBuckets = cwConstantsService.fullyQueryableBuckets;
-    qc.queryOnIndexedBuckets = cwConstantsService.queryOnIndexedBuckets;
-    qc.nonIndexedBuckets = cwConstantsService.nonIndexedBuckets;
+    qc.analysisFirstSection = cwConstantsService.analysisFirstSection;
+    qc.analysisSecondSection = cwConstantsService.analysisSecondSection;
 
     // are we enterprise?
 
