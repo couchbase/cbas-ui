@@ -21,6 +21,7 @@
 
     qc.buckets = cwQueryService.buckets;                // buckets on cluster
     qc.shadows = cwQueryService.shadows;                // shadow datasets on cluster
+    qc.bucketsWithNoConnection = cwQueryService.bucketsWithNoConnection; // cluster buckets with no analytics connection
     qc.gettingBuckets = cwQueryService.gettingBuckets;  // busy retrieving?
     qc.updateBuckets = cwQueryService.updateBuckets;    // function to update
     qc.lastResult = cwQueryService.getResult(); // holds the current query and result
@@ -159,7 +160,8 @@
     // labels for bucket analysis pane
     qc.analysisFirstSection = cwConstantsService.analysisFirstSection;
     qc.analysisSecondSection = cwConstantsService.analysisSecondSection;
-
+    qc.analysisThirdSection = cwConstantsService.analysisThirdSection;
+    qc.bucketInsightsUpdateTriggers = cwConstantsService.bucketInsightsUpdateTriggers;
     // are we enterprise?
 
     qc.isEnterprise = mnPools.export.isEnterprise;
@@ -499,9 +501,6 @@
       //console.log("Notext: " +noText + ", emptyMessageNode: " + emptyMessageNode);
       if (noText && !emptyMessageNode) {
         emptyMessageNode = qc.outputEditor.renderer.emptyMessageNode = document.createElement("div");
-        emptyMessageNode.innerText =
-          'See JSON, Table, and Tree formatted query results here.\n'+
-          'Hover over field names (in the tree layout) to see their full path.';
         emptyMessageNode.className = "ace_invisible ace_emptyMessage";
         emptyMessageNode.style.padding = "0 5px";
         qc.outputEditor.renderer.scroller.appendChild(emptyMessageNode);
@@ -750,8 +749,18 @@
       qc.markerIds = markerIds;
       updateEditorSizes();
       focusOnInput();
-    }
 
+      // check if updating bucket insights is needed
+      if (qc.lastResult.status == "success") {
+        var queryStr = qc.lastResult.query.toUpperCase();
+        for (var i = 0; i < qc.bucketInsightsUpdateTriggers.length; i++) {
+          if (queryStr.includes(qc.bucketInsightsUpdateTriggers[i])) {
+            qc.updateBuckets();
+            break;
+          }
+        }
+      }
+    }
     //
     // save the results to a file. Here we need to use a scope to to send the file name
     // to the file name dialog and get it back again.
@@ -1121,6 +1130,10 @@
           prev_active_nodes = nodes.active;
         });
        });
+
+      $scope.changeExpandShadow = function (shadow) {
+        shadow.expanded = !shadow.expanded;
+      }
 
       // if we receive a query parameter, and it's not the same as the current query,
       // insert it at the end of history

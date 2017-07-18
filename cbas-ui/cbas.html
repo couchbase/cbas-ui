@@ -129,28 +129,67 @@
   <div ng-if="true" id="metadata" class="width-3">
     <div ng-if="qc.qqs.bucket_errors"  id="sidebar_body">{{qc.qqs.bucket_errors}}</div>
     <div ng-if="!qc.qqs.bucket_errors" id="sidebar_body">
-      <div class="row">
+      <div class="row spacer">
         <h4>Bucket Insights</h4>
+        <span>
           <a title="Refresh bucket insights"
              ng-click="qc.updateBuckets()">
-            <span ng-if="true" class="icon fa-refresh"></span>
+            <span class="icon fa-refresh"></span>
+        </a>
+        <a title="expand or contract sidebar" ng-click="qc.toggleAnalysisSize()">
+            <span ng-if="!qc.analysisExpanded" class="icon fa-expand"></span>
+            <span ng-if="qc.analysisExpanded" class="icon fa-compress"></span>
           </a>
+        </span>
       </div>
 
       <section>
-        <h5 title="Available buckets">{{qc.analysisFirstSection}}</h5>
-        <ul ng-repeat="bucket in qc.buckets">
-            <ul>{{bucket.id}}</ul>
+        <div class="row">
+          <h5 title="Available bucket connections">{{qc.analysisFirstSection}}</h5>
+        </div>
+        <span class="text-small" ng-repeat="bucket in qc.buckets">
+        <ul>
+          <ul>
+            {{bucket.cbBucketName}}
+            <span ng-if="bucket.connected" title="connected" class="icon fa-random" style="cursor:auto; color:green;"></span>
+        <span ng-if="!bucket.connected" title="disconnected" class="icon fa-random" style="cursor:auto;"></span> {{bucket.id}}
         </ul>
+        </ul>
+        </span>
       </section>
 
       <section>
         <h5 title="Avaiable shadow datasets">{{qc.analysisSecondSection}}</h5>
-          <ul ng-repeat="shadow in qc.shadows">
-            <ul>{{shadow.id}}</ul>
+        <span ng-repeat="shadow in qc.shadows">
+          <div>
+           <a href="" ng-click="changeExpandShadow(shadow)" class="text-small">
+        <span class="icon fa-caret-down fa-fw" ng-show="shadow.expanded"></span>
+        <span class="icon fa-caret-right fa-fw" ng-hide="shadow.expanded"></span> {{shadow.id}}
+        </a>
+        <ul class="text-small" ng-if="shadow.expanded">
+          <ul>
+            <span title="Bucket Connection" class="icon fa-plug" style="cursor:auto"></span> {{shadow.bucketName}}
           </ul>
+          <ul ng-if="shadow.filter">
+            <span title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
+          </ul>
+        </ul>
+        </div>
+        </span>
       </section>
 
+      <section>
+        <div class="row">
+          <h5 title="Cluster bucket with no connections">{{qc.analysisThirdSection}}</h5>
+        </div>
+        <span class="text-small" ng-repeat="bucket in qc.bucketsWithNoConnection">
+        <ul>
+          <ul>
+            {{bucket}}
+          </ul>
+        </ul>
+        </span>
+      </section>
     </div>
   </div>
 </div>

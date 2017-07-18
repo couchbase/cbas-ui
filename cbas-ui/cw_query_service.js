@@ -68,6 +68,7 @@
 
     cwQueryService.buckets = [];
     cwQueryService.bucket_names = [];
+    cwQueryService.bucketsWithNoConnection = [];
     cwQueryService.shadows = [];
     cwQueryService.indexes = [];
     cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
@@ -179,6 +180,23 @@
       this.executionTime = truncateTime(executionTime);
     };
 
+    function getBucketState() {
+      var bucketStateRequest = {
+        url: cwConstantsService.bucketStateURL,
+        method: "GET",
+        headers: { 'Content-Type': 'application/json' }
+      };
+      return ($http(bucketStateRequest));
+    }
+
+    function getClusterBuckets() {
+      var clusterBucketsRequest = {
+        url: cwConstantsService.clusterBucketsURL,
+        method: "GET",
+        headers: { 'Content-Type': 'application/json' }
+      };
+      return ($http(clusterBucketsRequest));
+    }
 
     // elapsed and execution time come back with ridiculous amounts of
     // precision, and some letters at the end indicating units.
@@ -1524,6 +1542,7 @@
         // initialize the data structure for holding all the buckets and shadows
         cwQueryService.buckets.length = 0;
         cwQueryService.shadows.length = 0;
+        cwQueryService.bucketsWithNoConnection.length = 0;
         cwQueryService.bucket_errors = null;
         cwQueryService.bucket_names.length = 0;
         cwQueryService.autoCompleteTokens = {};
@@ -1531,16 +1550,66 @@
         if (data && data.results) {
           for (var i = 0; i < data.results.length; i++) {
             var record = data.results[i];
-            if (record.is_shadow) {
+            if (record.isShadow) {
+              record.expanded = true;
               cwQueryService.shadows.push(record);
               addToken(record.id, "shadow");
-            } else if (record.is_bucket) {
+            } else if (record.isBucket) {
               cwQueryService.buckets.push(record);
               cwQueryService.bucket_names.push(record.id);
               addToken(record.id, "bucket");
             }
           }
         }
+
+        // get buckets state
+        res1 = getBucketState()
+          .then(function success(resp) {
+            var data = resp.data, status = resp.status;
+            for (var i = 0; i < data.buckets.length; i++) {
+              // find the bucket from the list and update its state
+              var result = $.grep(cwQueryService.buckets, function (e) { return e.id == data.buckets[i].name; });
+              if (result[0]) {
+                result[0].connected = data.buckets[i].state == "connected";
+                // console.log("-> " + data.buckets[i].state);
+              }
+            }
+          },
+          function error(resp) {
+            var data = resp.data, status = resp.status;
+            var error = "Error retrieving buckets state";
+            if (data && data.errors) {
+              error = error + ": " + JSON.stringify(data.errors);
+            }
+            else if (status) {
+              error = error + ", contacting analytics service returned status: " + status;
+            }
+            logWorkbenchError(error);
+          });
+
+        // get all cluster bucket
+        res1 = getClusterBuckets()
+          .then(function success(resp) {
+            var data = resp.data, status = resp.status;
+            for (var i = 0; i < data.length; i++) {
+              var bucketName = data[i].name;
+              // find bucket with no connections
+              if (!(_.some(cwQueryService.buckets, function (e) { return e.cbBucketName == bucketName; }))) {
+                cwQueryService.bucketsWithNoConnection.push(bucketName);
+              }
+            }
+          },
+          function error(resp) {
+            var data = resp.data, status = resp.status;
+            var error = "Error retrieving buckets from cluster";
+            if (data && data.errors) {
+              error = error + ": " + JSON.stringify(data.errors);
+            }
+            else if (status) {
+              error = error + ", contacting default pool returned status: " + status;
+            }
+            logWorkbenchError(error);
+          });
 
         refreshAutoCompleteArray();
 
@@ -1624,6 +1693,7 @@
 
         cwQueryService.buckets.length = 0;
         cwQueryService.shadows.length = 0;
+        cwQueryService.bucketsWithNoConnection.length = 0;
         cwQueryService.autoCompleteTokens = {};
         cwQueryService.bucket_errors = error;
         logWorkbenchError(error);

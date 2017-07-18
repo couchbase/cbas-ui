@@ -130,12 +130,13 @@
   cursor: pointer;
   color: #555;
 }
+
 #sidebar_body ul {
   margin: .25rem 0;
   cursor: default;
 }
 #sidebar_body ul ul {
-  margin-left: .75rem;
+  margin-left: 1rem;
 }
 #sidebar_body li {
   list-style-type: none;
@@ -265,4 +266,8 @@
 }
 #query_stats hr {
   margin: .5rem 0;
+}
+
+.spacer {
+    margin-top: .5rem;
 }

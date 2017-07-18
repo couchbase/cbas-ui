@@ -24,6 +24,12 @@
     // URL to use for running queries
     cwConstantsService.queryURL = "../_p/cbas/query/service";
 
+    // URL to use to get the bucket connection state
+    cwConstantsService.bucketStateURL = "../_p/cbas/analytics/buckets";
+
+    // URL to get user visible buckets
+    cwConstantsService.clusterBucketsURL = "../pools/default/buckets";
+
     // should we get passwords from the Couchbase server?
     cwConstantsService.getCouchbaseBucketPasswords = false;
 
@@ -47,15 +53,20 @@
     // 'has_sec' indicating secondary indexes. For a different system, just make sure
     // the returned schema has 'id' and 'has_prim'.
     cwConstantsService.keyspaceQuery =
-      "select Name as id, true as is_bucket from Metadata.`Bucket` union all " +
-      "select DatasetName as id, true as is_shadow from Metadata.`Dataset` where BucketName is not missing;";
+      "select Name as id, true as isBucket, Configuration.name as cbBucketName from Metadata.`Bucket` union all " +
+      "select DatasetName as id, true as isShadow, BucketName as bucketName, `Filter` as `filter` from Metadata.`Dataset` where BucketName is not missing;";
 
     // should we permit schema inquiries in the bucket analysis pane?
     cwConstantsService.showSchemas = false;
 
     // labels for different types of buckets in the analysis pane
-    cwConstantsService.analysisFirstSection = "Buckets";
+    cwConstantsService.analysisFirstSection = "Buckets with Connections";
     cwConstantsService.analysisSecondSection = "Shadow Datasets";
+    cwConstantsService.analysisThirdSection = "Buckets with no Connections";
+
+    // list of trigger queries to update update the bucket insights after
+    cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE BUCKET", "DROP BUCKET", "CONNECT BUCKET", "DISCONNECT BUCKET", "CREATE SHADOW", "DROP DATASET"];
+
 
     //
     //
