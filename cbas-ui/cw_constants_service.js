@@ -24,6 +24,9 @@
     // URL to use for running queries
     cwConstantsService.queryURL = "../_p/cbas/query/service";
 
+    // URL to use to cancel running queries
+    cwConstantsService.canelQueryURL = "../_p/cbas/analytics/admin/active_requests";
+
     // URL to use to get the bucket connection state
     cwConstantsService.bucketStateURL = "../_p/cbas/analytics/buckets";
 
@@ -47,6 +50,9 @@
 
     // should queries include an array of credentials? ("creds")
     cwConstantsService.sendCreds = false;
+
+    // query id parameter name (for query cancellation)
+    cwConstantsService.queryIdParam = "client_context_id";
 
     // the following query asks Couchbase for a list of keyspaces, returning the 'id',
     // and a 'has_prim' boolean indicating whether or not it has a primary index, and

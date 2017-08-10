@@ -58,7 +58,6 @@
     cwQueryService.currentQueryRequestID = null;
     cwQueryService.executeQuery = executeQuery;
     cwQueryService.cancelQuery = cancelQuery;
-    cwQueryService.cancelQueryById = cancelQueryById;
 
     cwQueryService.executeQueryUtil = executeQueryUtil;
 
@@ -661,67 +660,26 @@
     //
     // cancelQuery - if a query is running, cancel it
     //
-
     function cancelQuery() {
-//      console.log("Cancelling query, currentQuery: " + cwQueryService.currentQueryRequest);
       if (cwQueryService.currentQueryRequest != null) {
         var queryInFly = mnPendingQueryKeeper.getQueryInFly(cwQueryService.currentQueryRequest);
         queryInFly && queryInFly.canceler("test");
 
-        //
-        // also submit a new query to delete the running query on the server
-        //
+        // prepare cancel request
+        var queryIdParam = cwConstantsService.queryIdParam + "=" + cwQueryService.currentQueryRequestID;
+        var cancelQueryRequest = {
+          url: cwConstantsService.canelQueryURL + "?" + queryIdParam,
+          method: "DELETE"
+        };
 
-        var query = 'delete from system:active_requests where clientContextID = "' +
-          cwQueryService.currentQueryRequestID + '";';
-
-//        console.log("  queryInFly: " + queryInFly + "\n  query: " + query);
-
-        executeQueryUtil(query,false)
-
-        .then(function success() {
-//        console.log("Success cancelling query.");
-//        console.log("    Data: " + JSON.stringify(data));
-//        console.log("    Status: " + JSON.stringify(status));
-        },
-
-        // sanity check - if there was an error put a message in the console.
-        function error(resp) {
-//          var data = resp.data, status = resp.status;
-          logWorkbenchError("Error cancelling query: " + JSON.stringify(resp));
-//          console.log("Error cancelling query.");
-//          console.log("    Data: " + JSON.stringify(data));
-//          console.log("    Status: " + JSON.stringify(status));
-        });
-
+        // submit request
+        $http(cancelQueryRequest)
+          .then(function success(resp) {
+          },
+          function error(resp) {
+            logWorkbenchError("Error cancelling query: " + JSON.stringif(resp));
+          });
       }
-    }
-
-
-    //
-    // query monitoring might want to cancel queries this way
-
-    function cancelQueryById(requestId) {
-      //console.log("Cancelling query: " + requestId);
-      var query = 'delete from system:active_requests where requestId = "' +
-        requestId + '";';
-
-      executeQueryUtil(query,false)
-
-        .then(function success() {
-//        console.log("Success cancelling query.");
-//        console.log("    Data: " + JSON.stringify(data));
-//        console.log("    Status: " + JSON.stringify(status));
-        },
-
-      // sanity check - if there was an error put a message in the console.
-      function error(resp) {
-          logWorkbenchError("Error cancelling query: " + JSON.stringify(resp));
-//        var data = resp.data, status = resp.status;
-//        console.log("Error cancelling query: " + query);
-//        console.log("    Response: " + JSON.stringify(resp));
-//        console.log("    Status: " + JSON.stringify(status));
-      });
     }
 
     //
