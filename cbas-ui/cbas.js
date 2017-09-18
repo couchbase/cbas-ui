@@ -121,9 +121,13 @@
         _bucketsInProgress = true;
 
         // meanwhile issue a query to the local node get the list of buckets
-        var queryData = {statement: "select 1;"};
-        $http.post("/_p/cbas/query/service",queryData)
-        .then(function success(resp) {
+        var queryRequest = {
+          url: "/_p/cbas/query/service",
+          method: "POST",
+          headers: {'ignore-401':'true'},
+          data: {statement: "select 1;"}
+      };
+        $http(queryRequest).then(function success(resp) {
           var data = resp.data, status = resp.status;
           //console.log("Got bucket list data: " + JSON.stringify(data));
           mnPermissions.check().then(function() {
