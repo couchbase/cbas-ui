@@ -67,8 +67,7 @@
 
     // labels for different types of buckets in the analysis pane
     cwConstantsService.analysisFirstSection = "Buckets with Connections";
-    cwConstantsService.analysisSecondSection = "Shadow Datasets";
-    cwConstantsService.analysisThirdSection = "Buckets with no Connections";
+    cwConstantsService.analysisSecondSection = "Buckets with no Connections";
 
     // list of trigger queries to update update the bucket insights after
     cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE BUCKET", "DROP BUCKET", "CONNECT BUCKET", "DISCONNECT BUCKET", "CREATE SHADOW", "DROP DATASET"];

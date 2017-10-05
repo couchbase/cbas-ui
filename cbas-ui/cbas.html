@@ -151,36 +151,30 @@
         <ul>
           <ul>
             {{bucket.cbBucketName}}
-            <span ng-if="bucket.connected" title="connected" class="icon fa-random" style="cursor:auto; color:green;"></span>
-        <span ng-if="!bucket.connected" title="disconnected" class="icon fa-random" style="cursor:auto;"></span> {{bucket.id}}
-        </ul>
-        </ul>
-        </span>
-      </section>
-
-      <section>
-        <h5 title="Avaiable shadow datasets">{{qc.analysisSecondSection}}</h5>
+            <span ng-if="bucket.connected" title="connected" class="icon fa-link fa-rotate-90" style="cursor:auto;"></span>
+        <span ng-if="!bucket.connected" title="disconnected" class="icon fa-unlink fa-rotate-90" style="cursor:auto;"></span>
+        <span ng-if="bucket.cbBucketName != bucket.id">{{bucket.id}}</span>
         <span ng-repeat="shadow in qc.shadows">
-          <div>
+          <div ng-if="shadow.bucketName == bucket.id">
            <a href="" ng-click="changeExpandShadow(shadow)" class="text-small">
         <span class="icon fa-caret-down fa-fw" ng-show="shadow.expanded"></span>
         <span class="icon fa-caret-right fa-fw" ng-hide="shadow.expanded"></span> {{shadow.id}}
         </a>
         <ul class="text-small" ng-if="shadow.expanded">
-          <ul>
-            <span title="Bucket Connection" class="icon fa-plug" style="cursor:auto"></span> {{shadow.bucketName}}
-          </ul>
           <ul ng-if="shadow.filter">
             <span title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
           </ul>
         </ul>
         </div>
         </span>
+        </ul>
+        </ul>
+        </span>
       </section>
 
       <section>
         <div class="row">
-          <h5 title="Cluster bucket with no connections">{{qc.analysisThirdSection}}</h5>
+          <h5 title="Cluster bucket with no connections">{{qc.analysisSecondSection}}</h5>
         </div>
         <span class="text-small" ng-repeat="bucket in qc.bucketsWithNoConnection">
         <ul>
