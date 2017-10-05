@@ -160,11 +160,12 @@
     //
 
     function QueryResult(status,elapsedTime,executionTime,resultCount,resultSize,result,
-        data,query,requestID,explainResult,mutationCount) {
+        data,query,requestID,explainResult,mutationCount, processedObjects) {
       this.status = status;
       this.resultCount = resultCount;
       this.resultCount = mutationCount;
       this.resultSize = resultSize;
+      this.processedObjects = processedObjects;
       this.result = result;
       this.data = data;
       this.query = query;
@@ -218,7 +219,7 @@
     QueryResult.prototype.clone = function()
     {
       return new QueryResult(this.status,this.elapsedTime,this.executionTime,this.resultCount,
-          this.resultSize,this.result,this.data,this.query,this.requestID,this.explainResult,this.mutationCount);
+          this.resultSize,this.result,this.data,this.query,this.requestID,this.explainResult,this.mutationCount,this.processedObjects);
     };
     QueryResult.prototype.copyIn = function(other)
     {
@@ -226,6 +227,7 @@
       this.elapsedTime = truncateTime(other.elapsedTime);
       this.executionTime = truncateTime(other.executionTime);
       this.resultCount = other.resultCount;
+      this.processedObjects = other.processedObjects;
       this.mutationCount = other.mutationCount;
       this.resultSize = other.resultSize;
       this.result = other.result;
@@ -241,7 +243,7 @@
     // structures for remembering queries and results
     //
 
-    var dummyResult = new QueryResult('','','','','','',{},'');
+    var dummyResult = new QueryResult('','','','','','',{},'', '');
     var lastResult = dummyResult.clone();
     var savedResultTemplate = dummyResult.clone();
     savedResultTemplate.status = "cached query";
@@ -261,6 +263,7 @@
     executingQueryTemplate.data = {status: "Executing statement"};
     executingQueryTemplate.resultSize = 0;
     executingQueryTemplate.resultCount = 0;
+    executingQueryTemplate.processedObjects = 0;
 
 
     var pastQueries = [];       // keep a history of past queries and their results
@@ -950,6 +953,7 @@
       lastResult.status = executingQueryTemplate.status;
       lastResult.resultSize = executingQueryTemplate.resultSize;
       lastResult.resultCount = executingQueryTemplate.resultCount;
+      lastResult.processedObjects = executingQueryTemplate.processedObjects;
 
       var pre_post_ms = new Date().getTime(); // when did we start?
 
@@ -972,6 +976,7 @@
           newResult.status = "errors";
           newResult.resultCount = 0;
           newResult.resultSize = 0;
+          newResult.processedObjects = 0;
           newResult.queryDone = true;
 
           // can't recover from error, finish query
@@ -1102,6 +1107,7 @@
         newResult.status = "errors";
         newResult.resultCount = 0;
         newResult.resultSize = 0;
+        newResult.processedObjects = 0;
         newResult.queryDone = true;
 
         // make sure to only finish if the explain query is also done
@@ -1156,13 +1162,14 @@
         // if we got no metrics, create a dummy version
 
         if (!data.metrics) {
-          data.metrics = {elapsedTime: 0.0, executionTime: 0.0, resultCount: 0, resultSize: "0", elapsedTime: 0.0}
+          data.metrics = {elapsedTime: 0.0, executionTime: 0.0, resultCount: 0, resultSize: "0", elapsedTime: 0.0, processedObjects: 0}
         }
 
         newResult.status = data.status;
         newResult.elapsedTime = data.metrics.elapsedTime;
         newResult.executionTime = data.metrics.executionTime;
         newResult.resultCount = data.metrics.resultCount;
+        newResult.processedObjects = data.metrics.processedObjects;
         if (data.metrics.mutationCount)
           newResult.mutationCount = data.metrics.mutationCount;
         newResult.resultSize = data.metrics.resultSize;
@@ -1254,6 +1261,7 @@
           newResult.status = "errors";
           newResult.resultCount = 0;
           newResult.resultSize = 0;
+          newResult.processedObjects = 0;
           newResult.queryDone = true;
 
           // make sure to only finish if the explain query is also done
@@ -1274,6 +1282,7 @@
           newResult.status = "errors";
           newResult.resultCount = 0;
           newResult.resultSize = 0;
+          newResult.processedObjects = 0;
           newResult.queryDone = true;
 
           // make sure to only finish if the explain query is also done
@@ -1335,6 +1344,7 @@
           if (data.metrics.mutationCount)
             newResult.mutationCount = data.metrics.mutationCount;
           newResult.resultSize = data.metrics.resultSize;
+          newResult.processedObjects = data.metrics.processedObjects;;
         }
 
         if (data.requestID)

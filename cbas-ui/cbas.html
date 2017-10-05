@@ -76,7 +76,8 @@
         <span>execution: {{qc.lastResult.executionTime}} | </span>
         <span ng-if="qc.lastResult.mutationCount">mutations: {{qc.lastResult.mutationCount}} | </span>
         <span ng-if="!qc.lastResult.mutationCount">count: {{qc.lastResult.resultCount}} | </span>
-        <span>size: {{qc.lastResult.resultSize}}</span>
+        <span>size: {{qc.lastResult.resultSize}} | </span>
+        <span>processed objects: {{qc.lastResult.processedObjects}}</span>
       </div>
 
       <a href="" ng-if="qc.showOptions" ng-click="qc.options()" class="row">
