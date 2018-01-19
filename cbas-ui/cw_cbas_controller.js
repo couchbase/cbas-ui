@@ -166,6 +166,9 @@
 
     qc.isEnterprise = mnPools.export.isEnterprise;
 
+    // helper functions //
+    qc.forceReload = forceReload;
+
     //
     // call the activate method for initialization
     //
@@ -1187,5 +1190,10 @@
 
   }
 
+  function forceReload(url) {
+    if (window.location.href == url) {
+      location.reload();
+    }
+  }
 
 })();

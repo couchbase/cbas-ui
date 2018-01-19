@@ -12,7 +12,7 @@
   </div>
 
   <div ng-if="!qc.validated.inProgress() && !qc.validated.valid()" class="margin-top1">
-    <p>The query interface is only available on Couchbase nodes running the analytics service.</p>
+    <p>The analytics interface is only available on Couchbase nodes running the analytics service.</p>
 
     <div ng-if="qc.validNodes.length">
       <span ng-if="qc.validated.otherStatus() == 404">
@@ -26,7 +26,7 @@
       </span>
       <ul class="nobullet">
         <li ng-repeat="url in qc.validNodes">
-          <a href="{{url}}">{{url}}</a>
+          <a href="{{url}}" data-ng-click="qc.forceReload(url)">{{url}}</a>
         </li>
       </ul>
     </div>
