@@ -1,12 +1,5 @@
 <div ng-controller="cwCbasController as qc">
 
-  <mn-element-cargo depot="subnav">
-    <nav ng-if="qc.validated.valid()" class="sub-nav">
-      <a ui-sref="app.admin.cbas.workbench" ui-sref-active="selected">
-        Analytics Workbench</a>
-    </nav>
-  </mn-element-cargo>
-
   <div class="margin-top1" ng-if="qc.validated.inProgress() && !qc.validated.valid()">
     <p>Contacting analytics node...</p>
   </div>
@@ -19,7 +12,7 @@
         <p>The analytics service was found on the following nodes:</p>
       </span>
       <span ng-if="qc.validated.otherStatus() != 404">
-        <p class="error">Received error {{qc.validated.otherStatus()}} when contacting the 
+        <p class="error">Received error {{qc.validated.otherStatus()}} when contacting the
         analytics service on this node. You can try refreshing the browser, or connecting to another node
         (if available).</p>
         <p>The analytics service should be found on the following nodes:</p>
