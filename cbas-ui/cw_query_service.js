@@ -1562,8 +1562,10 @@
             for (var i = 0; i < data.length; i++) {
               var bucketName = data[i].name;
               // find bucket with no connections
-              if (!(_.some(cwQueryService.buckets, function (e) { return e.cbBucketName == bucketName; }))) {
-                cwQueryService.bucketsWithNoConnection.push(bucketName);
+              if (!(_.some(cwQueryService.buckets, function (e) { return e.cbBucketName === bucketName; }))) {
+                if(cwQueryService.bucketsWithNoConnection.indexOf(bucketName) === -1){
+                    cwQueryService.bucketsWithNoConnection.push(bucketName);
+                }
               }
             }
           },
