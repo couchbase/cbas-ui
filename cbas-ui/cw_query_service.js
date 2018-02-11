@@ -73,6 +73,7 @@
     cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
     cwQueryService.getSchemaForBucket = getSchemaForBucket;   // get schema
     cwQueryService.testAuth = testAuth; // check passward
+    cwQueryService.loadingBuckets = false;
 
 //    mnAuthService.whoami().then(function (resp) {
 //      if (resp) cwQueryService.user = resp;
@@ -1487,189 +1488,88 @@
     $rootScope.$on("indexStatusURIChanged",updateBuckets);
     $rootScope.$on("bucketUriChanged",updateBuckets);
 
-    function updateBuckets(event,data) {
-      validateCbasService.getBucketsAndNodes(updateBucketsCallback);
+    function updateBuckets(event, data) {
+      validateCbasService.checkLiveness(updateBucketsCallback);
     }
 
     function updateBucketsCallback() {
-      //console.log("Inside updateBucketsCallback");
-      // use a query to get buckets with a primary index
-
+      cwQueryService.loadingBuckets = true;
       var queryText = cwConstantsService.keyspaceQuery;
-
-      res1 = executeQueryUtil(queryText, false)
-      .then(function success(resp) {
-        var data = resp.data, status = resp.status;
-
-        // remember the counts of each bucket so the screen doesn't blink when recomputing counts
-        var bucket_counts = {};
-        for (var i=0; i < cwQueryService.buckets.length; i++) {
-          bucket_counts[cwQueryService.buckets[i].id] = cwQueryService.buckets[i].count;
-        }
-
-        // initialize the data structure for holding all the buckets and shadows
-        cwQueryService.buckets.length = 0;
-        cwQueryService.shadows.length = 0;
-        cwQueryService.bucketsWithNoConnection.length = 0;
-        cwQueryService.bucket_errors = null;
-        cwQueryService.bucket_names.length = 0;
-        cwQueryService.autoCompleteTokens = {};
-
-        if (data && data.results) {
-          for (var i = 0; i < data.results.length; i++) {
-            var record = data.results[i];
-            if (record.isShadow) {
-              record.expanded = true;
-              cwQueryService.shadows.push(record);
-              addToken(record.id, "shadow");
-            } else if (record.isBucket) {
-              cwQueryService.buckets.push(record);
-              cwQueryService.bucket_names.push(record.id);
-              addToken(record.id, "bucket");
-            }
-          }
-        }
-
-        // get buckets state
-        res1 = getBucketState()
-          .then(function success(resp) {
-            var data = resp.data, status = resp.status;
-            for (var i = 0; i < data.buckets.length; i++) {
-              // find the bucket from the list and update its state
-              var result = $.grep(cwQueryService.buckets, function (e) { return e.id == data.buckets[i].name; });
-              if (result[0]) {
-                result[0].connected = data.buckets[i].state == "connected";
-                // console.log("-> " + data.buckets[i].state);
-              }
-            }
-          },
-          function error(resp) {
-            var data = resp.data, status = resp.status;
-            var error = "Error retrieving buckets state";
-            if (data && data.errors) {
-              error = error + ": " + JSON.stringify(data.errors);
-            }
-            else if (status) {
-              error = error + ", contacting analytics service returned status: " + status;
-            }
-            logWorkbenchError(error);
-          });
-
-        // get all cluster bucket
-        res1 = getClusterBuckets()
-          .then(function success(resp) {
-            var data = resp.data, status = resp.status;
-            for (var i = 0; i < data.length; i++) {
-              var bucketName = data[i].name;
-              // find bucket with no connections
-              if (!(_.some(cwQueryService.buckets, function (e) { return e.cbBucketName === bucketName; }))) {
-                if(cwQueryService.bucketsWithNoConnection.indexOf(bucketName) === -1){
-                    cwQueryService.bucketsWithNoConnection.push(bucketName);
-                }
-              }
-            }
-          },
-          function error(resp) {
-            var data = resp.data, status = resp.status;
-            var error = "Error retrieving buckets from cluster";
-            if (data && data.errors) {
-              error = error + ": " + JSON.stringify(data.errors);
-            }
-            else if (status) {
-              error = error + ", contacting default pool returned status: " + status;
-            }
-            logWorkbenchError(error);
-          });
-
-        refreshAutoCompleteArray();
-
-        //
-        // Should we go get information for each bucket?
-        //
-
-        if (cwConstantsService.showSchemas)
-          getInfoForBucketBackground(cwQueryService.buckets,0);
-
-        /////////////////////////////////////////////////////////////////////////
-        // now run a query to get the list of indexes
-        /////////////////////////////////////////////////////////////////////////
-
-        if (cwConstantsService.showSchemas) {
-          queryText = "select indexes.* from system:indexes";
-
-          res1 = executeQueryUtil(queryText, false)
-          //res1 = $http.post("/_p/query/query/service",{statement : queryText})
+      executeQueryUtil(queryText, false)
           .then(function (resp) {
-            var data = resp.data, status = resp.status;
-
-            //console.log("Got index info: " + JSON.stringify(data));
-
-            if (data && _.isArray(data.results)) {
-              cwQueryService.indexes = data.results;
-              // make sure each bucket knows about each relevant index
-              for (var i=0; i < data.results.length; i++) {
-                addToken(data.results[i].name,'index');
-                for (var b=0; b < cwQueryService.buckets.length; b++)
-                  if (data.results[i].keyspace_id === cwQueryService.buckets[b].id) {
-                    cwQueryService.buckets[b].indexes.push(data.results[i]);
-                    break;
-                  }
-              }
-            }
-
-            refreshAutoCompleteArray();
-          },
-
-          // error status from query about indexes
-          function index_error(resp) {
-            var data = resp.data, status = resp.status;
-
-            //console.log("Ind Error Data: " + JSON.stringify(data));
-            //console.log("Ind Error Status: " + JSON.stringify(status));
-            //console.log("Ind Error Headers: " + JSON.stringify(headers));
-            //console.log("Ind Error statusText: " + JSON.stringify(statusText));
-
-            var error = "Error retrieving list of indexes";
-
-            if (data && data.errors)
-              error = error + ": " + data.errors;
-            if (status)
-              error = error + ", contacting query service returned status: " + status;
-//          if (response && response.statusText)
-//          error = error + ", " + response.statusText;
-
-//            console.log(error);
+            processMetadataQueryResult(resp.data);
+            // now get the buckets state
+            return getBucketState();
+          })
+          .then(function (resp) {
+            processBucketsState(resp.data);
+            // check if we have any buckets with no analytics buckets
+            return getClusterBuckets();
+          })
+          .then(function (resp) {
+            processClusterBuckets(resp.data);
+          })
+          .catch(function (resp) {
+            var error = "Failed to get bucket insights.";
+            error = error + "\nAnalytics service returned status: " + resp.status;
+            error = error + "\nTry refreshing the bucket insights.";
+            cwQueryService.buckets.length = 0;
+            cwQueryService.shadows.length = 0;
+            cwQueryService.bucketsWithNoConnection.length = 0;
+            cwQueryService.autoCompleteTokens = {};
+            cwQueryService.bucket_errors = error;
             logWorkbenchError(error);
+          })
+          .finally(function () {
+            cwQueryService.loadingBuckets = false;
+          });
+    }
 
-            cwQueryService.index_error = error;
+    function processMetadataQueryResult(data) {
+      // initialize the data structure for holding all the buckets and shadows
+      cwQueryService.buckets.length = 0;
+      cwQueryService.shadows.length = 0;
+      cwQueryService.bucketsWithNoConnection.length = 0;
+      cwQueryService.bucket_errors = null;
+      cwQueryService.bucket_names.length = 0;
+      if (data && data.results) {
+        for (var i = 0; i < data.results.length; i++) {
+          var record = data.results[i];
+          if (record.isShadow) {
+            record.expanded = true;
+            cwQueryService.shadows.push(record);
+            addToken(record.id, "shadow");
+          } else if (record.isBucket) {
+            cwQueryService.buckets.push(record);
+            cwQueryService.bucket_names.push(record.id);
+            addToken(record.id, "bucket");
           }
-          );
         }
+      }
+    }
 
-      },
-      /* error response from $http */
-      function error(resp) {
-        var data = resp.data, status = resp.status;
-//        console.log("Schema Error Data: " + JSON.stringify(data));
-//        console.log("Schema Error Status: " + JSON.stringify(status));
-//        console.log("Schema Error Headers: " + JSON.stringify(headers));
-//        console.log("Schema Error Config: " + JSON.stringify(config));
-        var error = "Error retrieving list of buckets";
+    function processBucketsState(data) {
+      for (var i = 0; i < data.buckets.length; i++) {
+        // find the bucket from the list and update its state
+        var result = $.grep(cwQueryService.buckets, function (e) {
+          return e.id === data.buckets[i].name;
+        });
+        if (result[0]) {
+          result[0].connected = data.buckets[i].state === "connected";
+        }
+      }
+    }
 
-        if (data && data.errors)
-          error = error + ": " + JSON.stringify(data.errors);
-        else if (status)
-          error = error + ", contacting query service returned status: " + status;
-
-        cwQueryService.buckets.length = 0;
-        cwQueryService.shadows.length = 0;
-        cwQueryService.bucketsWithNoConnection.length = 0;
-        cwQueryService.autoCompleteTokens = {};
-        cwQueryService.bucket_errors = error;
-        logWorkbenchError(error);
-      });
-
-
+    function processClusterBuckets(data) {
+      for (var i = 0; i < data.length; i++) {
+        var bucketName = data[i].name;
+        // find bucket with no connections
+        if (!(_.some(cwQueryService.buckets, function (e) {
+              return e.cbBucketName === bucketName;
+            })) && cwQueryService.bucketsWithNoConnection.indexOf(bucketName) === -1) {
+          cwQueryService.bucketsWithNoConnection.push(bucketName);
+        }
+      }
     }
 
     //
@@ -2079,14 +1979,6 @@
     //
 
     loadStateFromStorage();
-
-    //
-    // when we are initialized, get the list of buckets
-    //
-
-    $timeout(function(){
-      updateBuckets();
-    },500);
 
     //
     // all done creating the service, now return it

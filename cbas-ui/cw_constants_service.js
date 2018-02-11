@@ -72,6 +72,7 @@
     // list of trigger queries to update update the bucket insights after
     cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE BUCKET", "DROP BUCKET", "CONNECT BUCKET", "DISCONNECT BUCKET", "CREATE SHADOW", "DROP DATASET"];
 
+    cwConstantsService.healthCheckURL = "../_p/cbas/admin/ping";
 
     //
     //

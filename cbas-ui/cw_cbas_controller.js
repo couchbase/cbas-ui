@@ -5,7 +5,6 @@
   cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService'];
 
   function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService) {
-
     var qc = this;
     //console.log("Start controller at: " + new Date().toTimeString());
 
@@ -1176,15 +1175,9 @@
       // get the list of buckets
       qc.updateBuckets();
 
-      //$( "#resizable-2" ).resizable({
-      //  animate: true
-    // });
-      //$(".resizable").resizable({handles: "w"});
-
       //
       // now let's make sure the window is the right size
       //
-
       $timeout(updateEditorSizes(),100);
     }
 
