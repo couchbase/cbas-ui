@@ -116,7 +116,7 @@
            ng-model="qc.lastResult.result"></div>
       <div id="result_table"
            ng-if="qc.isSelected(2) && (!qc.dataTooBig() || qc.showBigDatasets)"
-           qw-json-table="qc.lastResult.data"></div>
+           qw-json-data-table="qc.lastResult.data"></div>
       <div id="result_tree"
            ng-if="qc.isSelected(3) && (!qc.dataTooBig() || qc.showBigDatasets)"
            qw-json-tree="qc.lastResult.data"></div>
