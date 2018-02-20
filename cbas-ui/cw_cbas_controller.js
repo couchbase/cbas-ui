@@ -957,10 +957,16 @@
         scope: dialogScope
       }).result;
 
+      promise.then(function (result) {
+        if (result === 'run') {
+          query(false);
+        }
+      });
+
       // scroll the dialog's table
       $timeout(scrollHistoryToSelected,100);
 
-    };
+    }
 
     var historySearchResults = [];
     var searchInfo = {searchText: "", searchLabel: "search:"};
