@@ -160,30 +160,34 @@
             <h5 title="Available bucket connections">{{qc.analysisFirstSection}}</h5>
           </div>
           <span class="text-small" ng-repeat="bucket in qc.buckets">
-        <ul>
-          <ul>
-            {{bucket.cbBucketName}}
-            <span ng-if="bucket.connected" title="connected" class="icon fa-link fa-rotate-90"
-                  style="cursor:auto;"></span>
-        <span ng-if="!bucket.connected" title="disconnected" class="icon fa-unlink fa-rotate-90"
-              style="cursor:auto;"></span>
-        <span ng-if="bucket.cbBucketName != bucket.id">{{bucket.id}}</span>
-        <span ng-repeat="shadow in qc.shadows">
-          <div ng-if="shadow.bucketName == bucket.id">
-           <a href="" ng-click="changeExpandShadow(shadow)" class="text-small">
-        <span class="icon fa-caret-down fa-fw" ng-show="shadow.expanded"></span>
-        <span class="icon fa-caret-right fa-fw" ng-hide="shadow.expanded"></span> {{shadow.id}}
-        </a>
-        <ul class="text-small" ng-if="shadow.expanded">
-          <ul ng-if="shadow.filter">
-            <span title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
-          </ul>
-        </ul>
-        </div>
-        </span>
-        </ul>
-        </ul>
-        </span>
+            <ul>
+              <ul>
+                {{bucket.cbBucketName}}
+                <span ng-if="bucket.connected" title="connected" class="icon fa-link fa-rotate-90" style="cursor:auto;"></span>
+                <span ng-if="!bucket.connected" title="disconnected" class="icon fa-unlink fa-rotate-90" style="cursor:auto;"></span>
+                <span ng-if="bucket.cbBucketName != bucket.id">{{bucket.id}}</span>
+                <span ng-repeat="shadow in qc.shadows">
+                  <div ng-if="shadow.bucketName == bucket.id">
+                    <!-- only show shadow name if not filtered -->
+                    <ul ng-if="!shadow.filter" class="text-small">{{shadow.id}}</ul>
+                    <!-- show expandable shadow details if filtered -->
+                    <ul ng-if="shadow.filter">
+                      <a href="" ng-click="changeExpandShadow(shadow)" style="color: black" class="text-small">
+                        {{shadow.id}}
+                        <span class="icon fa-info-circle" style="color: #4287d6;" ng-hide="shadow.expanded"></span>
+                        <span class="icon fa-info-circle" style="color: gray;" ng-show="shadow.expanded"></span>
+                      </a>
+                      <ul class="text-small" ng-if="shadow.expanded">
+                        <ul>
+                          <span title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
+                        </ul>
+                      </ul>
+                    </ul>
+                  </div>
+                </span>
+              </ul>
+            </ul>
+          </span>
         </section>
 
         <section>
