@@ -45,8 +45,8 @@
       mnPluggableUiRegistryProvider.registerConfig({
         name: 'Analytics',
         state: 'app.admin.cbas.workbench',
-        plugIn: 'adminTab',
-        after: 'indexes'
+        plugIn: 'workbenchTab',
+        index: 2
       });
 
       //
