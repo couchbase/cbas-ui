@@ -1052,16 +1052,16 @@
 
     function toggleAnalysisSize() {
       if (!qc.analysisExpanded) {
-        $("#metadata").removeClass("width-3");
-        $("#metadata").addClass("width-6");
+        $(".insights-sidebar").removeClass("width-3");
+        $(".insights-sidebar").addClass("width-6");
       //  if ($('#result_box').hasClass('classic-ui')) {
           $("#query_wrapper").removeClass("width-9");
           $("#query_wrapper").addClass("width-6")
       //  }
       }
       else {
-        $("#metadata").removeClass("width-6");
-        $("#metadata").addClass("width-3");
+        $(".insights-sidebar").removeClass("width-6");
+        $(".insights-sidebar").addClass("width-3");
       //  if ($('#result_box').hasClass('classic-ui')) {
           $("#query_wrapper").removeClass("width-6");
           $("#query_wrapper").addClass("width-9");

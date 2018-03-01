@@ -16,19 +16,18 @@
   </mn-element-cargo>
 
   <!-- wrapper for query editor and results -->
-  <div mn-spinner="queryInProgress" id="query_wrapper" class="width-9">
+  <div mn-spinner="queryInProgress" id="query_wrapper" class="width-9 resp-small">
     <!-- query_box is the query editor -->
     <div id="query_box">
       <!-- Editor "header row" -->
       <div id="query_header" class="row">
-
         <h4>Analytics Query Editor</h4>
         <div class="query-history-controls">
           <button
-                  title="View previous queries/results" ng-click="qc.prev()"
-                  qw-long-press="qc.historyMenu"
-                  class="outline btn-small"
-                  ng-disabled="!qc.hasPrev()">
+             title="View previous queries/results" ng-click="qc.prev()"
+             qw-long-press="qc.historyMenu"
+             class="outline btn-small"
+             ng-disabled="!qc.hasPrev()">
             &larr;
           </button>
           <span class="query-history-controls-inner">
@@ -36,11 +35,11 @@
             <small>({{qc.getCurrentIndex()}})</small>
           </span>
           <button
-                  title="View subsequent queries/results"
-                  ng-click="qc.next()"
-                  qw-long-press="qc.historyMenu"
-                  class="outline btn-small"
-                  ng-disabled="!qc.hasNext()">
+             title="View subsequent queries/results"
+             ng-click="qc.next()"
+             qw-long-press="qc.historyMenu"
+             class="outline btn-small"
+             ng-disabled="!qc.hasNext()">
             &rarr;
           </button>
         </div>
@@ -50,7 +49,6 @@
            ng-disabled="qc.executingQuery.busy"
            ng-model="qc.lastResult.query">{{qc.renderPage()}}
       </div>
-
     </div>
 
     <!-- wrapper under query editor for button and stats -->
@@ -129,79 +127,80 @@
   </div>
 
   <!-- bucket insights sidebar -->
-  <div ng-if="true" id="metadata" class="width-3">
-    <!-- title + icons -->
-    <div class="row">
-      <h4>Bucket Insights</h4>
-      <span>
-          <a title="Refresh bucket insights"
-             ng-click="qc.updateBuckets()"
-             class="margin-right-half"
-             ng-disabled="qc.qqs.loadingBuckets">
-            <span ng-if="qc.qqs.loadingBuckets" class="icon fa-refresh" style="color: gray"></span>
-            <span ng-if="!qc.qqs.loadingBuckets" class="icon fa-refresh"></span>
-        </a>
-        <a title="expand or contract sidebar" ng-click="qc.toggleAnalysisSize()">
-            <span ng-if="!qc.analysisExpanded" class="icon fa-expand"></span>
-            <span ng-if="qc.analysisExpanded" class="icon fa-compress"></span>
+  <div class="insights-sidebar width-3">
+    <div class="sidebar-body">
+      <div class="row">
+        <h4>Bucket Insights</h4>
+        <span>
+            <a title="Refresh bucket insights"
+               ng-click="qc.updateBuckets()"
+               class="margin-right-half"
+               ng-disabled="qc.qqs.loadingBuckets">
+              <span ng-if="qc.qqs.loadingBuckets" class="icon fa-refresh"></span>
+              <span ng-if="!qc.qqs.loadingBuckets" class="icon fa-refresh"></span>
           </a>
-        </span>
-    </div>
-    <!-- details -->
-    <div mn-spinner="qc.qqs.loadingBuckets">
-      <div ng-if="qc.qqs.bucket_errors">
-        <br>
-        <p style="white-space:pre-wrap;">{{qc.qqs.bucket_errors}}
-        </p>
+          <a title="expand or contract sidebar" ng-click="qc.toggleAnalysisSize()">
+              <span ng-if="!qc.analysisExpanded" class="icon fa-expand"></span>
+              <span ng-if="qc.analysisExpanded" class="icon fa-compress"></span>
+            </a>
+          </span>
       </div>
-      <div ng-if="!qc.qqs.bucket_errors" id="sidebar_body">
-        <section>
-          <div class="row">
-            <h5 title="Available bucket connections">{{qc.analysisFirstSection}}</h5>
-          </div>
-          <span class="text-small" ng-repeat="bucket in qc.buckets">
-            <ul>
+      <!-- details -->
+      <div mn-spinner="qc.qqs.loadingBuckets">
+        <div ng-if="qc.qqs.bucket_errors">
+          <br>
+          <p style="white-space:pre-wrap;">{{qc.qqs.bucket_errors}}
+          </p>
+        </div>
+        <div ng-if="!qc.qqs.bucket_errors">
+          <section>
+            <div class="row">
+              <h5 title="Available bucket connections">{{qc.analysisFirstSection}}</h5>
+            </div>
+            <span class="text-small" ng-repeat="bucket in qc.buckets">
               <ul>
-                {{bucket.cbBucketName}}
-                <span ng-if="bucket.connected" title="connected" class="icon fa-link fa-rotate-90" style="cursor:auto;"></span>
-                <span ng-if="!bucket.connected" title="disconnected" class="icon fa-unlink fa-rotate-90" style="cursor:auto;"></span>
-                <span ng-if="bucket.cbBucketName != bucket.id">{{bucket.id}}</span>
-                <span ng-repeat="shadow in qc.shadows">
-                  <div ng-if="shadow.bucketName == bucket.id">
-                    <!-- only show shadow name if not filtered -->
-                    <ul ng-if="!shadow.filter" class="text-small">{{shadow.id}}</ul>
-                    <!-- show expandable shadow details if filtered -->
-                    <ul ng-if="shadow.filter">
-                      <a href="" ng-click="changeExpandShadow(shadow)" style="color: black" class="text-small">
-                        {{shadow.id}}
-                        <span class="icon fa-info-circle" style="color: #4287d6;" ng-hide="shadow.expanded"></span>
-                        <span class="icon fa-info-circle" style="color: gray;" ng-show="shadow.expanded"></span>
-                      </a>
-                      <ul class="text-small" ng-if="shadow.expanded">
-                        <ul>
-                          <span title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
+                <ul>
+                  {{bucket.cbBucketName}}
+                  <span ng-if="bucket.connected" title="connected" class="icon fa-link fa-rotate-90" style="cursor:auto;"></span>
+                  <span ng-if="!bucket.connected" title="disconnected" class="icon fa-unlink fa-rotate-90" style="cursor:auto;"></span>
+                  <span ng-if="bucket.cbBucketName != bucket.id">{{bucket.id}}</span>
+                  <span ng-repeat="shadow in qc.shadows">
+                    <div ng-if="shadow.bucketName == bucket.id">
+                      <!-- only show shadow name if not filtered -->
+                      <ul ng-if="!shadow.filter" class="text-small">{{shadow.id}}</ul>
+                      <!-- show expandable shadow details if filtered -->
+                      <ul ng-if="shadow.filter">
+                        <a href="" ng-click="changeExpandShadow(shadow)" style="color: black" class="text-small">
+                          {{shadow.id}}
+                          <span class="icon fa-info-circle" style="color: #4287d6;" ng-hide="shadow.expanded"></span>
+                          <span class="icon fa-info-circle" style="color: gray;" ng-show="shadow.expanded"></span>
+                        </a>
+                        <ul class="text-small" ng-if="shadow.expanded">
+                          <ul>
+                            <span title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
+                          </ul>
                         </ul>
                       </ul>
-                    </ul>
-                  </div>
-                </span>
+                    </div>
+                  </span>
+                </ul>
               </ul>
-            </ul>
-          </span>
-        </section>
+            </span>
+          </section>
 
-        <section>
-          <div class="row">
-            <h5 title="Cluster bucket with no connections">{{qc.analysisSecondSection}}</h5>
-          </div>
-          <span class="text-small" ng-repeat="bucket in qc.bucketsWithNoConnection">
-        <ul>
+          <section>
+            <div class="row">
+              <h5 title="Cluster bucket with no connections">{{qc.analysisSecondSection}}</h5>
+            </div>
+            <span class="text-small" ng-repeat="bucket in qc.bucketsWithNoConnection">
           <ul>
-            {{bucket}}
+            <ul>
+              {{bucket}}
+            </ul>
           </ul>
-        </ul>
-        </span>
-        </section>
+          </span>
+          </section>
+        </div>
       </div>
     </div>
   </div>

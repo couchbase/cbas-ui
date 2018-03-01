@@ -104,7 +104,7 @@
   text-align: right;
 }
 
-/* bucket inference sidebar -------------------- */
+/* bucket inference sidebar --------------------
 #metadata {
   -webkit-box-flex: 0;
   flex: 0 0 auto;
@@ -148,7 +148,7 @@
 .schema .indexed {
   color: #333;
   font-weight: 600;
-}
+}   */
 
 /* query history ------------------------ */
 .query-history-controls-inner {
