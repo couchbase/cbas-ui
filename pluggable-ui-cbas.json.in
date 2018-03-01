@@ -1,7 +1,14 @@
 {
   "service": "cbas",
   "proxy-strategy": "local",
-  "rest-api-prefix": "cbas",
+  "rest-api-prefixes": {
+    "cbas": {
+      "portName": "cbas_http_port"
+    },
+    "cbas-admin": {
+      "portName": "cbas_admin_port"
+    }
+  },
   "version-dirs": [
     {"version": [5, 0], "dir": "."}
   ],
