@@ -1949,7 +1949,7 @@
     //
 
     function showErrorDialog(message) {
-      var subdirectory = ($('#currentUI').height() != null) ? '/ui-current' : '/ui-classic';
+      var subdirectory = '/ui-current';
 
       var dialogScope = $rootScope.$new(true);
       dialogScope.error_title = "Error";
@@ -1962,7 +1962,7 @@
     }
 
     function showWarningDialog(message) {
-      var subdirectory = ($('#currentUI').height() != null) ? '/ui-current' : '/ui-classic';
+      var subdirectory = '/ui-current';
 
       var dialogScope = $rootScope.$new(true);
       dialogScope.error_title = "Warning";

@@ -370,8 +370,8 @@
       // make the query editor "catch" drag and drop files
       //
 
-      $("#query_editor")[0].addEventListener('dragover',handleDragOver,false);
-      $("#query_editor")[0].addEventListener('drop',handleFileDrop,false);
+      $(".wb-query-editor")[0].addEventListener('dragover',handleDragOver,false);
+      $(".wb-query-editor")[0].addEventListener('drop',handleFileDrop,false);
     };
 
     // this function is used for autocompletion of dynamically known names such
@@ -538,36 +538,21 @@
     //
 
     function updateEditorSizes() {
-      var margins = 200;
-      //if (navigator.userAgent.match(/safari/i))
-      //	constant = 10;
+      var margins = 90;
       var windowHeight = window.innerHeight;
-      var pageFooterHeight =  96; //$('#page_footer').height();
-      var pageHeaderHeight = 42;
-      var headerNavHeight =  $('#headerNav').height();
-      if (headerNavHeight == null)
-        headerNavHeight = 47;
-      var queryBoxHeight = $('#query_box').height();
-      var resultHeaderHeight =  $('#result_header').height();
-      var sidebarHeaderHeight =  $('#sidebar_header').height();
-      var resultSummaryHeight = $('#result_summary').height();
-      var current_ui = $('#currentUI').height() != null;
+      var pageFooterHeight =  90;
+      var headerNavHeight = 47;
+      var queryBoxHeight = $('.wb-query-editor').height();
 
-      var otherStuff = pageHeaderHeight + pageFooterHeight +
-        headerNavHeight + queryBoxHeight;
+      var otherStuff = pageFooterHeight + headerNavHeight + queryBoxHeight;
 
-      if (//pageHeaderHeight == null || pageFooterHeight == null ||
-          headerNavHeight == null || queryBoxHeight == null) {
+      if (headerNavHeight == null || queryBoxHeight == null) {
         return;
       }
 
-      var editor_size = windowHeight - otherStuff - margins - resultHeaderHeight;
+      var editor_size = windowHeight - otherStuff - margins;
       if (editor_size > 1000)
-        editor_size = 1000;
-      if (current_ui)
-        editor_size += 150;//70;
-      else
-        editor_size += 140;
+        editor_size = 1150;
       if (editor_size < 0)
         editor_size = 0;
 
@@ -581,31 +566,13 @@
 //      console.log(" current_ui: " + current_ui);
 //      console.log(" editor_size: " + editor_size);
 
-
-      if (!current_ui) { // classic UI
-        // ignore small changes less than 1% of size
-        var change = $('#result_editor').height()/(editor_size + 9);
-        if (change < 0.99 || change > 1.01) {
-          $('#sidebar_body').height(editor_size + resultHeaderHeight - sidebarHeaderHeight + resultSummaryHeight + 25);
-          $('#result_editor').height(editor_size + 9);
-          $('#result_table').height(editor_size+25);
-          $('#result_tree').height(editor_size+ 24);
-          $('#query_plan').height(editor_size + 15);
-          $('#query_plan_text').height(editor_size + 25);
-        //$('#result_box').height(editor_size+50);
-        }
-      }
-      else {
-        var sidebarHeight = windowHeight - pageHeaderHeight - pageFooterHeight -
-          sidebarHeaderHeight - 80;
-        $('#sidebar_body').height(sidebarHeight);
-        $('#result_editor').height(editor_size);
-        $('#result_table').height(editor_size+25);
-        $('#result_tree').height(editor_size+15);
-        $('#query_plan').height(editor_size + 15);
-        $('#query_plan_text').height(editor_size + 25);
-        //$('#result_box').height(editor_size+50);
-      }
+      var sidebarHeight = windowHeight - pageFooterHeight;
+      $('.insights-sidebar-body').height(sidebarHeight);
+      $('.wb-results-json').height(editor_size);
+      $('.wb-results-table').height(editor_size + 32);
+      $('.wb-results-tree').height(editor_size + 15);
+      //$('#query_plan').height(editor_size + 15);
+      $('.wb-results-explain-text').height(editor_size + 32);
 
 
       //
@@ -616,11 +583,11 @@
       // doesn't have fewer than 5 lines or more than ~50% of the window
 
       if (qc.inputEditor) {
-        var queryAreaHeight = Math.max($('#query_wrapper').height(),240);
-        var queryHeaderHeight = $('#query_header').height();
+        var queryAreaHeight = Math.max($('.wb-main-wrapper').height(),240);
+        var queryHeaderHeight = $('.wb-query-editor-header').height();
         var curSession = qc.inputEditor.getSession();
         var lines = curSession.getLength();
-        var halfScreen = queryAreaHeight/2-queryHeaderHeight*3;
+        var halfScreen = queryAreaHeight/2-queryHeaderHeight*4;
         var height = Math.max(75,((lines-1)*21)-10); // make sure height no less than 75
         if (halfScreen > 75 && height > halfScreen)
           height = halfScreen;
@@ -628,7 +595,7 @@
         //console.log("QueryAreaHeight: " + queryAreaHeight + ", queryHeaderHeight: " + queryHeaderHeight);
         //console.log("Half screen: " + halfScreen + ", Area height: " + queryAreaHeight + ", header: " + queryHeaderHeight + ", setting height to: " + height);
 
-        $("#query_editor").height(height);
+        $(".wb-ace-editor").height(height);
       }
 
 
@@ -776,7 +743,7 @@
     dialogScope.file = {name: "output"};
 
     function options() {
-      var subdirectory = ($('#currentUI').height() != null) ? '/ui-current' : '/ui-classic';
+      var subdirectory = '/ui-current';
       dialogScope.options = cwQueryService.clone_options();
 
       var promise = $uibModal.open({
@@ -809,7 +776,7 @@
       // but for those that do, get a name for the file
       dialogScope.file_type = 'json';
       dialogScope.file = dialogScope.data_file;
-      var subdirectory = ($('#currentUI').height() != null) ? '/ui-current' : '/ui-classic';
+      var subdirectory = '/ui-current';
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
@@ -848,7 +815,7 @@
       // but for those that do, get a name for the file
       dialogScope.file_type = 'query';
       dialogScope.file = dialogScope.query_file;
-      var subdirectory = ($('#currentUI').height() != null) ? '/ui-current' : '/ui-classic';
+      var subdirectory = '/ui-current';
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
@@ -949,7 +916,7 @@
       dialogScope.selectNextMatch = selectNextMatch;
       dialogScope.selectPrevMatch = selectPrevMatch;
 
-      var subdirectory = ($('#currentUI').height() != null) ? '/ui-current' : '/ui-classic';
+      var subdirectory = '/ui-current';
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
@@ -1054,18 +1021,14 @@
       if (!qc.analysisExpanded) {
         $(".insights-sidebar").removeClass("width-3");
         $(".insights-sidebar").addClass("width-6");
-      //  if ($('#result_box').hasClass('classic-ui')) {
-          $("#query_wrapper").removeClass("width-9");
-          $("#query_wrapper").addClass("width-6")
-      //  }
+        $(".wb-main-wrapper").removeClass("width-9");
+        $(".wb-main-wrapper").addClass("width-6")
       }
       else {
         $(".insights-sidebar").removeClass("width-6");
         $(".insights-sidebar").addClass("width-3");
-      //  if ($('#result_box').hasClass('classic-ui')) {
-          $("#query_wrapper").removeClass("width-6");
-          $("#query_wrapper").addClass("width-9");
-      //  }
+        $(".wb-main-wrapper").removeClass("width-6");
+        $(".wb-main-wrapper").addClass("width-9");
       }
       qc.analysisExpanded = !qc.analysisExpanded;
     }
@@ -1076,7 +1039,7 @@
     //
 
     function showErrorMessage(message) {
-      var subdirectory = ($('#currentUI').height() != null) ? '/ui-current' : '/ui-classic';
+      var subdirectory = '/ui-current';
       dialogScope.error_title = "Error";
       dialogScope.error_detail = message;
 
