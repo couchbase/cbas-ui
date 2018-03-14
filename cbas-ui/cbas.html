@@ -76,7 +76,7 @@
           <span ng-if="qc.lastResult.mutationCount">mutations: {{qc.lastResult.mutationCount}} | </span>
           <span ng-if="!qc.lastResult.mutationCount && qc.lastResult.resultCount">count: {{qc.lastResult.resultCount}} | </span>
           <span ng-if="qc.lastResult.resultSize">size: {{qc.lastResult.resultSize}} | </span>
-          <span>processed objects: {{qc.lastResult.processedObjects}}</span>
+          <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects">processed objects: {{qc.lastResult.processedObjects}}</span>
         </div>
 
 <!-- run-time preferences -->
