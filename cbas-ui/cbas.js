@@ -46,7 +46,7 @@
         name: 'Analytics',
         state: 'app.admin.cbas.workbench',
         plugIn: 'workbenchTab',
-        index: 2
+        index: 3
       });
 
       //
