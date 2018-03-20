@@ -1546,6 +1546,7 @@
           }
         }
       }
+      refreshAutoCompleteArray();
     }
 
     function processBucketsState(data) {
