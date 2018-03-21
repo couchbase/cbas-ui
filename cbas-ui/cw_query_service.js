@@ -1175,7 +1175,7 @@
           newResult.mutationCount = data.metrics.mutationCount;
         newResult.resultSize = data.metrics.resultSize;
         if (data.rawJSON)
-          newResult.result = angular.toJson(JSON.parse(data.rawJSON), true);
+          newResult.result = js_beautify(data.rawJSON, {"indent_size": 2});
         else
           newResult.result = angular.toJson(result, true);
         newResult.data = result;
