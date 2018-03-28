@@ -71,12 +71,13 @@
              ng-class="{success: qc.status_success(), error: qc.status_fail()}">
             {{qc.lastResult.status}}
           </span>
-          <span ng-if="qc.lastResult.elapsedTime"> | elapsed: {{qc.lastResult.elapsedTime}} | </span>
-          <span ng-if="qc.lastResult.executionTime">execution: {{qc.lastResult.executionTime}} | </span>
-          <span ng-if="qc.lastResult.mutationCount">mutations: {{qc.lastResult.mutationCount}} | </span>
-          <span ng-if="!qc.lastResult.mutationCount && qc.lastResult.resultCount">count: {{qc.lastResult.resultCount}} | </span>
-          <span ng-if="qc.lastResult.resultSize">size: {{qc.lastResult.resultSize}} | </span>
-          <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects">processed objects: {{qc.lastResult.processedObjects}}</span>
+          <span ng-if="!qc.executingQuery.busy">
+            <span ng-if="qc.lastResult.elapsedTime"> | elapsed: {{qc.lastResult.elapsedTime}} | </span>
+            <span ng-if="qc.lastResult.executionTime">execution: {{qc.lastResult.executionTime}} | </span>
+            <span ng-if="qc.lastResult.resultCount">count: {{qc.lastResult.resultCount}} | </span>
+            <span ng-if="qc.lastResult.resultSize">size: {{qc.lastResult.resultSize}} | </span>
+            <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects">processed objects: {{qc.lastResult.processedObjects}}</span>
+          </span>
         </div>
 
 <!-- run-time preferences -->
