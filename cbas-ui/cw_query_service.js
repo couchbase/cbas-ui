@@ -1536,7 +1536,9 @@
         for (var i = 0; i < data.results.length; i++) {
           var record = data.results[i];
           if (record.isShadow) {
-            record.expanded = true;
+            record.expandable = record.filter || (record.indexes && record.indexes.length > 0);
+            record.expanded = record.expandable;
+            constructIndexesKeys(record);
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
           } else if (record.isBucket) {
@@ -1569,6 +1571,18 @@
               return e.cbBucketName === bucketName;
             })) && cwQueryService.bucketsWithNoConnection.indexOf(bucketName) === -1) {
           cwQueryService.bucketsWithNoConnection.push(bucketName);
+        }
+      }
+    }
+
+    function constructIndexesKeys(dataset) {
+      if (dataset.indexes && dataset.indexes.length > 0) {
+        for (var i = 0; i < dataset.indexes.length; i++) {
+          var idx = dataset.indexes[i];
+          idx.keys = [];
+          for (var j = 0; j < idx.SearchKey.length; j++) {
+            idx.keys.push(idx.SearchKey[j] + ":" + idx.SearchKeyType[j]);
+          }
         }
       }
     }
