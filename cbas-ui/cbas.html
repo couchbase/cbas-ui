@@ -74,12 +74,13 @@
              ng-class="{success: qc.status_success(), error: qc.status_fail()}">
             {{qc.lastResult.status}}
           </span>
-          <span ng-if="qc.lastResult.elapsedTime"> | elapsed: {{qc.lastResult.elapsedTime}} | </span>
-          <span ng-if="qc.lastResult.executionTime">execution: {{qc.lastResult.executionTime}} | </span>
-          <span ng-if="qc.lastResult.mutationCount">mutations: {{qc.lastResult.mutationCount}} | </span>
-          <span ng-if="!qc.lastResult.mutationCount && qc.lastResult.resultCount">count: {{qc.lastResult.resultCount}} | </span>
-          <span ng-if="qc.lastResult.resultSize">size: {{qc.lastResult.resultSize}} | </span>
-          <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects">processed objects: {{qc.lastResult.processedObjects}}</span>
+          <span ng-if="!qc.executingQuery.busy">
+            <span ng-if="qc.lastResult.elapsedTime"> | elapsed: {{qc.lastResult.elapsedTime}} | </span>
+            <span ng-if="qc.lastResult.executionTime">execution: {{qc.lastResult.executionTime}} | </span>
+            <span ng-if="qc.lastResult.resultCount">count: {{qc.lastResult.resultCount}} | </span>
+            <span ng-if="qc.lastResult.resultSize">size: {{qc.lastResult.resultSize}} | </span>
+            <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects">processed objects: {{qc.lastResult.processedObjects}}</span>
+          </span>
         </div>
 
 <!-- run-time preferences -->
@@ -176,18 +177,30 @@
                   <span ng-if="bucket.cbBucketName != bucket.id">{{bucket.id}}</span>
                   <span ng-repeat="shadow in qc.shadows">
                     <div ng-if="shadow.bucketName == bucket.id">
-                      <!-- only show shadow name if not filtered -->
-                      <ul ng-if="!shadow.filter" class="text-small">{{shadow.id}}</ul>
-                      <!-- show expandable shadow details if filtered -->
-                      <ul ng-if="shadow.filter">
+                      <!-- only show shadow name if not expandable -->
+                      <ul ng-if="!shadow.expandable" class="text-small">{{shadow.id}}</ul>
+                      <!-- show expandable shadow details if expandable -->
+                      <ul ng-if="shadow.expandable">
                         <a href="" ng-click="changeExpandShadow(shadow)" style="color: black" class="text-small">
                           {{shadow.id}}
                           <span class="icon fa-info-circle" style="color: #4287d6;" ng-hide="shadow.expanded"></span>
                           <span class="icon fa-info-circle" style="color: gray;" ng-show="shadow.expanded"></span>
                         </a>
-                        <ul class="text-small" ng-if="shadow.expanded">
+                        <ul class="text-small" ng-if="shadow.expanded && shadow.filter">
                           <ul>
                             <span title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
+                          </ul>
+                        </ul>
+                      </ul>
+                      <ul ng-if="shadow.expanded && shadow.indexes" class="text-small">
+                        <ul>
+                          <ul ng-repeat="idx in shadow.indexes">
+                            <span title="Index" class="icon fa-caret-up fa-lg" style="cursor:auto"></span> {{idx.IndexName}}
+                            <ul ng-repeat="key in idx.keys">
+                              <ul>
+                                <span title="Key" class="icon fa-map-pin" style="cursor:auto"></span> {{key}}
+                              </ul>
+                            </ul>
                           </ul>
                         </ul>
                       </ul>
