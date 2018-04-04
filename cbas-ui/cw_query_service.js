@@ -776,6 +776,7 @@
       if (is_user_query) {
         cwQueryService.currentQueryRequestID = UUID.generate();
         queryData.client_context_id = cwQueryService.currentQueryRequestID;
+        queryData["optimized-logical-plan"] = true;
       }
 
       //
@@ -1180,17 +1181,15 @@
           newResult.result = angular.toJson(result, true);
         newResult.data = result;
 
-        if(explainOnly || queryIsExplain) {
-          newResult.explainResultText = newResult.data[0];
-          newResult.result = null;
-          newResult.data = null;
-          // select Plan Text tab
-          cwQueryService.selectTab(5);
+        if (data.plans.optimizedLogicalPlan) {
+          newResult.explainResultText = JSON.stringify(data.plans.optimizedLogicalPlan, null, '  ');
         } else {
-          if(cwQueryService.isSelected(5)) {
-            // if Plan Text tab is selected, select JSON tab
-            cwQueryService.selectTab(1);
-          }
+          newResult.explainResultText = "";
+        }
+
+        if(explainOnly || queryIsExplain) {
+          newResult.result = newResult.explainResultText;
+          newResult.data = newResult.explainResultText;
         }
         newResult.requestID = data.requestID;
 

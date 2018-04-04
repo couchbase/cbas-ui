@@ -107,7 +107,7 @@
     };
 
     qc.acePlanOptions = {
-        mode: 'text',
+        mode: 'json',
         showGutter: true,
         useWrapMode: true,
         onLoad: qc.acePlanLoaded,
