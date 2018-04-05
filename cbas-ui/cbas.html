@@ -98,8 +98,7 @@
            ng-class="{selected: qc.isSelected(2)}">Table</a>
         <a ng-click="qc.selectTab(3)"
            ng-class="{selected: qc.isSelected(3)}">Tree</a>
-        <!-- Temporary Hide Plan Tab  -->
-        <a ng-click="qc.selectTab(4)" ng-if="qc.isEnterprise && false"
+        <a ng-click="qc.selectTab(4)" ng-if="qc.isEnterprise"
            ng-class="{selected: qc.isSelected(4)}">Plan</a>
         <a ng-click="qc.selectTab(5)"
            ng-class="{selected: qc.isSelected(5)}">Plan Text</a>
@@ -123,9 +122,8 @@
            ng-if="qc.isSelected(3) && (!qc.dataTooBig() || qc.showBigDatasets)"
            qw-json-tree="qc.lastResult.data"></div>
 
-<!--      <div class="wb-results-explain"
-           ng-if="qc.isSelected(4)"
-           qw-explain-viz="qc.lastResult.explainResult"></div>  -->
+      <div class="wb-results-explain" ng-if="qc.isSelected(4)"
+           qw-explain-viz-d3="qc.lastResult.explainResult"></div>
 
       <div class="wb-results-explain-text"
            ng-if="qc.isSelected(5)"

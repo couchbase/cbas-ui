@@ -580,7 +580,7 @@
       $('.wb-results-json').height(editor_size);
       $('.wb-results-table').height(editor_size + 32);
       $('.wb-results-tree').height(editor_size + 15);
-      //$('#query_plan').height(editor_size + 15);
+      $('.wb-results-explain').height(editor_size + 32);
       $('.wb-results-explain-text').height(editor_size + 32);
 
 

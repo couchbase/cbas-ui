@@ -992,11 +992,11 @@
 
           // now check the status of what came back
           if (data && data.status == "success" && data.results && data.results.length > 0) {
-            var lists = qwQueryPlanService.analyzePlan(data.results[0].plan,null);
+            var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
             newResult.explainResult =
             {explain: data.results[0],
                 analysis: lists,
-                plan_nodes: qwQueryPlanService.convertPlanJSONToPlanNodes(data.results[0].plan, null, lists)
+                plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan, null, lists)
             };
 
             // let's check all the fields to make sure they are all valid
@@ -1182,7 +1182,15 @@
         newResult.data = result;
 
         if (data.plans.optimizedLogicalPlan) {
-          newResult.explainResultText = JSON.stringify(data.plans.optimizedLogicalPlan, null, '  ');
+          var plan = data.plans.optimizedLogicalPlan;
+          newResult.explainResultText = JSON.stringify(plan, null, '  ');
+          // convert plan format to QueryPlanService expected format
+          var stringPlan = JSON.stringify(plan);
+          stringPlan = stringPlan.replace(/\"operator\":/g, '"#operator":');
+          plan = JSON.parse(stringPlan, null, '  ');
+          var planEntities = qwQueryPlanService.analyzeAnalyticsPlan(plan, null);
+          var planNodes = qwQueryPlanService.convertAnalyticsPlanToPlanNodes(plan, null, planEntities);
+          newResult.explainResult = {explain: plan, analysis: planEntities, plan_nodes: planNodes};
         } else {
           newResult.explainResultText = "";
         }
@@ -1196,11 +1204,11 @@
         // did we get query timings in the result? If so, update the plan
 
         if (data.profile && data.profile.executionTimings) {
-          var lists = qwQueryPlanService.analyzePlan(data.profile.executionTimings,null);
+          var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.profile.executionTimings,null);
           newResult.explainResult =
           {explain: data.profile.executionTimings,
               analysis: lists,
-              plan_nodes: qwQueryPlanService.convertPlanJSONToPlanNodes(data.profile.executionTimings,null,lists)
+              plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.profile.executionTimings,null,lists)
               /*,
               buckets: cwQueryService.buckets,
               tokens: cwQueryService.autoCompleteTokens*/};
@@ -1218,11 +1226,11 @@
         // explain plan
 
         if (queryIsExplain && cwConstantsService.autoExplain) {
-          var lists = qwQueryPlanService.analyzePlan(data.results[0].plan,null);
+          var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
           newResult.explainResult =
           {explain: data.results[0],
               analysis: lists,
-              plan_nodes: qwQueryPlanService.convertPlanJSONToPlanNodes(data.results[0].plan,null,lists)
+              plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan,null,lists)
               /*,
               buckets: cwQueryService.buckets,
               tokens: cwQueryService.autoCompleteTokens*/};
@@ -1298,7 +1306,7 @@
 
         // result is a string? it must be an error message
         if (_.isString(data)) {
-          newResult.data = {status: data};
+          newResult.data = {status: status, message: data};
           if (status && status == 504) {
             newResult.data.status_detail =
               "The query workbench only supports queries running for " + timeout +
