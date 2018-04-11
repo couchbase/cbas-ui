@@ -1504,10 +1504,12 @@
           .then(function (resp) {
             processBucketsState(resp.data);
             // check if we have any buckets with no analytics buckets
-            return getClusterBuckets();
+            return validateCbasService.userHasAnyBuckets() ? getClusterBuckets() : null;
           })
           .then(function (resp) {
-            processClusterBuckets(resp.data);
+            if (resp) {
+              processClusterBuckets(resp.data);
+            }
           })
           .catch(function (resp) {
             var error = "Failed to get bucket insights.";
