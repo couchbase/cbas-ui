@@ -1511,10 +1511,12 @@
           .then(function (resp) {
             processBucketsState(resp.data);
             // check if we have any buckets with no analytics buckets
-            return getClusterBuckets();
+            return validateCbasService.userHasAnyBuckets() ? getClusterBuckets() : null;
           })
           .then(function (resp) {
-            processClusterBuckets(resp.data);
+            if (resp) {
+              processClusterBuckets(resp.data);
+            }
           })
           .catch(function (resp) {
             var error = "Failed to get bucket insights.";
@@ -1805,7 +1807,7 @@
       if (!rawBytes)
         return rawBytes;
 
-      var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|([:\s][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*)[,\s}]/ig;
+      var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|([:\s]\-?[0-9]{16,})[,\s}]|([:\s]\-?[0-9\.]{17,})[,\s}]/ig;
       var longIntCount = 0;
       var matchArray = matchNonQuotedLongInts.exec(rawBytes);
       while (matchArray != null) {

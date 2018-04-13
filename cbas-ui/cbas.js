@@ -46,6 +46,7 @@
         name: 'Analytics',
         state: 'app.admin.cbas.workbench',
         plugIn: 'workbenchTab',
+        ngShow: "rbac.cluster.analytics.select",
         index: 3
       });
 
@@ -63,7 +64,7 @@
         cwQueryService.updateBuckets();
       });
 
-//      mnPermissionsProvider.set("cluster.n1ql.meta!read"); // system catalogs
+      mnPermissionsProvider.set("cluster.analytics!select");
 //      mnPermissionsProvider.setBucketSpecific(function (name) {
 //        return [
 //          "cluster.bucket[" + name + "].n1ql.select!execute"
@@ -81,6 +82,7 @@
         var _checked = false;              // have we checked validity yet?
         var _valid = false;                // do we have a valid query node?
         var _InProgress = false;    // are we retrieving the list of buckets?
+        var _userHasAnyBuckets = false;
         var _otherStatus;
         var _otherError;
         var service = {
@@ -96,6 +98,9 @@
           otherError: function () {
             return _otherError;
           },
+          userHasAnyBuckets: function() {
+            return _userHasAnyBuckets;
+          },
           checkLiveness: checkLiveness
         };
 
@@ -106,6 +111,7 @@
           }
 
           _valid = false;
+          _userHasAnyBuckets = false;
           _checked = true;
           _otherStatus = null;
           _otherError = null;
@@ -117,13 +123,12 @@
             headers: {'ignore-401': 'true'}
           };
           $http(pingRequest).then(function success(resp) {
-                mnPermissions.check().then(function () {
-                  _valid = true;
-                  _InProgress = false;
-                  if (callback) {
-                    callback();
-                  }
-                });
+                checkUserPermissions();
+                _valid = true;
+                _InProgress = false;
+                if (callback) {
+                  callback();
+                }
               },
               // Error from $http
               function error(resp) {
@@ -133,6 +138,15 @@
                 _otherStatus = status;
                 _otherError = data;
               });
+        }
+
+        function checkUserPermissions() {
+          mnPermissions.check().then(function success() {
+            var perms = mnPermissions.export.cluster;
+            if (perms && perms.bucket["."] && perms.bucket["."].settings.read) {
+              _userHasAnyBuckets = true;
+            }
+          });
         }
 
         // now return the service
