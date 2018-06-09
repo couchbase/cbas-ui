@@ -28,6 +28,7 @@
     qc.executingQuery = cwQueryService.executingQuery;
     qc.emptyQuery = function() {return(cwQueryService.getResult().query.length == 0);}
     qc.emptyResult = cwQueryService.emptyResult;
+    qc.planFormat = cwQueryService.planFormat;
 
     // some functions for handling query history, going backward and forward
 
@@ -525,6 +526,7 @@
 
     function acePlanLoaded(_editor) {
       //console.log("AcePlanLoaded");
+      qc.planEditor = _editor;
       _editor.$blockScrolling = Infinity;
       _editor.setReadOnly(true);
       _editor.renderer.setPrintMarginColumn(false); // hide page boundary lines
@@ -537,6 +539,11 @@
     }
 
     function acePlanChanged(e) {
+        if (cwQueryService.planFormat === "json") {
+            qc.planEditor.session.setMode("ace/mode/json");
+        } else {
+            qc.planEditor.session.setMode("ace/mode/text");
+        }
       //e.$blockScrolling = Infinity;
 
       updateEditorSizes();

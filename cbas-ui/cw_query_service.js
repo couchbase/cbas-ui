@@ -74,7 +74,12 @@
     cwQueryService.getSchemaForBucket = getSchemaForBucket;   // get schema
     cwQueryService.testAuth = testAuth; // check passward
     cwQueryService.loadingBuckets = false;
+    cwQueryService.planFormat = 'json';
 
+    var explainTextFormat = "text";
+    var explainJsonFormat = "json";
+    var queryApiTextPlanFormat = "STRING";
+    var planFormatStartIndex = 8; // "explain (json | text)"
 //    mnAuthService.whoami().then(function (resp) {
 //      if (resp) cwQueryService.user = resp;
 //    });
@@ -732,6 +737,9 @@
       // protected buckets
       //
 
+      var extractedQuery = extractExplainPlanFormat(queryText);
+      var planFormat = extractedQuery[0];
+      queryText = extractedQuery[1];
       var queryData = {statement: queryText};
 
       if (cwConstantsService.sendCreds) {
@@ -777,6 +785,7 @@
         cwQueryService.currentQueryRequestID = UUID.generate();
         queryData.client_context_id = cwQueryService.currentQueryRequestID;
         queryData["optimized-logical-plan"] = true;
+        queryData["plan-format"] = planFormat;
       }
 
       //
@@ -834,6 +843,7 @@
         //console.log("Query data: " + JSON.stringify(queryData));
         //console.log("Encoded query: " + encodedQuery);
       }
+      queryRequest.planFormat = planFormat;
 
       // if it's a userQuery, make sure to handle really long ints, and remember the
       // request in case we need to cancel
@@ -1181,8 +1191,14 @@
           newResult.result = angular.toJson(result, true);
         newResult.data = result;
 
-        if (data.plans.optimizedLogicalPlan) {
-          var plan = data.plans.optimizedLogicalPlan;
+        var isJsonPlan = request.planFormat === "json";
+        var plan = "";
+        if (data.plans && data.plans.optimizedLogicalPlan) {
+            plan = data.plans.optimizedLogicalPlan;
+            newResult.explainResultText = plan;
+        }
+        if(isJsonPlan) {
+          cwQueryService.planFormat = "json";
           newResult.explainResultText = JSON.stringify(plan, null, '  ');
           // convert plan format to QueryPlanService expected format
           var stringPlan = JSON.stringify(plan);
@@ -1192,12 +1208,13 @@
           var planNodes = qwQueryPlanService.convertAnalyticsPlanToPlanNodes(plan, null, planEntities);
           newResult.explainResult = {explain: plan, analysis: planEntities, plan_nodes: planNodes};
         } else {
-          newResult.explainResultText = "";
+          cwQueryService.planFormat = "text";
+          cwQueryService.selectTab(5);
         }
 
         if(explainOnly || queryIsExplain) {
-          newResult.result = newResult.explainResultText;
-          newResult.data = newResult.explainResultText;
+          newResult.result = isJsonPlan ? newResult.explainResultText : "";
+          newResult.data = isJsonPlan ? newResult.explainResultText : "";
         }
         newResult.requestID = data.requestID;
 
@@ -1595,6 +1612,31 @@
         }
       }
     }
+
+      function extractExplainPlanFormat(queryText) {
+          var planFormat = explainJsonFormat;
+          if (queryText.length >= 11 && isExplainQuery(queryText)) {
+              if (hasPlanFormat(queryText, explainJsonFormat)) {
+                  queryText = removeExplainPlanFormat(queryText, explainJsonFormat);
+              } else if (hasPlanFormat(queryText, explainTextFormat)) {
+                  queryText = removeExplainPlanFormat(queryText, explainTextFormat);
+                  planFormat = queryApiTextPlanFormat;
+              }
+          }
+          return [planFormat, queryText];
+      }
+
+      function isExplainQuery(queryText) {
+          return queryText.toLowerCase().indexOf("explain", 0) === 0;
+      }
+
+      function removeExplainPlanFormat(queryText, format) {
+          return "explain " + queryText.substring(planFormatStartIndex + format.length);
+      }
+
+      function hasPlanFormat(queryText, format) {
+          return queryText.toLowerCase().indexOf(format, planFormatStartIndex) === planFormatStartIndex;
+      }
 
     //
     // this method uses promises and recursion to get the schemas for a list of
