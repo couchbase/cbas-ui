@@ -178,7 +178,7 @@
                         </a>
                           <span ng-show="shadow.remaining == 0" title="Remaining mutations: {{shadow.remaining}}" class="icon fa-random" style="color: green;"></span>
                           <span ng-show="shadow.remaining > 0" title="Remaining mutations: {{shadow.remaining}}" class="icon fa-random" style="color: orange;"></span>
-                          <span ng-show="shadow.remaining < 0" title="Disconnected" class="icon fa-random" style="color: gray;"></span>
+                          <span ng-show="shadow.remaining === qc.datasetDisconnectedState" title="Disconnected" class="icon fa-random" style="color: gray;"></span>
                         </span>
                         <ul class="text-small" ng-if="shadow.expanded">
                           <ul>

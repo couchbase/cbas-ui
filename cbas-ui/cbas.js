@@ -83,6 +83,7 @@
         var _valid = false;                // do we have a valid query node?
         var _InProgress = false;    // are we retrieving the list of buckets?
         var _userHasAnyBuckets = false;
+        var _userCanAccessStats = false;
         var _otherStatus;
         var _otherError;
         var service = {
@@ -101,6 +102,9 @@
           userHasAnyBuckets: function() {
             return _userHasAnyBuckets;
           },
+          canAccessStats: function() {
+            return _userCanAccessStats;
+          },
           checkLiveness: checkLiveness
         };
 
@@ -112,6 +116,7 @@
 
           _valid = false;
           _userHasAnyBuckets = false;
+          _userCanAccessStats = false;
           _checked = true;
           _otherStatus = null;
           _otherError = null;
@@ -143,8 +148,13 @@
         function checkUserPermissions() {
           mnPermissions.check().then(function success() {
             var perms = mnPermissions.export.cluster;
-            if (perms && perms.bucket["."] && perms.bucket["."].settings.read) {
-              _userHasAnyBuckets = true;
+            if (perms) {
+              if(perms.bucket["."] && perms.bucket["."].settings.read) {
+                 _userHasAnyBuckets = true;
+              }
+              if (perms.settings && perms.settings.read) {
+                _userCanAccessStats = true;
+              }
             }
           });
         }

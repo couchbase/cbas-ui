@@ -30,6 +30,7 @@
     qc.emptyQuery = function() {return(cwQueryService.getResult().query.length == 0);}
     qc.emptyResult = cwQueryService.emptyResult;
     qc.planFormat = cwQueryService.planFormat;
+    qc.datasetDisconnectedState = cwQueryService.datasetDisconnectedState;
 
     // some functions for handling query history, going backward and forward
 

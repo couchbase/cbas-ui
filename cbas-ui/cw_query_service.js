@@ -13,6 +13,8 @@
     //
 
     cwQueryService.outputTab = 1;     // remember selected output tab
+    cwQueryService.datasetDisconnectedState = -1;
+    cwQueryService.dataseUnknownState = -2;
     cwQueryService.selectTab = function(newTab) {cwQueryService.outputTab = newTab;};
     cwQueryService.isSelected = function(checkTab) {return cwQueryService.outputTab === checkTab;};
 
@@ -190,7 +192,7 @@
       var bucketStateRequest = {
         url: cwConstantsService.bucketStateURL,
         method: "GET",
-        headers: { 'Content-Type': 'application/json' }
+        headers: {'Content-Type': 'application/json', 'ignore-401':'true'}
       };
       return ($http(bucketStateRequest));
     }
@@ -1565,7 +1567,7 @@
           var record = data.results[i];
           if (record.isShadow) {
             record.expanded = true;
-            record.remaininig = -1;
+            record.remaining = cwQueryService.dataseUnknownState;
             constructIndexesKeys(record);
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
@@ -1640,6 +1642,9 @@
       }
 
       function getAnalyticsShadowingStats() {
+          if (!validateCbasService.canAccessStats()) {
+              return;
+          }
           var stats = getAnalyticsStats();
           stats.then(function (resp) {
               var shadowsStats = extractShadowingStats(resp.data);
@@ -1679,7 +1684,7 @@
               if (shadowingStats.hasOwnProperty(shadow.id)) {
                   shadow.remaining = shadowingStats[shadow.id];
               } else {
-                  shadow.remaining = -1;
+                  shadow.remaining = cwQueryService.datasetDisconnectedState;
               }
           }
       }
