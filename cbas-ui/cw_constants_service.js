@@ -33,6 +33,9 @@
     // URL to get user visible buckets
     cwConstantsService.clusterBucketsURL = "../pools/default/buckets";
 
+    // URL to use to get the analytics stats
+    cwConstantsService.analyticsStatsURL = "../_p/cbas-admin/analytics/node/stats";
+
     // should we get passwords from the Couchbase server?
     cwConstantsService.getCouchbaseBucketPasswords = false;
 
@@ -70,11 +73,11 @@
     cwConstantsService.showSchemas = false;
 
     // labels for different types of buckets in the analysis pane
-    cwConstantsService.analysisFirstSection = "Buckets with Connections";
-    cwConstantsService.analysisSecondSection = "Buckets with no Connections";
+    cwConstantsService.analysisFirstSection = "Datasets";
+    cwConstantsService.analysisSecondSection = "Cluster Buckets";
 
     // list of trigger queries to update update the bucket insights after
-    cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE BUCKET", "DROP BUCKET", "CONNECT BUCKET", "DISCONNECT BUCKET", "CREATE SHADOW", "DROP DATASET"];
+    cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE BUCKET", "DROP BUCKET", "CONNECT BUCKET", "DISCONNECT BUCKET", "CREATE DATASET", "DROP DATASET", "CREATE INDEX", "DROP INDEX"];
 
     cwConstantsService.healthCheckURL = "../_p/cbas-admin/admin/ping";
 

@@ -67,7 +67,7 @@
 
     cwQueryService.buckets = [];
     cwQueryService.bucket_names = [];
-    cwQueryService.bucketsWithNoConnection = [];
+    cwQueryService.clusterBuckets = [];
     cwQueryService.shadows = [];
     cwQueryService.indexes = [];
     cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
@@ -1511,6 +1511,7 @@
 
     $rootScope.$on("indexStatusURIChanged",updateBuckets);
     $rootScope.$on("bucketUriChanged",updateBuckets);
+    $rootScope.$on("pollAnalyticsShadowingStats", pollAnalyticsShadowingStats);
 
     function updateBuckets(event, data) {
       validateCbasService.checkLiveness(updateBucketsCallback);
@@ -1534,6 +1535,7 @@
             if (resp) {
               processClusterBuckets(resp.data);
             }
+            return getAnalyticsShadowingStats();
           })
           .catch(function (resp) {
             var error = "Failed to get bucket insights.";
@@ -1541,7 +1543,7 @@
             error = error + "\nTry refreshing the bucket insights.";
             cwQueryService.buckets.length = 0;
             cwQueryService.shadows.length = 0;
-            cwQueryService.bucketsWithNoConnection.length = 0;
+            cwQueryService.clusterBuckets.length = 0;
             cwQueryService.autoCompleteTokens = {};
             cwQueryService.bucket_errors = error;
             logWorkbenchError(error);
@@ -1555,15 +1557,15 @@
       // initialize the data structure for holding all the buckets and shadows
       cwQueryService.buckets.length = 0;
       cwQueryService.shadows.length = 0;
-      cwQueryService.bucketsWithNoConnection.length = 0;
+      cwQueryService.clusterBuckets.length = 0;
       cwQueryService.bucket_errors = null;
       cwQueryService.bucket_names.length = 0;
       if (data && data.results) {
         for (var i = 0; i < data.results.length; i++) {
           var record = data.results[i];
           if (record.isShadow) {
-            record.expandable = record.filter || (record.indexes && record.indexes.length > 0);
-            record.expanded = record.expandable;
+            record.expanded = true;
+            record.remaininig = -1;
             constructIndexesKeys(record);
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
@@ -1592,12 +1594,7 @@
     function processClusterBuckets(data) {
       for (var i = 0; i < data.length; i++) {
         var bucketName = data[i].name;
-        // find bucket with no connections
-        if (!(_.some(cwQueryService.buckets, function (e) {
-              return e.cbBucketName === bucketName;
-            })) && cwQueryService.bucketsWithNoConnection.indexOf(bucketName) === -1) {
-          cwQueryService.bucketsWithNoConnection.push(bucketName);
-        }
+          cwQueryService.clusterBuckets.push(bucketName);
       }
     }
 
@@ -1636,6 +1633,55 @@
 
       function hasPlanFormat(queryText, format) {
           return queryText.toLowerCase().indexOf(format, planFormatStartIndex) === planFormatStartIndex;
+      }
+
+      function pollAnalyticsShadowingStats() {
+          getAnalyticsShadowingStats();
+      }
+
+      function getAnalyticsShadowingStats() {
+          var stats = getAnalyticsStats();
+          stats.then(function (resp) {
+              var shadowsStats = extractShadowingStats(resp.data);
+              updateDatasetShadowingProgress(shadowsStats);
+          }, function (resp) {
+              // ignore stats failure, will be retried
+          });
+      }
+
+      function getAnalyticsStats() {
+          var statsRequest = {
+              url: cwConstantsService.analyticsStatsURL,
+              method: "GET",
+              headers: {'Content-Type': 'application/json'}
+          };
+          return ($http(statsRequest));
+      }
+
+      function extractShadowingStats(statsJson) {
+          var shadowsStats = {};
+          for (var i = 0; i < cwQueryService.clusterBuckets.length; i++) {
+              var bucketStatName = cwQueryService.clusterBuckets[i] + ":all:reader_stats";
+              if (statsJson[bucketStatName] && statsJson[bucketStatName].remaining) {
+                  var remainingJson = statsJson[bucketStatName].remaining;
+                  Object.keys(remainingJson).forEach(function (key) {
+                      // TODO account for dataverses
+                      shadowsStats[key.substring(key.indexOf(".") + 1)] = remainingJson[key];
+                  });
+              }
+          }
+          return shadowsStats;
+      }
+
+      function updateDatasetShadowingProgress(shadowingStats) {
+          for (var i = 0; i < cwQueryService.shadows.length; i++) {
+              var shadow = cwQueryService.shadows[i];
+              if (shadowingStats.hasOwnProperty(shadow.id)) {
+                  shadow.remaining = shadowingStats[shadow.id];
+              } else {
+                  shadow.remaining = -1;
+              }
+          }
       }
 
     //

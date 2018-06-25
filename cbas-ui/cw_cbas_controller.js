@@ -2,10 +2,11 @@
 
   angular.module('cwCbas').controller('cwCbasController', cbasController);
 
-  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService'];
+  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval'];
 
-  function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService) {
+  function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval) {
     var qc = this;
+    var statsRefreshInterval = 5000;
     //console.log("Start controller at: " + new Date().toTimeString());
 
     //
@@ -20,7 +21,7 @@
 
     qc.buckets = cwQueryService.buckets;                // buckets on cluster
     qc.shadows = cwQueryService.shadows;                // shadow datasets on cluster
-    qc.bucketsWithNoConnection = cwQueryService.bucketsWithNoConnection; // cluster buckets with no analytics connection
+    qc.clusterBuckets = cwQueryService.clusterBuckets; // all cluster buckets
     qc.gettingBuckets = cwQueryService.gettingBuckets;  // busy retrieving?
     qc.updateBuckets = cwQueryService.updateBuckets;    // function to update
     qc.lastResult = cwQueryService.getResult(); // holds the current query and result
@@ -1156,6 +1157,18 @@
           event.preventDefault();
         }
       });
+
+      // schedule a timer to poll analytics stats
+      if (!cwQueryService.pollShadowingStats) {
+          cwQueryService.pollShadowingStats = $interval(function () {
+          $rootScope.$broadcast("pollAnalyticsShadowingStats");
+          }, statsRefreshInterval);
+
+        $scope.$on('$destroy', function () {
+          $interval.cancel(cwQueryService.pollShadowingStats);
+            cwQueryService.pollShadowingStats = null;
+          });
+      }
 
       // get the list of buckets
       qc.updateBuckets();
