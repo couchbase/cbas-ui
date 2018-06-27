@@ -135,11 +135,11 @@
     </div>
   </div>
 
-  <!-- dataset insights sidebar -->
+<!-- datasets  sidebar -->
   <div class="insights-sidebar width-3 resp-hide-sml">
     <div class="insights-sidebar-body">
       <div class="row">
-        <h4>Dataset Insights</h4>
+        <h4>Datasets</h4>
         <span>
           <a title="Refresh dataset insights"
              ng-click="qc.updateBuckets()"
@@ -158,66 +158,61 @@
       <div mn-spinner="qc.qqs.loadingBuckets">
         <div ng-if="qc.qqs.bucket_errors">
           <br>
-          <p style="white-space:pre-wrap;">{{qc.qqs.bucket_errors}}
+          <p style="white-space:pre-wrap;" class="text-small">{{qc.qqs.bucket_errors}}
           </p>
         </div>
         <div ng-if="!qc.qqs.bucket_errors">
+
           <section>
-            <div class="row">
-              <h5 title="Available bucket connections">{{qc.analysisFirstSection}}</h5>
-            </div>
             <span class="text-small" ng-repeat="bucket in qc.buckets">
-              <ul>
-                  <span ng-repeat="shadow in qc.shadows">
-                    <div ng-if="shadow.bucketName == bucket.id">
-                      <ul>
-                        <span> {{shadow.id}}
-                        <a href="" ng-click="changeExpandShadow(shadow)" style="color: black" class="text-small">
-                          <span class="icon fa-info-circle" style="color: #4287d6;" ng-hide="shadow.expanded"></span>
-                          <span class="icon fa-info-circle" style="color: gray;" ng-show="shadow.expanded"></span>
-                        </a>
-                          <span ng-show="shadow.remaining == 0" title="Remaining mutations: {{shadow.remaining}}" class="icon fa-random" style="color: green;"></span>
-                          <span ng-show="shadow.remaining > 0" title="Remaining mutations: {{shadow.remaining}}" class="icon fa-random" style="color: orange;"></span>
-                          <span ng-show="shadow.remaining === qc.datasetDisconnectedState" title="Disconnected" class="icon fa-random" style="color: gray;"></span>
-                        </span>
-                        <ul class="text-small" ng-if="shadow.expanded">
-                          <ul>
-                            <span title="Bucket" class="icon fa-database" style="cursor:auto"></span> {{shadow.bucketName}}
-                          </ul>
-                          <ul>
-                            <span ng-if="shadow.filter" title="Filter" class="icon fa-filter" style="cursor:auto"></span> {{shadow.filter}}
-                          </ul>
-                        </ul>
-                      </ul>
-                      <ul ng-if="shadow.expanded && shadow.indexes" class="text-small">
-                        <ul>
-                          <ul ng-repeat="idx in shadow.indexes">
-                            <span title="Index" class="icon fa-caret-up fa-lg" style="cursor:auto"></span> {{idx.IndexName}}
-                            <ul ng-repeat="key in idx.keys">
-                              <ul>
-                                <span title="Key" class="icon fa-map-pin" style="cursor:auto"></span> {{key}}
-                              </ul>
-                            </ul>
-                          </ul>
-                        </ul>
-                      </ul>
-                    </div>
+              <span ng-repeat="shadow in qc.shadows">
+                <div ng-if="shadow.bucketName == bucket.id" ng-init="shadow.expanded = false">
+                  <span class="row margin-bottom-0">
+                    <span ng-click="changeExpandShadow(shadow)" class="cursor-pointer">
+                      <span
+                         class="icon fa-caret-down fa-fw"
+                         ng-class="{'fa-caret-right': !shadow.expanded}"></span>
+                      {{shadow.id}}
+                      <span
+                         ng-show="shadow.remaining === qc.datasetDisconnectedState"
+                         title="disconnected"
+                         class="icon fa-unlink"
+                         style="color: #e07f82">
+                      </span>
+                      <span
+                         ng-show="shadow.remaining > 0 || shadow.remaining == 0"
+                         title="connected"
+                         class="icon fa-link">
+                      </span>
+                    </span>
+                    <span
+                       ng-show="shadow.remaining > 0"
+                       title="Remaining mutations: {{shadow.remaining}}"
+                       class="text-smaller">
+                      {{shadow.remaining}}
+                    </span>
                   </span>
-              </ul>
+                  <div class="text-smaller margin-bottom-half indent-1" ng-show="shadow.expanded">
+                    <h5 style="line-height:1.4">Bucket</h5>
+                    {{shadow.bucketName}} <span ng-show="shadow.filter">|</span> {{shadow.filter}}
+
+                    <h5 style="line-height:1.4" ng-show="shadow.indexes.length > 0" class="margin-top-half">
+                      Index<span ng-show="shadow.indexes.length > 1">es</span>
+                    </h5>
+                    <span ng-repeat="idx in shadow.indexes">
+                      {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})</span><br>
+                    </span>
+                  </div>
+                </div>
+              </span>
             </span>
           </section>
 
           <section>
-            <div class="row">
-              <h5 title="Cluster buckets">{{qc.analysisSecondSection}}</h5>
-            </div>
-            <span class="text-small" ng-repeat="bucket in qc.clusterBuckets">
-          <ul>
-            <ul>
-              <span title="Bucket" class="icon fa-database" style="cursor:auto"></span> {{bucket}}
-            </ul>
-          </ul>
-          </span>
+            <h5>Couchbase Buckets</h5>
+            <span class="text-small indent-1" ng-repeat="bucket in qc.clusterBuckets">
+              {{bucket}}<br>
+            </span>
           </section>
         </div>
       </div>
