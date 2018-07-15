@@ -159,11 +159,18 @@
           </p>
         </div>
         <div ng-if="!qc.qqs.bucket_errors">
-
           <section>
-            <span class="text-small" ng-repeat="bucket in qc.buckets">
+            <span class="text-small" ng-repeat="dataverse in qc.dataverses">
+              <h5 style="line-height:1.4">Dataverse:</h5>
+              <div class="text-small margin-bottom-half indent-1">{{dataverse.DataverseName}}</div>
+              <div ng-show="dataverse.links.length > 0">
+                <h5 style="line-height:1.4">Links:</h5>
+                <span ng-repeat="link in dataverse.links">
+                  <div class="text-small margin-bottom-half indent-1">{{link.Name}}</div>
+                </span>
+              </div>
               <span ng-repeat="shadow in qc.shadows">
-                <div ng-if="shadow.bucketName == bucket.id" ng-init="shadow.expanded = false">
+                <div ng-if="shadow.DataverseName === dataverse.DataverseName" ng-init="shadow.expanded = false">
                   <span class="row margin-bottom-0">
                     <span ng-click="changeExpandShadow(shadow)" class="cursor-pointer">
                       <span
@@ -192,7 +199,8 @@
                   <div class="text-smaller margin-bottom-half indent-1" ng-show="shadow.expanded">
                     <h5 style="line-height:1.4">Bucket</h5>
                     {{shadow.bucketName}} <span ng-show="shadow.filter">|</span> {{shadow.filter}}
-
+                    <h5 style="line-height:1.4">Link</h5>
+                    {{shadow.LinkName}}
                     <h5 style="line-height:1.4" ng-show="shadow.indexes.length > 0" class="margin-top-half">
                       Index<span ng-show="shadow.indexes.length > 1">es</span>
                     </h5>

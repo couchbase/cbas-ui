@@ -19,7 +19,8 @@
     // alot of state is provided by the cwQueryService
     //
 
-    qc.buckets = cwQueryService.buckets;                // buckets on cluster
+    qc.dataverses = cwQueryService.dataverses;          // dataverses
+    qc.links = cwQueryService.links;                    // links
     qc.shadows = cwQueryService.shadows;                // shadow datasets on cluster
     qc.clusterBuckets = cwQueryService.clusterBuckets; // all cluster buckets
     qc.gettingBuckets = cwQueryService.gettingBuckets;  // busy retrieving?

@@ -72,6 +72,8 @@
     cwQueryService.clusterBuckets = [];
     cwQueryService.shadows = [];
     cwQueryService.indexes = [];
+    cwQueryService.dataverses = [];
+    cwQueryService.links = [];
     cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
     cwQueryService.getSchemaForBucket = getSchemaForBucket;   // get schema
     cwQueryService.testAuth = testAuth; // check passward
@@ -1525,13 +1527,7 @@
       executeQueryUtil(queryText, false)
           .then(function (resp) {
             processMetadataQueryResult(resp.data);
-            // now get the buckets state
-            return getBucketState();
-          })
-          .then(function (resp) {
-            processBucketsState(resp.data);
-            // check if we have any buckets with no analytics buckets
-            return validateCbasService.userHasAnyBuckets() ? getClusterBuckets() : null;
+              return validateCbasService.userHasAnyBuckets() ? getClusterBuckets() : null;
           })
           .then(function (resp) {
             if (resp) {
@@ -1546,6 +1542,8 @@
             cwQueryService.buckets.length = 0;
             cwQueryService.shadows.length = 0;
             cwQueryService.clusterBuckets.length = 0;
+            cwQueryService.dataverses.length = 0;
+            cwQueryService.links.length = 0;
             cwQueryService.autoCompleteTokens = {};
             cwQueryService.bucket_errors = error;
             logWorkbenchError(error);
@@ -1559,38 +1557,28 @@
       // initialize the data structure for holding all the buckets and shadows
       cwQueryService.buckets.length = 0;
       cwQueryService.shadows.length = 0;
+      cwQueryService.dataverses.length = 0;
+      cwQueryService.links.length = 0;
       cwQueryService.clusterBuckets.length = 0;
       cwQueryService.bucket_errors = null;
       cwQueryService.bucket_names.length = 0;
       if (data && data.results) {
         for (var i = 0; i < data.results.length; i++) {
           var record = data.results[i];
-          if (record.isShadow) {
+          if (record.isDataset) {
             record.expanded = true;
             record.remaining = cwQueryService.dataseUnknownState;
             constructIndexesKeys(record);
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
-          } else if (record.isBucket) {
-            cwQueryService.buckets.push(record);
-            cwQueryService.bucket_names.push(record.id);
-            addToken(record.id, "bucket");
+          } else if (record.isDataverse) {
+              cwQueryService.dataverses.push(record);
+          } else if (record.isLink) {
+              cwQueryService.links.push(record);
           }
         }
       }
       refreshAutoCompleteArray();
-    }
-
-    function processBucketsState(data) {
-      for (var i = 0; i < data.buckets.length; i++) {
-        // find the bucket from the list and update its state
-        var result = $.grep(cwQueryService.buckets, function (e) {
-          return e.id === data.buckets[i].name;
-        });
-        if (result[0]) {
-          result[0].connected = data.buckets[i].state === "connected";
-        }
-      }
     }
 
     function processClusterBuckets(data) {
@@ -1670,8 +1658,7 @@
               if (statsJson[bucketStatName] && statsJson[bucketStatName].remaining) {
                   var remainingJson = statsJson[bucketStatName].remaining;
                   Object.keys(remainingJson).forEach(function (key) {
-                      // TODO account for dataverses
-                      shadowsStats[key.substring(key.indexOf(".") + 1)] = remainingJson[key];
+                      shadowsStats[key] = remainingJson[key];
                   });
               }
           }
@@ -1681,8 +1668,8 @@
       function updateDatasetShadowingProgress(shadowingStats) {
           for (var i = 0; i < cwQueryService.shadows.length; i++) {
               var shadow = cwQueryService.shadows[i];
-              if (shadowingStats.hasOwnProperty(shadow.id)) {
-                  shadow.remaining = shadowingStats[shadow.id];
+              if (shadowingStats.hasOwnProperty(shadow.fullName)) {
+                  shadow.remaining = shadowingStats[shadow.fullName];
               } else {
                   shadow.remaining = cwQueryService.datasetDisconnectedState;
               }

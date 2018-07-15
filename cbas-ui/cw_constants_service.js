@@ -62,12 +62,17 @@
     // 'has_sec' indicating secondary indexes. For a different system, just make sure
     // the returned schema has 'id' and 'has_prim'.
     cwConstantsService.keyspaceQuery =
-        "SELECT DatasetName as id, true as isShadow, BucketName as bucketName, `Filter` as `filter`, " +
-        "(SELECT idx.IndexName, idx.SearchKey,idx.SearchKeyType from Metadata.`Index` idx " +
-        "WHERE idx.IsPrimary = false and idx.DatasetName = ds.DatasetName) as indexes " +
-        "FROM Metadata.`Dataset` ds where BucketName is not missing " +
-        "UNION ALL " +
-        "SELECT Name as id, true as isBucket, Configuration.name as cbBucketName from Metadata.`Bucket`";
+      "SELECT DataverseName,  DataverseName || '.' || DatasetName as fullName, DatasetName as id, true as isDataset, " +
+      "BucketName as bucketName, `Filter` as `filter`, LinkName, " +
+      "(SELECT idx.IndexName, idx.SearchKey,idx.SearchKeyType from Metadata.`Index` idx " +
+      "WHERE idx.IsPrimary = false and idx.DatasetName = ds.DatasetName) as indexes " +
+      "FROM Metadata.`Dataset` ds where BucketName is not missing " +
+      "UNION ALL " +
+      "SELECT dv.DataverseName, true as isDataverse, " +
+      "(SELECT l.Name from Metadata.`Link` l WHERE l.DataverseName = dv.DataverseName) as links " +
+      "FROM Metadata.`Dataverse` dv WHERE dv.DataverseName != 'Metadata' " +
+      "UNION ALL " +
+      "SELECT DataverseName, Name, true as isLink FROM Metadata.`Link`;";
 
     // should we permit schema inquiries in the bucket analysis pane?
     cwConstantsService.showSchemas = false;
@@ -77,7 +82,7 @@
     cwConstantsService.analysisSecondSection = "Cluster Buckets";
 
     // list of trigger queries to update update the bucket insights after
-    cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE BUCKET", "DROP BUCKET", "CONNECT BUCKET", "DISCONNECT BUCKET", "CREATE DATASET", "DROP DATASET", "CREATE INDEX", "DROP INDEX"];
+    cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE DATAVERSE", "DROP DATAVERSE", "CONNECT LINK", "DISCONNECT LINK", "CREATE DATASET", "DROP DATASET", "CREATE INDEX", "DROP INDEX"];
 
     cwConstantsService.healthCheckURL = "../_p/cbas-admin/admin/ping";
 
