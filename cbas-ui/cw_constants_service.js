@@ -62,17 +62,47 @@
     // 'has_sec' indicating secondary indexes. For a different system, just make sure
     // the returned schema has 'id' and 'has_prim'.
     cwConstantsService.keyspaceQuery =
-      "SELECT DataverseName,  DataverseName || '.' || DatasetName as fullName, DatasetName as id, true as isDataset, " +
-      "BucketName as bucketName, `Filter` as `filter`, LinkName, " +
-      "(SELECT idx.IndexName, idx.SearchKey,idx.SearchKeyType from Metadata.`Index` idx " +
-      "WHERE idx.IsPrimary = false and idx.DatasetName = ds.DatasetName) as indexes " +
-      "FROM Metadata.`Dataset` ds where BucketName is not missing " +
+      "SELECT " +
+      "  DataverseName, " +
+      "  DataverseName || '.' || DatasetName AS fullName, " +
+      "  DatasetName AS id, " +
+      "  TRUE AS isDataset, " +
+      "  BucketName AS bucketName, " +
+      "  `Filter` AS `filter`, " +
+      "  LinkName,  " +
+      "  ( SELECT " +
+      "      idx.IndexName, " +
+      "      idx.SearchKey, " +
+      "      idx.SearchKeyType " +
+      "    FROM " +
+      "      Metadata.`Index` AS idx " +
+      "    WHERE idx.IsPrimary = false " +
+      "      AND idx.DatasetName = ds.DatasetName) AS indexes " +
+      "FROM " +
+      "  Metadata.`Dataset` AS ds " +
+      "WHERE " +
+      "  BucketName IS NOT missing " +
       "UNION ALL " +
-      "SELECT dv.DataverseName, true as isDataverse, " +
-      "(SELECT l.Name from Metadata.`Link` l WHERE l.DataverseName = dv.DataverseName) as links " +
-      "FROM Metadata.`Dataverse` dv WHERE dv.DataverseName != 'Metadata' " +
+      "SELECT " +
+      "  dv.DataverseName, " +
+      "  TRUE AS isDataverse, " +
+      "  ( SELECT " +
+      "      l.Name " +
+      "    FROM " +
+      "      Metadata.`Link` AS l " +
+      "    WHERE " +
+      "      l.DataverseName = dv.DataverseName) AS links " +
+      "FROM " +
+      "  Metadata.`Dataverse` AS dv " +
+      "WHERE " +
+      "  dv.DataverseName != 'Metadata' " +
       "UNION ALL " +
-      "SELECT DataverseName, Name, true as isLink FROM Metadata.`Link`;";
+      "SELECT " +
+      "  DataverseName, " +
+      "  Name, " +
+      "  TRUE as isLink " +
+      "FROM " +
+      "  Metadata.`Link`;"
 
     // should we permit schema inquiries in the bucket analysis pane?
     cwConstantsService.showSchemas = false;
