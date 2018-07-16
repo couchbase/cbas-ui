@@ -116,7 +116,9 @@
 
     cwConstantsService.healthCheckURL = "../_p/cbas-admin/admin/ping";
 
-    //
+    // should we show the query options button?
+    cwConstantsService.showOptions = true;
+
     //
     //
     // all done creating the service, now return it

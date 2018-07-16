@@ -2,9 +2,9 @@
 
   angular.module('cwCbas').controller('cwCbasController', cbasController);
 
-  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval'];
+  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService'];
 
-  function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval) {
+  function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService) {
     var qc = this;
     var statsRefreshInterval = 5000;
     //console.log("Start controller at: " + new Date().toTimeString());
@@ -168,6 +168,8 @@
     // are we enterprise?
 
     qc.isEnterprise = mnPools.export.isEnterprise;
+
+    qc.copyResultAsCSV = function() {copyResultAsCSV();};
 
     // helper functions //
     qc.forceReload = forceReload;
@@ -764,6 +766,7 @@
     function options() {
       var subdirectory = '/ui-current';
       dialogScope.options = cwQueryService.clone_options();
+      dialogScope.mode = "analytics";
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
@@ -1099,6 +1102,26 @@
 
     function updateValidNodes() {
       qc.validNodes = mnPoolDefault.getUrlsRunningService(mnPoolDefault.latestValue().value.nodes, "cbas", null);
+    }
+
+
+    function copyResultAsCSV() {
+      var csv = qwJsonCsvService.convertDocArrayToTSV(qc.lastResult.data);
+
+      // error check
+      if (!csv || csv.length == 0) {
+        showErrorMessage("Unable to create tab-separated values, perhaps source data is not an array.");
+        return;
+      }
+
+      // create temp element
+      var copyElement = document.createElement("textarea");
+      angular.element(document.body.append(copyElement));
+      copyElement.value = csv;
+      copyElement.focus();
+      copyElement.select();
+      document.execCommand('copy');
+      copyElement.remove();
     }
 
     //
