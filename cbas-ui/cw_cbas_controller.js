@@ -767,6 +767,23 @@
       var subdirectory = '/ui-current';
       dialogScope.options = cwQueryService.clone_options();
       dialogScope.mode = "analytics";
+      dialogScope.options.positional_parameters = [];
+      dialogScope.options.named_parameters = [];
+
+      // the named & positional parameters are values, convert to JSON
+      if (cwQueryService.options.positional_parameters)
+        for (var i=0; i < cwQueryService.options.positional_parameters.length; i++)
+          dialogScope.options.positional_parameters[i] =
+            JSON.stringify(cwQueryService.options.positional_parameters[i]);
+
+      if (cwQueryService.options.named_parameters)
+        for (var i=0; i < cwQueryService.options.named_parameters.length; i++) {
+          dialogScope.options.named_parameters.push({
+            name: cwQueryService.options.named_parameters[i].name,
+            value: JSON.stringify(cwQueryService.options.named_parameters[i].value)
+          });
+        }
+
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
@@ -776,6 +793,18 @@
 
       // now save it
       promise.then(function success(res) {
+        // any named or positional parameters are entered as JSON, and must be parsed into
+        // actual values
+        if (dialogScope.options.positional_parameters)
+          for (var i=0; i < dialogScope.options.positional_parameters.length; i++)
+            dialogScope.options.positional_parameters[i] =
+              JSON.parse(dialogScope.options.positional_parameters[i]);
+
+        if (dialogScope.options.named_parameters)
+          for (var i=0; i < dialogScope.options.named_parameters.length; i++)
+            dialogScope.options.named_parameters[i].value =
+              JSON.parse(dialogScope.options.named_parameters[i].value);
+
         cwQueryService.options = dialogScope.options;
       });
 
