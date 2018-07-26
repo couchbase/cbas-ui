@@ -166,58 +166,71 @@
           </p>
         </div>
         <div ng-if="!qc.qqs.bucket_errors">
-          <section>
-            <span class="text-small" ng-repeat="dataverse in qc.dataverses">
-              <h5 style="line-height:1.4">Dataverse:</h5>
-              <div class="text-small margin-bottom-half indent-1">{{dataverse.DataverseName}}</div>
-              <div ng-show="dataverse.links.length > 0">
-                <h5 style="line-height:1.4">Links:</h5>
-                <span ng-repeat="link in dataverse.links">
-                  <div class="text-small margin-bottom-half indent-1">{{link.Name}}</div>
-                </span>
-              </div>
-              <span ng-repeat="shadow in qc.shadows">
-                <div ng-if="shadow.DataverseName === dataverse.DataverseName" ng-init="shadow.expanded = false">
-                  <span class="row margin-bottom-0">
-                    <span ng-click="changeExpandShadow(shadow)" class="cursor-pointer">
-                      <span
-                         class="icon fa-caret-down fa-fw"
-                         ng-class="{'fa-caret-right': !shadow.expanded}"></span>
-                      {{shadow.id}}
-                      <span
-                         ng-show="shadow.remaining === qc.datasetDisconnectedState"
-                         title="disconnected"
-                         class="icon fa-unlink"
-                         style="color: #e07f82">
-                      </span>
-                      <span
-                         ng-show="shadow.remaining > 0 || shadow.remaining == 0"
-                         title="connected"
-                         class="icon fa-link">
-                      </span>
-                    </span>
-                    <span
-                       ng-show="shadow.remaining > 0"
-                       title="Remaining mutations: {{shadow.remaining}}"
-                       class="text-smaller">
-                      {{shadow.remaining}}
-                    </span>
-                  </span>
-                  <div class="text-smaller margin-bottom-half indent-1" ng-show="shadow.expanded">
-                    <h5 style="line-height:1.4">Bucket</h5>
-                    {{shadow.bucketName}} <span ng-show="shadow.filter">|</span> {{shadow.filter}}
-                    <h5 style="line-height:1.4">Link</h5>
-                    {{shadow.LinkName}}
-                    <h5 style="line-height:1.4" ng-show="shadow.indexes.length > 0" class="margin-top-half">
-                      Index<span ng-show="shadow.indexes.length > 1">es</span>
-                    </h5>
-                    <span ng-repeat="idx in shadow.indexes">
-                      {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})</span><br>
-                    </span>
-                  </div>
-                </div>
+          <section class="text-small" ng-repeat="dataverse in qc.dataverses">
+            <p class="margin-bottom-0">Dataverse: {{dataverse.DataverseName}}</p>
+       <!-- <div ng-show="dataverse.links.length > 0">
+              <h5 style="line-height:1.4">Links:</h5>
+              <span ng-repeat="link in dataverse.links">
+                <div class="text-small margin-bottom-half indent-1">{{link.Name}}</div>
               </span>
+            </div> -->
+            <span ng-repeat="shadow in qc.shadows">
+              <div ng-if="shadow.DataverseName === dataverse.DataverseName" ng-init="shadow.expanded = false">
+                <span class="row margin-bottom-0">
+                  <span ng-click="changeExpandShadow(shadow)" class="cursor-pointer">
+                    <span
+                       class="icon fa-caret-down fa-fw"
+                       ng-class="{'fa-caret-right': !shadow.expanded}"></span>
+                    <strong>{{shadow.id}}</strong>
+                  </span>
+                  <span
+                     ng-show="shadow.remaining === qc.datasetDisconnectedState"
+                     title="disconnected"
+                     class="icon fa-unlink"
+                     style="color: #e07f82">
+                  </span>
+                  <span
+                     ng-show="shadow.remaining > 0 || shadow.remaining == 0"
+                     title="connected"
+                     class="icon fa-link">
+                  </span>
+                </span>
+
+                <div class="margin-bottom-half padding-left-half" ng-show="shadow.expanded">
+                  <p class="margin-bottom-half">Bucket:<br>
+                    {{shadow.LinkName}}.{{shadow.bucketName}} <span ng-show="shadow.filter">|</span> {{shadow.filter}}
+                  </p>
+                  <p
+                     class="margin-bottom-half"
+                     ng-show="shadow.indexes.length > 0">
+                    Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
+                    <span ng-repeat="idx in shadow.indexes">
+                      {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
+                    </span>
+                  </p>
+                </div>
+                <div
+                   class="margin-bottom-1 padding-left-half"
+                   ng-show="shadow.remaining > 0">
+                  <em class="text-smaller">
+                    remaining mutations: {{shadow.remaining}}
+                  </em>
+                </div>
+              </div>
             </span>
+
+            <span
+               ng-show="shadow.remaining === qc.datasetDisconnectedState"
+               title="disconnected"
+               class="icon fa-unlink"
+               style="color: #e07f82">
+            </span>
+            <span
+               ng-show="shadow.remaining > 0 || shadow.remaining == 0"
+               title="connected"
+               class="icon fa-link">
+            </span>
+
           </section>
 
           <section>

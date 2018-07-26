@@ -77,7 +77,8 @@
       "    FROM " +
       "      Metadata.`Index` AS idx " +
       "    WHERE idx.IsPrimary = false " +
-      "      AND idx.DatasetName = ds.DatasetName) AS indexes " +
+      "      AND idx.DatasetName = ds.DatasetName" +
+      "      AND idx.DataverseName = ds.DataverseName) AS indexes " +
       "FROM " +
       "  Metadata.`Dataset` AS ds " +
       "WHERE " +
