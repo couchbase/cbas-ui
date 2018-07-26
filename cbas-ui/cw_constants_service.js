@@ -34,7 +34,7 @@
     cwConstantsService.clusterBucketsURL = "../pools/default/buckets";
 
     // URL to use to get the analytics stats
-    cwConstantsService.analyticsStatsURL = "../_p/cbas-admin/analytics/node/stats";
+    cwConstantsService.analyticsStatsURL = "../_p/cbas-admin/analytics/node/agg/stats/remaining";
 
     // should we get passwords from the Couchbase server?
     cwConstantsService.getCouchbaseBucketPasswords = false;

@@ -1653,15 +1653,9 @@
 
       function extractShadowingStats(statsJson) {
           var shadowsStats = {};
-          for (var i = 0; i < cwQueryService.clusterBuckets.length; i++) {
-              var bucketStatName = cwQueryService.clusterBuckets[i] + ":all:reader_stats";
-              if (statsJson[bucketStatName] && statsJson[bucketStatName].remaining) {
-                  var remainingJson = statsJson[bucketStatName].remaining;
-                  Object.keys(remainingJson).forEach(function (key) {
-                      shadowsStats[key] = remainingJson[key];
-                  });
-              }
-          }
+          Object.keys(statsJson).forEach(function (key) {
+              shadowsStats[key] = statsJson[key];
+          });
           return shadowsStats;
       }
 
