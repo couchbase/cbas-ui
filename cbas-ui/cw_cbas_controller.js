@@ -563,7 +563,7 @@
     function updateEditorSizes() {
       var margins = 90;
       var windowHeight = window.innerHeight;
-      var pageFooterHeight =  90;
+      var pageFooterHeight =  84;
       var headerNavHeight = 47;
       var queryBoxHeight = $('.wb-query-editor').height();
 
@@ -589,8 +589,8 @@
 //      console.log(" current_ui: " + current_ui);
 //      console.log(" editor_size: " + editor_size);
 
-      var sidebarHeight = windowHeight - pageFooterHeight;
-      $('.insights-sidebar-body').height(sidebarHeight);
+      var sidebarHeight = windowHeight - 130;
+      $('.insights-sidebar').height(sidebarHeight);
       $('.wb-results-json').height(editor_size);
       $('.wb-results-table').height(editor_size + 32);
       $('.wb-results-tree').height(editor_size + 15);
