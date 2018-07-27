@@ -16,7 +16,7 @@
     var cwConstantsService = {};
 
     // do we automatically run queries if the user clicks enter after a semicolon?
-    cwConstantsService.autoExecuteQueryOnEnter = false;
+    cwConstantsService.autoExecuteQueryOnEnter = true;
 
     // don't allow multiple queries to run at once
     cwConstantsService.forbidMultipleQueries = false;

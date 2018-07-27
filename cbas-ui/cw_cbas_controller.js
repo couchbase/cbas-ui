@@ -327,6 +327,8 @@
 
         // if they hit enter and the query ends with a semicolon, run the query
         if (cwConstantsService.autoExecuteQueryOnEnter && // auto execute enabled
+            pos.row == (qc.inputEditor.getSession().getLength()-1) && // cursor at last line
+            containsValidStatements(curSession.getValue()) && // valid single/multi-statements
             e[0].lines && e[0].lines.length == 2 && // <cr> marked by two empty lines
             e[0].lines[0].length == 0 &&
             e[0].lines[1].length == 0 &&
@@ -1239,6 +1241,26 @@
     if (window.location.href == url) {
       location.reload();
     }
+  }
+
+  function containsValidStatements(input) {
+    var statements = input.split(";");
+    var statementCount = 0;
+    for (var i = 0; i < statements.length; i++) {
+      var statement = statements[i].trim();
+      if (statement.length === 0) {
+        continue;
+      }
+      if (!isAllowedMultiStatement(statement)) {
+        statementCount++;
+      }
+    }
+    return statementCount >= 1;
+  }
+
+  function isAllowedMultiStatement(statement) {
+    var statementLowerCase = statement.toLowerCase();
+    return _.startsWith(statementLowerCase, "use ") || _.startsWith(statementLowerCase, "set ");
   }
 
 })();
