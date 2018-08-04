@@ -100,6 +100,7 @@
     var active_updated = "never"; // last update time
     var completed_updated = "never"; // last update time
     var prepareds_updated = "never"; // last update time
+    var defaultProxyTimeout = 1800; // default ns_server proxy timeout in seconds
 
     cwQueryService.monitoring = {
         active_requests: active_requests,
@@ -135,7 +136,8 @@
         max_parallelism: "",
         scan_consistency: "not_bounded",
         positional_parameters: [],
-        named_parameters: []
+        named_parameters: [],
+        query_timeout: defaultProxyTimeout
     };
 
     // clone options so we can have a scratch copy for the dialog box
@@ -145,7 +147,8 @@
           max_parallelism: cwQueryService.options.max_parallelism,
           scan_consistency: cwQueryService.options.scan_consistency,
           positional_parameters: cwQueryService.options.positional_parameters.slice(),
-          named_parameters: cwQueryService.options.named_parameters.slice()
+          named_parameters: cwQueryService.options.named_parameters.slice(),
+          query_timeout: cwQueryService.options.query_timeout
         };
     };
 
@@ -802,6 +805,10 @@
       if (mnPoolDefault.export.thisNode && mnPoolDefault.export.thisNode.version)
         userAgent += ' (' + mnPoolDefault.export.thisNode.version + ')';
 
+      if (!_.isNumber(cwQueryService.options.query_timeout) || cwQueryService.options.query_timeout === 0) {
+          cwQueryService.options.query_timeout = defaultProxyTimeout;
+      }
+
       if (mnPoolDefault.export.compat && mnPoolDefault.export.compat.atLeast45) {
 
         // An alternate way to get around Angular's encoding is "isNotForm: true". But
@@ -814,7 +821,8 @@
         var queryRequest = {
             url: cwConstantsService.queryURL,
             method: "POST",
-            headers: {'Content-Type':'application/json','ns-server-proxy-timeout':timeout*1000,
+            headers: {'Content-Type':'application/json',
+                      'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,
                       'ignore-401':'true','CB-User-Agent': userAgent},
             data: queryData,
             mnHttp: {
@@ -838,7 +846,7 @@
         queryRequest = {url: cwConstantsService.queryURL,
             method: "POST",
             headers: {'Content-Type': 'application/x-www-form-urlencoded',
-                      'ns-server-proxy-timeout':timeout*1000,'CB-User-Agent': userAgent},
+                      'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,'CB-User-Agent': userAgent},
             data: encodedQuery,
             mnHttp: {
               group: "global"
@@ -900,8 +908,6 @@
     //
     // executeQuery
     //
-
-    var timeout = 600; // query timeout in seconds
 
     function executeQuery(queryText, userQuery, queryOptions, explainOnly) {
       var newResult;
@@ -1328,13 +1334,12 @@
         // result is a string? it must be an error message
         if (_.isString(data)) {
           newResult.data = {status: status, message: data};
-          if (status && status == 504) {
-            newResult.data.status_detail =
-              "The query workbench only supports queries running for " + timeout +
-              " seconds. Use cbq from the command-line for longer running queries. " +
-              "Certain DML queries, such as index creation, will continue in the " +
-              "background despite the user interface timeout.";
-          }
+            if (status && status === 504) {
+                newResult.data.status_detail =
+                    "The Analytics workbench only supports queries running for " + cwQueryService.options.query_timeout
+                    + " seconds. This value can be changed in the preferences dialog. You can also use cbq from the " +
+                    "command-line for longer running queries.";
+            }
 
           newResult.result = JSON.stringify(newResult.data,null,'  ');
           newResult.status = "errors";
