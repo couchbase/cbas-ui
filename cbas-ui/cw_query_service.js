@@ -708,9 +708,9 @@
     //   3) set cwQueryService.currentQueryRequestID and qwQueryRequest.currentQueryRequest
     //
 
-    function executeQueryUtil(queryText, is_user_query) {
+    function executeQueryUtil(queryText, is_user_query, highPriority) {
       //console.log("Running query: " + queryText);
-      var request = buildQueryRequest(queryText,is_user_query);
+      var request = buildQueryRequest(queryText, is_user_query, null, highPriority);
 
       // if the request can't be built because the query is too big, return a dummy
       // promise that resolves immediately. This needs to follow the angular $http
@@ -736,14 +736,14 @@
       });
     }
 
-    function buildQueryRequest(queryText, is_user_query, queryOptions) {
+    function buildQueryRequest(queryText, is_user_query, queryOptions, highPriority) {
 
       //console.log("Building query: " + queryText);
       //
       // create a data structure for holding the query, and the credentials for any SASL
       // protected buckets
       //
-
+      var priority = highPriority ? '-1' : '0';
       var extractedQuery = extractExplainPlanFormat(queryText);
       var planFormat = extractedQuery[0];
       queryText = extractedQuery[1];
@@ -823,7 +823,7 @@
             method: "POST",
             headers: {'Content-Type':'application/json',
                       'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,
-                      'ignore-401':'true','CB-User-Agent': userAgent},
+                      'ignore-401':'true','CB-User-Agent': userAgent, 'Analytics-Priority': priority},
             data: queryData,
             mnHttp: {
               isNotForm: true,
@@ -846,7 +846,8 @@
         queryRequest = {url: cwConstantsService.queryURL,
             method: "POST",
             headers: {'Content-Type': 'application/x-www-form-urlencoded',
-                      'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,'CB-User-Agent': userAgent},
+                      'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,'CB-User-Agent': userAgent,
+                      'Analytics-Priority': priority},
             data: encodedQuery,
             mnHttp: {
               group: "global"
@@ -991,7 +992,7 @@
 
         newResult.explainDone = false;
 
-        var explain_request = buildQueryRequest("explain " + queryText, false);
+        var explain_request = buildQueryRequest("explain " + queryText, false, null, false);
         if (!explain_request) {
           newResult.result = '{"status": "Query Failed."}';
           newResult.data = {status: "Query Failed."};
@@ -1121,7 +1122,7 @@
 
       newResult.queryDone = false;
 
-      var request = buildQueryRequest(queryText, true, queryOptions);
+      var request = buildQueryRequest(queryText, true, queryOptions, false);
 
       if (!request) {
         newResult.result = '{"status": "Query Failed."}';
@@ -1436,7 +1437,7 @@
 //      var config = {headers: {'Content-Type':'application/json','ns-server-proxy-timeout':20000}};
      // console.log("Running monitoring cat: " + category + ", query: " + payload.statement);
 
-      return(executeQueryUtil(query,false))
+      return(executeQueryUtil(query,false, false))
       .then(function success(response) {
         var data = response.data;
         var status = response.status;
@@ -1529,7 +1530,7 @@
     function updateBucketsCallback() {
       cwQueryService.loadingBuckets = true;
       var queryText = cwConstantsService.keyspaceQuery;
-      executeQueryUtil(queryText, false)
+      executeQueryUtil(queryText, false, true)
           .then(function (resp) {
             processMetadataQueryResult(resp.data);
               return validateCbasService.userHasAnyBuckets() ? getClusterBuckets() : null;
@@ -1542,7 +1543,6 @@
           })
           .catch(function (resp) {
             var error = "Failed to get bucket insights.";
-            error = error + "\nAnalytics service returned status: " + resp.status;
             error = error + "\nTry refreshing the bucket insights.";
             cwQueryService.buckets.length = 0;
             cwQueryService.shadows.length = 0;
@@ -1714,7 +1714,7 @@
       // start by getting the document count for each bucket
       queryText = "select count(*) cnt from `" + bucket.id + '`';
 
-      res1 = executeQueryUtil(queryText, false)
+      res1 = executeQueryUtil(queryText, false, false)
       .then(function successCallback(resp) {
         var data = resp.data, status = resp.status;
 
@@ -1758,7 +1758,7 @@
       //console.log("Getting schema for : " + bucket.id);
 
       //return $http(inferQueryRequest)
-      return executeQueryUtil("infer `" + bucket.id + "`;", false)
+      return executeQueryUtil("infer `" + bucket.id + "`;", false, false)
       .then(function successCallback(response) {
         //console.log("Done with schema for: " + bucket.id);
         //console.log("Schema status: " + status);
