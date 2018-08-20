@@ -1,6 +1,6 @@
 {
   "service": "cbas",
-  "proxy-strategy": "local",
+  "proxy-strategy": "sticky",
   "rest-api-prefixes": {
     "cbas": {
       "portName": "cbas_http_port"
