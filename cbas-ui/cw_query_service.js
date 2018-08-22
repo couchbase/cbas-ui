@@ -1519,7 +1519,6 @@
     // whenever the system changes, we need to update the list of valid buckets
     //
 
-    $rootScope.$on("indexStatusURIChanged",updateBuckets);
     $rootScope.$on("bucketUriChanged",updateBuckets);
     $rootScope.$on("pollAnalyticsShadowingStats", pollAnalyticsShadowingStats);
 
