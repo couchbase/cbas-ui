@@ -1016,6 +1016,7 @@
             var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
             newResult.explainResult =
             {explain: data.results[0],
+                mode: "analytics",
                 analysis: lists,
                 plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan, null, lists)
             };
@@ -1217,7 +1218,7 @@
           plan = JSON.parse(stringPlan, null, '  ');
           var planEntities = qwQueryPlanService.analyzeAnalyticsPlan(plan, null);
           var planNodes = qwQueryPlanService.convertAnalyticsPlanToPlanNodes(plan, null, planEntities);
-          newResult.explainResult = {explain: plan, analysis: planEntities, plan_nodes: planNodes};
+          newResult.explainResult = {explain: plan, mode: "analytics", analysis: planEntities, plan_nodes: planNodes};
         } else {
           cwQueryService.planFormat = "text";
           cwQueryService.selectTab(5);
@@ -1235,6 +1236,7 @@
           var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.profile.executionTimings,null);
           newResult.explainResult =
           {explain: data.profile.executionTimings,
+              mode: "analytics",
               analysis: lists,
               plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.profile.executionTimings,null,lists)
               /*,
@@ -1257,6 +1259,7 @@
           var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
           newResult.explainResult =
           {explain: data.results[0],
+              mode: "analytics",
               analysis: lists,
               plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan,null,lists)
               /*,
