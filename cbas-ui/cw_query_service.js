@@ -206,7 +206,7 @@
       var clusterBucketsRequest = {
         url: cwConstantsService.clusterBucketsURL,
         method: "GET",
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', 'ignore-401':'true'}
       };
       return ($http(clusterBucketsRequest));
     }
@@ -1653,7 +1653,7 @@
           var statsRequest = {
               url: cwConstantsService.analyticsStatsURL,
               method: "GET",
-              headers: {'Content-Type': 'application/json'}
+              headers: {'Content-Type': 'application/json', 'ignore-401':'true'}
           };
           return ($http(statsRequest));
       }
