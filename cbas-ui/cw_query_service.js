@@ -79,6 +79,7 @@
     cwQueryService.testAuth = testAuth; // check passward
     cwQueryService.loadingBuckets = false;
     cwQueryService.planFormat = 'json';
+    cwQueryService.fetchingStats = false;
 
     var explainTextFormat = "text";
     var explainJsonFormat = "json";
@@ -1637,16 +1638,19 @@
       }
 
       function getAnalyticsShadowingStats() {
-          if (!validateCbasService.canAccessStats()) {
+          if (!validateCbasService.canAccessStats() || cwQueryService.fetchingStats) {
               return;
           }
+          cwQueryService.fetchingStats = true;
           var stats = getAnalyticsStats();
           stats.then(function (resp) {
               var shadowsStats = extractShadowingStats(resp.data);
               updateDatasetShadowingProgress(shadowsStats);
           }, function (resp) {
               // ignore stats failure, will be retried
-          });
+          }).finally(function () {
+              cwQueryService.fetchingStats = false;
+          });;
       }
 
       function getAnalyticsStats() {
