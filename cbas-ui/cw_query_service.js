@@ -79,6 +79,7 @@
     cwQueryService.testAuth = testAuth; // check passward
     cwQueryService.loadingBuckets = false;
     cwQueryService.planFormat = 'json';
+    cwQueryService.fetchingStats = false;
 
     var explainTextFormat = "text";
     var explainJsonFormat = "json";
@@ -206,7 +207,7 @@
       var clusterBucketsRequest = {
         url: cwConstantsService.clusterBucketsURL,
         method: "GET",
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', 'ignore-401':'true'}
       };
       return ($http(clusterBucketsRequest));
     }
@@ -1016,6 +1017,7 @@
             var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
             newResult.explainResult =
             {explain: data.results[0],
+                mode: "analytics",
                 analysis: lists,
                 plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan, null, lists)
             };
@@ -1217,7 +1219,7 @@
           plan = JSON.parse(stringPlan, null, '  ');
           var planEntities = qwQueryPlanService.analyzeAnalyticsPlan(plan, null);
           var planNodes = qwQueryPlanService.convertAnalyticsPlanToPlanNodes(plan, null, planEntities);
-          newResult.explainResult = {explain: plan, analysis: planEntities, plan_nodes: planNodes};
+          newResult.explainResult = {explain: plan, mode: "analytics", analysis: planEntities, plan_nodes: planNodes};
         } else {
           cwQueryService.planFormat = "text";
           cwQueryService.selectTab(5);
@@ -1235,6 +1237,7 @@
           var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.profile.executionTimings,null);
           newResult.explainResult =
           {explain: data.profile.executionTimings,
+              mode: "analytics",
               analysis: lists,
               plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.profile.executionTimings,null,lists)
               /*,
@@ -1257,6 +1260,7 @@
           var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
           newResult.explainResult =
           {explain: data.results[0],
+              mode: "analytics",
               analysis: lists,
               plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan,null,lists)
               /*,
@@ -1519,7 +1523,6 @@
     // whenever the system changes, we need to update the list of valid buckets
     //
 
-    $rootScope.$on("indexStatusURIChanged",updateBuckets);
     $rootScope.$on("bucketUriChanged",updateBuckets);
     $rootScope.$on("pollAnalyticsShadowingStats", pollAnalyticsShadowingStats);
 
@@ -1635,23 +1638,26 @@
       }
 
       function getAnalyticsShadowingStats() {
-          if (!validateCbasService.canAccessStats()) {
+          if (!validateCbasService.canAccessStats() || cwQueryService.fetchingStats) {
               return;
           }
+          cwQueryService.fetchingStats = true;
           var stats = getAnalyticsStats();
           stats.then(function (resp) {
               var shadowsStats = extractShadowingStats(resp.data);
               updateDatasetShadowingProgress(shadowsStats);
           }, function (resp) {
               // ignore stats failure, will be retried
-          });
+          }).finally(function () {
+              cwQueryService.fetchingStats = false;
+          });;
       }
 
       function getAnalyticsStats() {
           var statsRequest = {
               url: cwConstantsService.analyticsStatsURL,
               method: "GET",
-              headers: {'Content-Type': 'application/json'}
+              headers: {'Content-Type': 'application/json', 'ignore-401':'true'}
           };
           return ($http(statsRequest));
       }
