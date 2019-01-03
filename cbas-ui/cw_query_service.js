@@ -1601,10 +1601,12 @@
         for (var i = 0; i < dataset.indexes.length; i++) {
           var idx = dataset.indexes[i];
           idx.keys = [];
-          if (idx.SearchKeyType) {
-            idx.keys.push(idx.SearchKey[j] + ":" + idx.SearchKeyType[j]);
-          } else {
-            idx.keys.push(idx.SearchKey[j]);
+          for (var j = 0; j < idx.SearchKey.length; j++) {
+            if (idx.SearchKeyType) {
+              idx.keys.push(idx.SearchKey[j] + ":" + idx.SearchKeyType[j]);
+            } else {
+              idx.keys.push(idx.SearchKey[j]);
+            }
           }
         }
       }
