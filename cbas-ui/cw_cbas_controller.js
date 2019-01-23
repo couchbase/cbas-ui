@@ -33,6 +33,8 @@
     qc.planFormat = cwQueryService.planFormat;
     qc.datasetDisconnectedState = cwQueryService.datasetDisconnectedState;
 
+    qc.toggleFullscreen = toggleFullscreen;
+
     // some functions for handling query history, going backward and forward
 
     qc.prev = prevResult;
@@ -563,7 +565,7 @@
     function updateEditorSizes() {
       var margins = 90;
       var windowHeight = window.innerHeight;
-      var pageFooterHeight =  84;
+      var pageFooterHeight =  64;
       var headerNavHeight = 47;
       var queryBoxHeight = $('.wb-query-editor').height();
 
@@ -589,7 +591,7 @@
 //      console.log(" current_ui: " + current_ui);
 //      console.log(" editor_size: " + editor_size);
 
-      var sidebarHeight = windowHeight - 130;
+      var sidebarHeight = windowHeight - 110;
       $('.insights-sidebar').height(sidebarHeight);
       $('.wb-results-json').height(editor_size);
       $('.wb-results-table').height(editor_size + 32);
@@ -1235,6 +1237,26 @@
       $timeout(updateEditorSizes(),100);
     }
 
+      // hide & show the datasets sidebar + the main navigation sidebar
+      function toggleFullscreen() {
+        if (!qc.fullscreen) {
+          $(".insights-sidebar").removeClass("width-3");
+          $(".insights-sidebar").addClass("fix-width-0");
+          $(".wb-main-wrapper").removeClass("width-9");
+          $(".wb-main-wrapper").addClass("width-12");
+          $(".wb-refresh-btn").addClass("hidden");
+          mnPoolDefault.setHideNavSidebar(true);
+        }
+        else {
+          $(".insights-sidebar").removeClass("fix-width-0");
+          $(".insights-sidebar").addClass("width-3");
+          $(".wb-main-wrapper").removeClass("width-12");
+          $(".wb-main-wrapper").addClass("width-9");
+          $(".wb-refresh-btn").removeClass("hidden");
+          mnPoolDefault.setHideNavSidebar(false);
+        }
+        qc.fullscreen = !qc.fullscreen;
+      }
   }
 
   function forceReload(url) {
