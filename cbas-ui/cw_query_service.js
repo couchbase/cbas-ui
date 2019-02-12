@@ -1113,7 +1113,7 @@
         newResult.explainResultText = "";
       }
       if (!queryIsExplain && explainOnly) {
-         queryText = "explain " + queryText;
+        queryText = "explain " + queryText;
       }
 
       //console.log("submitting query: " + JSON.stringify(cwQueryService.currentQueryRequest));
@@ -1143,149 +1143,168 @@
       var promise = $http(request)
       // SUCCESS!
       .then(function success(resp) {
-        var data = resp.data, status = resp.status;
-//      console.log("Success Data: " + JSON.stringify(data));
-//      console.log("Success Status: " + JSON.stringify(status));
-//      console.log("Success Headers: " + JSON.stringify(headers));
-//      console.log("Success Config: " + JSON.stringify(config));
+        // make sure to handle any processing errors
+        try{
+          var data = resp.data, status = resp.status;
+//        console.log("Success Data: " + JSON.stringify(data));
+//        console.log("Success Status: " + JSON.stringify(status));
+//        console.log("Success Headers: " + JSON.stringify(headers));
+//        console.log("Success Config: " + JSON.stringify(config));
 
-        var result;
+          var result;
 
-        //      var post_post_ms = new Date().getTime();
+          //      var post_post_ms = new Date().getTime();
 
-        // make sure we show errors if the query did not succeed
-        if (data.status == "success") {
-          // if the results are empty, show some of the surrounding data
-          if (_.isArray(data.results) && data.results.length == 0) {
-            result = {};
-            result.results = data.results;
-            //result.metrics = data.metrics;
+          // make sure we show errors if the query did not succeed
+          if (data.status == "success") {
+            // if the results are empty, show some of the surrounding data
+            if (_.isArray(data.results) && data.results.length == 0) {
+              result = {};
+              result.results = data.results;
+              //result.metrics = data.metrics;
+            }
+            // otherwise, use the results
+            else
+              result = data.results;
           }
-          // otherwise, use the results
-          else
-            result = data.results;
-        }
-        else if (data.errors) {
-          var failed = "Authorization Failed";
-          // hack - detect authorization failed, make a suggestion
+          else if (data.errors) {
+            var failed = "Authorization Failed";
+            // hack - detect authorization failed, make a suggestion
 //          for (var i=0; i < data.errors.length; i++)
-//            if (data.errors[i].msg &&
-//                data.errors[i].msg.length >= failed.length &&
-//                data.errors[i].msg.substring(0,failed.length) == failed)
-//              data.errors[i].suggestion = "Try reloading bucket information by refreshing the Bucket Analysis pane.";
+//          if (data.errors[i].msg &&
+//          data.errors[i].msg.length >= failed.length &&
+//          data.errors[i].msg.substring(0,failed.length) == failed)
+//          data.errors[i].suggestion = "Try reloading bucket information by refreshing the Bucket Analysis pane.";
 
-          result = data.errors;
-        }
-        else if (data.status == "stopped") {
-          result = {status: "Query stopped on server."};
+            result = data.errors;
+          }
+          else if (data.status == "stopped") {
+            result = {status: "Query stopped on server."};
 //          console.log("Success/Error Data: " + JSON.stringify(data));
 //          console.log("Success/Error Status: " + JSON.stringify(status));
 //          console.log("Success/Error Headers: " + JSON.stringify(headers));
 //          console.log("Success/Error Config: " + JSON.stringify(config));
-        }
+          }
 
-        // if we got no metrics, create a dummy version
+          // if we got no metrics, create a dummy version
 
-        if (!data.metrics) {
-          data.metrics = {elapsedTime: 0.0, executionTime: 0.0, resultCount: 0, resultSize: "0", elapsedTime: 0.0, processedObjects: 0}
-        }
+          if (!data.metrics) {
+            data.metrics = {elapsedTime: 0.0, executionTime: 0.0, resultCount: 0, resultSize: "0", elapsedTime: 0.0, processedObjects: 0}
+          }
 
-        newResult.status = data.status;
-        newResult.elapsedTime = data.metrics.elapsedTime;
-        newResult.executionTime = data.metrics.executionTime;
-        newResult.resultCount = data.metrics.resultCount;
-        newResult.processedObjects = data.metrics.processedObjects;
-        if (data.metrics.mutationCount)
-          newResult.mutationCount = data.metrics.mutationCount;
-        newResult.resultSize = data.metrics.resultSize;
-        if (data.rawJSON)
-          newResult.result = js_beautify(data.rawJSON, {"indent_size": 2});
-        else
-          newResult.result = angular.toJson(result, true);
-        newResult.data = result;
+          newResult.status = data.status;
+          newResult.elapsedTime = data.metrics.elapsedTime;
+          newResult.executionTime = data.metrics.executionTime;
+          newResult.resultCount = data.metrics.resultCount;
+          newResult.processedObjects = data.metrics.processedObjects;
+          if (data.metrics.mutationCount)
+            newResult.mutationCount = data.metrics.mutationCount;
+          newResult.resultSize = data.metrics.resultSize;
+          if (data.rawJSON)
+            newResult.result = js_beautify(data.rawJSON, {"indent_size": 2});
+          else
+            newResult.result = angular.toJson(result, true);
+          newResult.data = result;
 
-        var isJsonPlan = request.planFormat === "json";
-        var plan = "";
-        if (data.plans && data.plans.optimizedLogicalPlan) {
+          var isJsonPlan = request.planFormat === "json";
+          var plan = "";
+          if (data.plans && data.plans.optimizedLogicalPlan) {
             plan = data.plans.optimizedLogicalPlan;
             newResult.explainResultText = plan;
-        }
-        if(isJsonPlan) {
-          cwQueryService.planFormat = "json";
-          newResult.explainResultText = JSON.stringify(plan, null, '  ');
-          // convert plan format to QueryPlanService expected format
-          var stringPlan = JSON.stringify(plan);
-          stringPlan = stringPlan.replace(/\"operator\":/g, '"#operator":');
-          plan = JSON.parse(stringPlan, null, '  ');
-          var planEntities = qwQueryPlanService.analyzeAnalyticsPlan(plan, null);
-          var planNodes = qwQueryPlanService.convertAnalyticsPlanToPlanNodes(plan, null, planEntities);
-          newResult.explainResult = {explain: plan, mode: "analytics", analysis: planEntities, plan_nodes: planNodes};
-        } else {
-          cwQueryService.planFormat = "text";
-          cwQueryService.selectTab(5);
-        }
+          }
+          if(isJsonPlan) {
+            cwQueryService.planFormat = "json";
+            newResult.explainResultText = JSON.stringify(plan, null, '  ');
+            // convert plan format to QueryPlanService expected format
+            var stringPlan = JSON.stringify(plan);
+            stringPlan = stringPlan.replace(/\"operator\":/g, '"#operator":');
+            plan = JSON.parse(stringPlan, null, '  ');
+            var planEntities = qwQueryPlanService.analyzeAnalyticsPlan(plan, null);
+            var planNodes = qwQueryPlanService.convertAnalyticsPlanToPlanNodes(plan, null, planEntities);
+            newResult.explainResult = {explain: plan, mode: "analytics", analysis: planEntities, plan_nodes: planNodes};
+          } else {
+            cwQueryService.planFormat = "text";
+            cwQueryService.selectTab(5);
+          }
 
-        if(explainOnly || queryIsExplain) {
-          newResult.result = isJsonPlan ? newResult.explainResultText : "";
-          newResult.data = isJsonPlan ? newResult.explainResultText : "";
-        }
-        newResult.requestID = data.requestID;
+          if(explainOnly || queryIsExplain) {
+            newResult.result = isJsonPlan ? newResult.explainResultText : "";
+            newResult.data = isJsonPlan ? newResult.explainResultText : "";
+          }
+          newResult.requestID = data.requestID;
 
-        // did we get query timings in the result? If so, update the plan
+          // did we get query timings in the result? If so, update the plan
 
-        if (data.profile && data.profile.executionTimings) {
-          var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.profile.executionTimings,null);
-          newResult.explainResult =
-          {explain: data.profile.executionTimings,
-              mode: "analytics",
-              analysis: lists,
-              plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.profile.executionTimings,null,lists)
-              /*,
+          if (data.profile && data.profile.executionTimings) {
+            var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.profile.executionTimings,null);
+            newResult.explainResult =
+            {explain: data.profile.executionTimings,
+                mode: "analytics",
+                analysis: lists,
+                plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.profile.executionTimings,null,lists)
+                /*,
               buckets: cwQueryService.buckets,
               tokens: cwQueryService.autoCompleteTokens*/};
-          newResult.explainResultText = JSON.stringify(newResult.explainResult.explain,null,'  ');
+            newResult.explainResultText = JSON.stringify(newResult.explainResult.explain,null,'  ');
 
-          // let's check all the fields to make sure they are all valid
-          var problem_fields = getProblemFields(newResult.explainResult.analysis.fields);
-          if (problem_fields.length > 0)
-            newResult.explainResult.problem_fields = problem_fields;
-        }
+            // let's check all the fields to make sure they are all valid
+            var problem_fields = getProblemFields(newResult.explainResult.analysis.fields);
+            if (problem_fields.length > 0)
+              newResult.explainResult.problem_fields = problem_fields;
+          }
 
-        newResult.queryDone = true;
+          newResult.queryDone = true;
 
-        // if this was an explain query, change the result to show the
-        // explain plan
+          // if this was an explain query, change the result to show the
+          // explain plan
 
-        if (queryIsExplain && cwConstantsService.autoExplain) {
-          var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
-          newResult.explainResult =
-          {explain: data.results[0],
-              mode: "analytics",
-              analysis: lists,
-              plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan,null,lists)
-              /*,
+          if (queryIsExplain && cwConstantsService.autoExplain) {
+            var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
+            newResult.explainResult =
+            {explain: data.results[0],
+                mode: "analytics",
+                analysis: lists,
+                plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan,null,lists)
+                /*,
               buckets: cwQueryService.buckets,
               tokens: cwQueryService.autoCompleteTokens*/};
-          newResult.explainResultText = JSON.stringify(newResult.explainResult.explain, null, '  ');
-          cwQueryService.selectTab(4); // make the explain visible
+            newResult.explainResultText = JSON.stringify(newResult.explainResult.explain, null, '  ');
+            cwQueryService.selectTab(4); // make the explain visible
+          }
+
+          // make sure to only finish if the explain query is also done
+          if (newResult.explainDone) {
+            //console.log("Query done, got explain: " + newResult.explainResultText);
+
+            lastResult.copyIn(newResult);
+            finishQuery();
+          }
         }
+        // got some error in processing
+        catch (e) {
+          newResult.result = '{\n  "status": "Internal Query Processing Error."\n}';
+          newResult.data = {status: "Query Failed."};
+          console.log("Internal query processing error: " + JSON.stringify(e))
+          newResult.status = "errors";
+          newResult.resultCount = 0;
+          newResult.resultSize = 0;
+          newResult.processedObjects = 0;
+          newResult.queryDone = true;
 
-        // make sure to only finish if the explain query is also done
-        if (newResult.explainDone) {
-          //console.log("Query done, got explain: " + newResult.explainResultText);
-
+          // make sure to only finish if the explain query is also done
           lastResult.copyIn(newResult);
           finishQuery();
+          return;
         }
       },
       /* error response from $http */
       function error(resp) {
         var data = resp.data, status = resp.status;
-//        console.log("Error Data: " + JSON.stringify(data));
-//        console.log("Request was: " + JSON.stringify(request));
+//      console.log("Error Data: " + JSON.stringify(data));
+//      console.log("Request was: " + JSON.stringify(request));
 //      console.log("Error Status: " + JSON.stringify(status));
 //      console.log("Error Headers: " + JSON.stringify(headers));
-      //console.log("Error Config: " + JSON.stringify(config));
+        //console.log("Error Config: " + JSON.stringify(config));
 
         // if we don't get query metrics, estimate elapsed time
         if (!data || !data.metrics) {
@@ -1339,12 +1358,12 @@
         // result is a string? it must be an error message
         if (_.isString(data)) {
           newResult.data = {status: status, message: data};
-            if (status && status === 504) {
-                newResult.data.status_detail =
-                    "The Analytics workbench only supports queries running for " + cwQueryService.options.query_timeout
-                    + " seconds. This value can be changed in the preferences dialog. You can also use cbq from the " +
-                    "command-line for longer running queries.";
-            }
+          if (status && status === 504) {
+            newResult.data.status_detail =
+              "The Analytics workbench only supports queries running for " + cwQueryService.options.query_timeout
+              + " seconds. This value can be changed in the preferences dialog. You can also use cbq from the " +
+              "command-line for longer running queries.";
+          }
 
           newResult.result = JSON.stringify(newResult.data,null,'  ');
           newResult.status = "errors";
