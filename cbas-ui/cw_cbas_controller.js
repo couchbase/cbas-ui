@@ -155,6 +155,8 @@
 
     qc.showOptions = cwConstantsService.showOptions;
 
+    qc.format = format;
+
     //
     // does the browser support file choosing?
     //
@@ -348,8 +350,10 @@
 
     var langTools = ace.require("ace/ext/language_tools");
     var autocomplete = ace.require("ace/autocomplete");
+    var mode_n1ql;
 
     function aceInputLoaded(_editor) {
+      mode_sql_plus_plus = ace.require("ace/mode/sql-plus-plus");
       _editor.$blockScrolling = Infinity;
       _editor.setFontSize('13px');
       _editor.renderer.setPrintMarginColumn(false);
@@ -383,6 +387,14 @@
       $(".wb-query-editor")[0].addEventListener('dragover',handleDragOver,false);
       $(".wb-query-editor")[0].addEventListener('drop',handleFileDrop,false);
     };
+
+    //
+    // format the contents of the query field
+    //
+
+    function format() {
+      qc.lastResult.query = mode_sql_plus_plus.Instance.format(qc.lastResult.query,2);
+    }
 
     // this function is used for autocompletion of dynamically known names such
     // as bucket names, field names, and so on. We only want to return items that

@@ -103,6 +103,13 @@
         </div>
 
 <!-- run-time preferences ----------------------------------------------------->
+          <a
+             ng-disabled="qc.executingQuery.busy"
+             ng-click="qc.format()"
+             class="text-smallish nowrap resp-hide-xsml">
+            <span class="icon fa-align-right"></span>
+            format&nbsp;&nbsp;
+          </a>
         <a
            ng-if="qc.showOptions"
            ng-click="qc.options()"
