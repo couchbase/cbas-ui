@@ -32,6 +32,7 @@
     qc.emptyResult = cwQueryService.emptyResult;
     qc.planFormat = cwQueryService.planFormat;
     qc.datasetDisconnectedState = cwQueryService.datasetDisconnectedState;
+    qc.isAllowedMultiStatement = cwQueryService.isAllowedMultiStatement;
 
     // some functions for handling query history, going backward and forward
 
@@ -1235,32 +1236,26 @@
       $timeout(updateEditorSizes(),100);
     }
 
+    function containsValidStatements(input) {
+      var statements = input.split(";");
+      var statementCount = 0;
+      for (var i = 0; i < statements.length; i++) {
+        var statement = statements[i].trim();
+        if (statement.length === 0) {
+          continue;
+        }
+        if (!qc.isAllowedMultiStatement(statement)) {
+          statementCount++;
+        }
+      }
+      return statementCount >= 1;
+    }
   }
 
   function forceReload(url) {
     if (window.location.href == url) {
       location.reload();
     }
-  }
-
-  function containsValidStatements(input) {
-    var statements = input.split(";");
-    var statementCount = 0;
-    for (var i = 0; i < statements.length; i++) {
-      var statement = statements[i].trim();
-      if (statement.length === 0) {
-        continue;
-      }
-      if (!isAllowedMultiStatement(statement)) {
-        statementCount++;
-      }
-    }
-    return statementCount >= 1;
-  }
-
-  function isAllowedMultiStatement(statement) {
-    var statementLowerCase = statement.toLowerCase();
-    return _.startsWith(statementLowerCase, "use ") || _.startsWith(statementLowerCase, "set ");
   }
 
 })();
