@@ -80,6 +80,7 @@
     cwQueryService.loadingBuckets = false;
     cwQueryService.planFormat = 'json';
     cwQueryService.fetchingStats = false;
+    cwQueryService.isAllowedMultiStatement = isAllowedMultiStatement;
 
     var explainTextFormat = "text";
     var explainJsonFormat = "json";
@@ -1113,7 +1114,7 @@
         newResult.explainResultText = "";
       }
       if (!queryIsExplain && explainOnly) {
-        queryText = "explain " + queryText;
+        queryText = addExplain(queryText);
       }
 
       //console.log("submitting query: " + JSON.stringify(cwQueryService.currentQueryRequest));
@@ -1621,7 +1622,11 @@
           var idx = dataset.indexes[i];
           idx.keys = [];
           for (var j = 0; j < idx.SearchKey.length; j++) {
-            idx.keys.push(idx.SearchKey[j] + ":" + idx.SearchKeyType[j]);
+            if (idx.SearchKeyType) {
+              idx.keys.push(idx.SearchKey[j] + ":" + idx.SearchKeyType[j]);
+            } else {
+              idx.keys.push(idx.SearchKey[j]);
+            }
           }
         }
       }
@@ -1629,27 +1634,52 @@
 
       function extractExplainPlanFormat(queryText) {
           var planFormat = explainJsonFormat;
-          if (queryText.length >= 11 && isExplainQuery(queryText)) {
-              if (hasPlanFormat(queryText, explainJsonFormat)) {
-                  queryText = removeExplainPlanFormat(queryText, explainJsonFormat);
-              } else if (hasPlanFormat(queryText, explainTextFormat)) {
-                  queryText = removeExplainPlanFormat(queryText, explainTextFormat);
+          var explainIndex = getExplainIndex(queryText);
+          if (explainIndex >= 0) {
+              if (hasPlanFormat(queryText, explainIndex, explainJsonFormat)) {
+                  queryText = removeExplainPlanFormat(queryText, explainIndex, explainJsonFormat);
+              } else if (hasPlanFormat(queryText, explainIndex, explainTextFormat)) {
+                  queryText = removeExplainPlanFormat(queryText, explainIndex, explainTextFormat);
                   planFormat = queryApiTextPlanFormat;
               }
           }
           return [planFormat, queryText];
       }
 
-      function isExplainQuery(queryText) {
-          return queryText.toLowerCase().indexOf("explain", 0) === 0;
+      function getExplainIndex(queryText) {
+        var match = /^\s*explain/gmi.exec(queryText);
+        if (match) {
+          return match.index;
+        }
+        return -1;
       }
 
-      function removeExplainPlanFormat(queryText, format) {
-          return "explain " + queryText.substring(planFormatStartIndex + format.length);
+      function addExplain(queryText) {
+        var statements = queryText.split(";");
+        for (var i = 0; i < statements.length; i++) {
+          var statement = statements[i].trim();
+          if (statement.length === 0) {
+            continue;
+          }
+          if (!isAllowedMultiStatement(statement)) {
+            queryText = queryText.replace(statement, "explain " + statement);
+            break;
+          }
+        }
+        return queryText;
       }
 
-      function hasPlanFormat(queryText, format) {
-          return queryText.toLowerCase().indexOf(format, planFormatStartIndex) === planFormatStartIndex;
+      function hasPlanFormat(queryText, explainIndex, format) {
+        return queryText.toLowerCase().indexOf(format, explainIndex) === explainIndex + planFormatStartIndex;
+      }
+
+      function removeExplainPlanFormat(queryText, explainIndex, format) {
+        return "explain " + queryText.substring(explainIndex + planFormatStartIndex + format.length);
+      }
+
+      function isAllowedMultiStatement(statement) {
+        var statementLowerCase = statement.toLowerCase();
+        return _.startsWith(statementLowerCase, "use ") || _.startsWith(statementLowerCase, "set ");
       }
 
       function pollAnalyticsShadowingStats() {
