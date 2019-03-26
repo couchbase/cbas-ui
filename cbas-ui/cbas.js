@@ -6,7 +6,6 @@
     'qwJsonTree',
     'qwJsonTable',
     'qwJsonTableEditor',
-    'qwExplainViz',
     'qwLongPress',
     'mnPendingQueryKeeper',
     'mnServersService',
