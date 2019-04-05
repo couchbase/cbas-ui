@@ -1175,6 +1175,14 @@
     //
 
     function activate() {
+
+      // if we receive a query parameter, and it's not the same as the current query,
+      // insert it at the end of history
+      if (_.isString($stateParams.query) && $stateParams.query.length > 0 &&
+          $stateParams.query != qc.lastResult.query) {
+        cwQueryService.addNewQueryAtEndOfHistory($stateParams.query);
+      }
+
       //
       // make sure we stay on top of the latest query nodes
       //

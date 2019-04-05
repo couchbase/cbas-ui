@@ -17,14 +17,46 @@
     cwQueryService.dataseUnknownState = -2;
     cwQueryService.selectTab = function(newTab) {cwQueryService.outputTab = newTab;};
     cwQueryService.isSelected = function(checkTab) {return cwQueryService.outputTab === checkTab;};
+    cwQueryService.validated = validateCbasService;
+
+    // analytics monitoring
+
+    var monitoringOptions = {
+        selectedTab: 1,
+        autoUpdate: true,
+        active_sort_by: 'elapsedTime',
+        active_sort_reverse: true,
+        completed_sort_by: 'elapsedTime',
+        completed_sort_reverse: true,
+        prepared_sort_by: 'elapsedTime',
+        prepared_sort_reverse: true
+    };
+    cwQueryService.selectMonitoringTab = function(newTab) {monitoringOptions.selectedTab = newTab; saveStateToStorage();};
+    cwQueryService.getMonitoringSelectedTab = function() {return monitoringOptions.selectedTab;};
+    cwQueryService.isMonitoringSelected = function(checkTab) {return monitoringOptions.selectedTab === checkTab;};
+    cwQueryService.getMonitoringAutoUpdate = function() {return monitoringOptions.autoUpdate;};
+    cwQueryService.setMonitoringAutoUpdate = function(newValue) {monitoringOptions.autoUpdate = newValue; saveStateToStorage();};
+    cwQueryService.getMonitoringOptions = function() {return monitoringOptions};
+
+    cwQueryService.monitoring = {
+        active_requests: active_requests,
+        completed_requests: completed_requests,
+
+        active_updated: active_updated,
+        completed_updated: completed_updated,
+    };
+
+    cwQueryService.updateQueryMonitoring = updateQueryMonitoring;
+    cwQueryService.getStats = getStats;
+
+    var defaultProxyTimeout = 1800; // default ns_server proxy timeout in seconds
+    var active_requests = [];
+    var completed_requests = [];
+    var active_updated = "never"; // last update time
+    var completed_updated = "never"; // last update time
 
 
-    cwQueryService.monitoringTab = 0;
-    cwQueryService.monitoringAutoUpdate = true;
-    cwQueryService.selectMonitoringTab = function(newTab) {cwQueryService.monitoringTab = newTab;};
-    cwQueryService.isMonitoringSelected = function(checkTab) {return cwQueryService.monitoringTab === checkTab;};
-
-    // access to our most recent query result, and functions to traverse the history
+     // access to our most recent query result, and functions to traverse the history
     // of different results
 
     cwQueryService.getResult = function() {return lastResult;};
@@ -60,6 +92,7 @@
     cwQueryService.currentQueryRequestID = null;
     cwQueryService.executeQuery = executeQuery;
     cwQueryService.cancelQuery = cancelQuery;
+    cwQueryService.cancelQueryById = cancelQueryById;
 
     cwQueryService.executeQueryUtil = executeQueryUtil;
 
@@ -89,32 +122,6 @@
 //    mnAuthService.whoami().then(function (resp) {
 //      if (resp) cwQueryService.user = resp;
 //    });
-
-
-    //
-    // keep track of active queries, complete requests, and prepared statements
-    //
-
-    var active_requests = [];
-    var completed_requests = [];
-    var prepareds = [];
-
-    var active_updated = "never"; // last update time
-    var completed_updated = "never"; // last update time
-    var prepareds_updated = "never"; // last update time
-    var defaultProxyTimeout = 1800; // default ns_server proxy timeout in seconds
-
-    cwQueryService.monitoring = {
-        active_requests: active_requests,
-        completed_requests: completed_requests,
-        prepareds: prepareds,
-
-        active_updated: active_updated,
-        completed_updated: completed_updated,
-        prepareds_updated: prepareds_updated,
-    };
-
-    cwQueryService.updateQueryMonitoring = updateQueryMonitoring;
 
     // for the front-end, distinguish error status and good statuses
 
@@ -698,6 +705,19 @@
             logWorkbenchError("Error cancelling query: " + JSON.stringif(resp));
           });
       }
+    }
+
+    //
+    // cancel a query - given its UUID
+    //
+
+    function cancelQueryById(request_id) {
+      var cancelQueryRequest = {
+          url: cwConstantsService.canelQueryURL + '?request_id=' + request_id,
+          method: 'DELETE'
+        };
+
+      return ($http(cancelQueryRequest));
     }
 
     //
@@ -1437,109 +1457,6 @@
     }
 
     //
-    // manage metadata, including buckets, fields, and field descriptions
-    //
-
-    function updateQueryMonitoring(category) {
-
-      var query1 = "select active_requests.* from system:active_requests";
-      var query2 = "select completed_requests.* from system:completed_requests";
-      var query3 = "select prepareds.* from system:prepareds";
-      var query = "foo";
-
-      switch (category) {
-      case 1: query = query1; break;
-      case 2: query = query2; break;
-      case 3: query = query3; break;
-      default: return;
-      }
-
-      var result = [];
-
-      //console.log("Got query: " + query);
-
-//      var config = {headers: {'Content-Type':'application/json','ns-server-proxy-timeout':20000}};
-     // console.log("Running monitoring cat: " + category + ", query: " + payload.statement);
-
-      return(executeQueryUtil(query,false, false))
-      .then(function success(response) {
-        var data = response.data;
-        var status = response.status;
-        var headers = response.headers;
-        var config = response.config;
-
-        if (data.status == "success") {
-          result = data.results;
-
-          // we need to reformat the duration values coming back
-          // since they are in the most useless format ever.
-
-          for (var i=0; i< result.length; i++) if (result[i].elapsedTime) {
-            result[i].elapsedTime = qwQueryPlanService.convertTimeToNormalizedString(result[i].elapsedTime);
-          }
-        }
-        else {
-          result = [data.errors];
-        }
-
-        switch (category) {
-        case 1:
-          cwQueryService.monitoring.active_requests = result;
-          cwQueryService.monitoring.active_updated = new Date();
-          break;
-        case 2:
-          cwQueryService.monitoring.completed_requests = result;
-          cwQueryService.monitoring.completed_updated = new Date();
-          break;
-        case 3:
-          cwQueryService.monitoring.prepareds = result;
-          cwQueryService.monitoring.prepareds_updated = new Date();
-          break;
-        }
-
-
-      },
-      function error(response) {
-        var data = response.data;
-        var status = response.status;
-        var headers = response.headers;
-        var config = response.config;
-
-        //console.log("Mon Error Data: " + JSON.stringify(data));
-        //console.log("Mon Error Status: " + JSON.stringify(status));
-        //console.log("Mon Error Headers: " + JSON.stringify(headers));
-        //console.log("Mon Error Config: " + JSON.stringify(config));
-        var error = "Error with query monitoring";
-
-        if (data && data.errors)
-          error = error + ": " + JSON.stringify(data.errors);
-        else if (status && _.isString(data))
-          error = error + ", query service returned status: " + status + ", " + data;
-        else if (status)
-          error = error + ", query service returned status: " + status;
-
-        logWorkbenchError(error);
-//        console.log("Got error: " + error);
-
-        switch (category) {
-        case 1:
-          cwQueryService.monitoring.active_requests = [{statment: error}];
-          cwQueryService.monitoring.active_updated = new Date();
-          break;
-        case 2:
-          cwQueryService.monitoring.completed_requests = [{statement: error}];
-          cwQueryService.monitoring.completed_updated = new Date();
-          break;
-        case 3:
-          cwQueryService.monitoring.prepareds = [{statement: error}];
-          cwQueryService.monitoring.prepareds_updated = new Date();
-          break;
-        }
-
-      });
-    };
-
-    //
     // whenever the system changes, we need to update the list of valid buckets
     //
 
@@ -2101,6 +2018,122 @@
       }
       return(curLoc);
     }
+
+    //
+    // manage query monitoring for analytics
+    //
+
+   function updateQueryMonitoring(category) {
+
+      var query1 = "select value active_requests()";
+      var query2 = "select value completed_requests()";
+       var query = '';
+
+      switch (category) {
+      case 1: query = query1; break;
+      case 2: query = query2; break;
+      default: return;
+      }
+
+      var result = [];
+
+      //console.log("Got query: " + query);
+      //var config = {headers: {'Content-Type':'application/json','ns-server-proxy-timeout':20000}};
+      //console.log("Running monitoring cat: " + category + ", query: " + payload.statement);
+
+      return(executeQueryUtil(query,false))
+           .then(function success(response) {
+        var data = response.data;
+        var status = response.status;
+        var headers = response.headers;
+        var config = response.config;
+
+        if (data.status == "success") {
+          result = data.results[0];
+
+          // we need to reformat the duration values coming back
+          // since they are in the most useless format ever.
+
+          for (var i=0; i< result.length; i++) if (result[i].elapsedTime) {
+            result[i].elapsedTime = qwQueryPlanService.convertTimeToNormalizedString(result[i].elapsedTime);
+          }
+        }
+        else {
+          result = [data.errors];
+        }
+
+        switch (category) {
+        case 1:
+          cwQueryService.monitoring.active_requests = result;
+          cwQueryService.monitoring.active_updated = new Date();
+          break;
+        case 2:
+          cwQueryService.monitoring.completed_requests = result;
+          cwQueryService.monitoring.completed_updated = new Date();
+          break;
+        }
+
+
+      },
+      function error(response) {
+        var data = response.data;
+        var status = response.status;
+        var headers = response.headers;
+        var config = response.config;
+
+        //console.log("Mon Error Data: " + JSON.stringify(data));
+        //console.log("Mon Error Status: " + JSON.stringify(status));
+        //console.log("Mon Error Headers: " + JSON.stringify(headers));
+        //console.log("Mon Error Config: " + JSON.stringify(config));
+        var error = "Error with query monitoring";
+
+        if (data && data.errors)
+          error = error + ": " + JSON.stringify(data.errors);
+        else if (status && _.isString(data))
+          error = error + ", query service returned status: " + status + ", " + data;
+        else if (status)
+          error = error + ", query service returned status: " + status;
+
+        logWorkbenchError(error);
+//        console.log("Got error: " + error);
+
+        switch (category) {
+        case 1:
+          cwQueryService.monitoring.active_requests = [{statment: error}];
+          cwQueryService.monitoring.active_updated = new Date();
+          break;
+        case 2:
+          cwQueryService.monitoring.completed_requests = [{statement: error}];
+          cwQueryService.monitoring.completed_updated = new Date();
+          break;
+        }
+
+      });
+    };
+
+    //
+    // get stats for the past minute
+    //
+
+    function getStats(stats) {
+      var requests = [];
+      var data = {
+        startTS: Date.now() - 5000,
+        endTS: Date.now(),
+        step: 1,
+        host: 'aggregate'
+      };
+      stats.forEach(function (statName) {
+          requests.push(
+            $http({type: "GET",
+                   url: "/_uistats/v2",
+                   params: Object.assign({statName: statName}, data)
+                  }));
+      });
+
+      return($q.all(requests));
+    }
+
 
     //
     // show an error dialog

@@ -1,4 +1,17 @@
 <div>
+    <mn-element-cargo depot="subnav">
+    <nav ng-if="qc.validated.valid()" class="sub-nav">
+      <a ui-sref="app.admin.cbas.workbench" ui-sref-active="selected">
+        Workbench</a>
+      <a ui-sref="app.admin.cbas.monitoring" ng-if="qc.isEnterprise"
+       ng-class="{selected: ('app.admin.query.monitoring' | includedByState)}">
+        Monitor</a>
+        <!--
+      <a ui-sref="app.admin.query.doc_editor" ui-sref-active="selected">
+        Document Editor</a> -->
+    </nav>
+  </mn-element-cargo>
+
   <div class="margin-top-1" ng-if="qc.validated.inProgress() && !qc.validated.valid()">
     <p>Contacting analytics node...</p>
   </div>

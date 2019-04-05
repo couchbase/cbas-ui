@@ -34,8 +34,14 @@
 
       function addQueryStates(parent) {
         $stateProvider
+        .state(parent + '.monitoring', {
+          url: '/monitoring',
+          controller: 'cwCbasMonitorController as qmc',
+          templateUrl: '../_p/ui/cbas/cbas_monitoring.html'
+        })
         .state(parent + '.workbench', {
           url: '/workbench?query',
+          controller: 'cwCbasController as qc',
           templateUrl: '../_p/ui/cbas/cbas.html'
         })
         ;
