@@ -607,7 +607,7 @@
       var sidebarHeight = windowHeight - 110;
       $('.insights-sidebar').height(sidebarHeight);
       $('.wb-results-json').height(editor_size);
-      $('.wb-results-table').height(editor_size + 32);
+      $('.wb-results-table').height(editor_size + 8);
       $('.wb-results-tree').height(editor_size + 15);
       $('.wb-results-explain').height(editor_size + 32);
       $('.wb-results-explain-text').height(editor_size + 32);
