@@ -168,21 +168,26 @@
 
 <!-- QUERY STATISTICS ****************************************************** -->
 
-  <div class="qm-stats">
-
-    <div class="column">
-      <span class="width-6">Disk used</span> <span class="text-right width-6">{{qmc.stats.cbas_disk_used/1024/1024 | number:1}}</span>MB<br>
-      <span class="width-6">Heap used</span> <span class="text-right width-6">{{qmc.stats.cbas_heap_used/1024/1024 | number:1}}</span>MB<br>
+  <footer class="footer-analytics">
+    <div class="column vertical-divider">
+      <span class="width-6">Disk Used</span>
+      <span class="text-right width-6">{{qmc.stats.cbas_disk_used/1024/1024 | number:1}} MB</span><br>
+      <span class="width-6">Heap Used</span>
+      <span class="text-right width-6">{{qmc.stats.cbas_heap_used/1024/1024 | number:1}} MB</span>
+    </div>
+    <div class="column vertical-divider">
+      <span class="width-6">System Load</span>
+      <span class="text-right width-6">{{qmc.stats.cbas_system_load_average | number:1}}</span><br>
+      <span class="width-6">Thread Count</span>
+      <span class="text-right width-6">{{qmc.stats.cbas_thread_count | number:1}}</span>
     </div>
     <div class="column">
-      <span class="width-6">System load</span> <span class="text-right width-6">{{qmc.stats.cbas_system_load_average | number:1}}</span><br>
-      <span class="width-6">Thread count</span> <span class="text-right width-6">{{qmc.stats.cbas_thread_count | number:1}}</span><br>
+      <span class="width-6">Garbage Collection Rate</span>
+      <span class="text-right width-6">{{qmc.stats.cbas_gc_count | number:1}} gc/sec</span><br>
+      <span class="width-6">Garbage Collection Time</span>
+      <span class="text-right width-6">{{qmc.stats.cbas_gc_time | number:1}} ms/sec</span>
     </div>
-    <div class="column">
-      <span class="width-6">GC rate</span> <span class="text-right width-6">{{qmc.stats.cbas_gc_count | number:1}}</span>gc/sec<br>
-      <span class="width-6">GC time</span> <span class="text-right width-6">{{qmc.stats.cbas_gc_time | number:1}}</span>ms/sec<br>
-    </div>
-  </div>
+  </footer>
 
 
 </div>
