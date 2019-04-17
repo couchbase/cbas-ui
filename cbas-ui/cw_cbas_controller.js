@@ -72,6 +72,7 @@
 
     qc.acePlanLoaded = acePlanLoaded;
     qc.acePlanChanged = acePlanChanged;
+    qc.userIntertest = 'editor';
 
     //
     // expand/collapse the analysis pane
@@ -216,10 +217,10 @@
         timeUnits = "minutes";
       }
       var message = "The current dataset, " + qc.lastResult.resultSize + " " +
-        "bytes, is too large to display quickly.<br>Using a lower limit or a more " +
-        "specific where clause in your query can reduce result size. Rendering " +
-        "might freeze your browser for " + timeEstimate + " to " + timeEstimate*4 +
-        " " + timeUnits + " or more. ";
+      "bytes, is too large to display quickly.<br>Using a lower limit or a more " +
+      "specific where clause in your query can reduce result size. Rendering " +
+      "might freeze your browser for " + timeEstimate + " to " + timeEstimate*4 +
+      " " + timeUnits + " or more. ";
 
       if (cwQueryService.outputTab != 1) {
         message += "The JSON view is about 10x faster. ";
@@ -561,11 +562,11 @@
     }
 
     function acePlanChanged(e) {
-        if (cwQueryService.planFormat === "json") {
-            qc.planEditor.session.setMode("ace/mode/json");
-        } else {
-            qc.planEditor.session.setMode("ace/mode/text");
-        }
+      if (cwQueryService.planFormat === "json") {
+        qc.planEditor.session.setMode("ace/mode/json");
+      } else {
+        qc.planEditor.session.setMode("ace/mode/text");
+      }
       //e.$blockScrolling = Infinity;
 
       updateEditorSizes();
@@ -575,71 +576,62 @@
     // since it doesn't auto-resize
     //
 
+    //var updateEditorSizes = _.debounce(updateEditorSizes2,100);
+
     function updateEditorSizes() {
-      var margins = 90;
-      var windowHeight = window.innerHeight;
-      var pageFooterHeight =  64;
-      var headerNavHeight = 47;
-      var queryBoxHeight = $('.wb-query-editor').height();
+//      function updateEditorSizesInner() {
+      var totalHeight = window.innerHeight - 130; // window minus header size
+      var aceEditorHeight = 0;
 
-      var otherStuff = pageFooterHeight + headerNavHeight + queryBoxHeight;
-
-      if (headerNavHeight == null || queryBoxHeight == null) {
-        return;
-      }
-
-      var editor_size = windowHeight - otherStuff - margins;
-      if (editor_size > 1000)
-        editor_size = 1150;
-      if (editor_size < 0)
-        editor_size = 0;
-
-//    console.log("pageHeaderHeight: " + pageHeaderHeight);
-//    console.log("pageFooterHeight: " + pageFooterHeight);
-//    console.log("headerNavHeight: " + headerNavHeight);
-//    console.log("queryBoxHeight: " + queryBoxHeight);
-//      console.log("windowHeight: " + windowHeight);
-//      console.log("resultHeaderHeight: " + resultHeaderHeight);
-//      console.log("resultSummaryHeight: " + resultSummaryHeight + "\n\n");
-//      console.log(" current_ui: " + current_ui);
-//      console.log(" editor_size: " + editor_size);
-
-      var sidebarHeight = windowHeight - 110;
-      $('.insights-sidebar').height(sidebarHeight);
-      $('.wb-results-json').height(editor_size);
-      $('.wb-results-table').height(editor_size + 8);
-      $('.wb-results-tree').height(editor_size + 15);
-      $('.wb-results-explain').height(editor_size + 32);
-      $('.wb-results-explain-text').height(editor_size + 32);
-
-
-      //
-      // allow the query editor to grow and shrink a certain amount based
-      // on the number of lines in the query
-      //
-      // as the query is edited, allow it more vertical space, but max sure it
-      // doesn't have fewer than 5 lines or more than ~50% of the window
-
+      // how much does the query editor need?
       if (qc.inputEditor) {
-        var queryAreaHeight = Math.max($('.wb-main-wrapper').height(),240);
-        var queryHeaderHeight = $('.wb-query-editor-header').height();
-        var curSession = qc.inputEditor.getSession();
-        var lines = curSession.getLength();
-        var halfScreen = queryAreaHeight/2-queryHeaderHeight*4;
-        var height = Math.max(75,((lines-1)*21)-10); // make sure height no less than 75
-        if (halfScreen > 75 && height > halfScreen)
-          height = halfScreen;
+        // give the query editor at least 3 lines, but it might want more if the query has > 3 lines
+        var lines = qc.inputEditor.getSession().getLength();       // how long in the query?
+        var desiredQueryHeight = Math.max(23,(lines-1)*22-21);         // make sure height no less than 23
 
-        //console.log("QueryAreaHeight: " + queryAreaHeight + ", queryHeaderHeight: " + queryHeaderHeight);
-        //console.log("Half screen: " + halfScreen + ", Area height: " + queryAreaHeight + ", header: " + queryHeaderHeight + ", setting height to: " + height);
+        // when focused on the query editor, give it up to 3/4 of the total height, but make sure the results
+        // never gets smaller than 270
+        var maxEditorSize = Math.min(totalHeight*3/4,totalHeight - 270);
 
-        $(".wb-ace-editor").height(height);
+        // if the user has been clicking on the results, minimize the query editor
+        if (qc.userInterest == 'results')
+          aceEditorHeight = 23;//Math.min(totalHeight/5,desiredQueryHeight); // 1/5 space for editor, more for results
+        else
+          aceEditorHeight = Math.min(maxEditorSize,desiredQueryHeight);      // don't give it more than it wants
+
+        $(".wb-ace-editor").height(aceEditorHeight);
+        $timeout(resizeInputEditor,200); // wait until after transition
       }
+    }
 
+    //
+    // convenience functions for safely refreshing the ACE editors
+    //
 
+    function resizeInputEditor() {
+      try {
+        if (qc.inputEditor && qc.inputEditor.renderer && qc.inputEditor.resize)
+          qc.inputEditor.resize();
+      } catch (e) {console.log("Input error: " + e);/*ignore*/}
+    }
+
+    function resizeOutputEditor() {
+      try {
+        if (qc.outputEditor && qc.outputEditor.renderer && qc.outputEditor.resize)
+          qc.outputEditor.resize();
+      } catch (e) {console.log("Output error: " + e);/*ignore*/}
     }
 
     $(window).resize(updateEditorSizes);
+
+    //
+    // keep track of which parts of the UI the user is clicking, indicating their interest
+    //
+
+    qc.handleClick = function(detail) {
+      qc.userInterest = detail;
+      updateEditorSizes();
+    }
 
     //
     // make the focus go to the input field, so that backspace doesn't trigger
@@ -726,8 +718,8 @@
         // one generic warning for all unknown fields
         annotations.push(
             {row: 0,column: 0,
-            text: "This query contains the following fields not found in the inferred schema for their bucket: \n"+ allFields,
-            type: "warning"});
+              text: "This query contains the following fields not found in the inferred schema for their bucket: \n"+ allFields,
+              type: "warning"});
 
         // for each line, for each problem field, find all matches and add an info annotation
         for (var l=0; l < lines.length; l++)
@@ -743,8 +735,8 @@
 
       for (var i=0; i<markers.length; i++)
         markerIds.push(session.addMarker(new aceRange(markers[i].start_row,markers[i].start_col,
-                                    markers[i].end_row,markers[i].end_col),
-                          "ace_selection","text"));
+            markers[i].end_row,markers[i].end_col),
+            "ace_selection","text"));
 
       if (annotations.length > 0)
         session.setAnnotations(annotations);
@@ -753,6 +745,7 @@
 
       // now update everything
       qc.inputEditor.setReadOnly(false);
+      qc.userInterest =  'results';
       qc.markerIds = markerIds;
       updateEditorSizes();
       focusOnInput();
@@ -804,7 +797,7 @@
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
-                     '/prefs_dialog/qw_prefs_dialog.html',
+        '/prefs_dialog/qw_prefs_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -848,7 +841,7 @@
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
-                     '/file_dialog/qw_query_file_dialog.html',
+        '/file_dialog/qw_query_file_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -887,7 +880,7 @@
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
-                     '/file_dialog/qw_query_file_dialog.html',
+        '/file_dialog/qw_query_file_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -943,7 +936,7 @@
         //  return;
         //}
         //else
-          saveAs(file,dialogScope.file.name + file_extension);
+        saveAs(file,dialogScope.file.name + file_extension);
       });
 
     }
@@ -988,7 +981,7 @@
 
       var promise = $uibModal.open({
         templateUrl: '../_p/ui/query' + subdirectory +
-                     '/history_dialog/qw_history_dialog.html',
+        '/history_dialog/qw_history_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -1081,7 +1074,7 @@
       scrollHistoryToSelected();
     }
 
-     //
+    //
     // toggle the size of the analysis pane
     //
 
@@ -1196,7 +1189,7 @@
           }
           prev_active_nodes = nodes.active;
         });
-       });
+      });
 
       $scope.changeExpandShadow = function (shadow) {
         shadow.expanded = !shadow.expanded;
@@ -1239,14 +1232,14 @@
 
       // schedule a timer to poll analytics stats
       if (!cwQueryService.pollShadowingStats) {
-          cwQueryService.pollShadowingStats = $interval(function () {
+        cwQueryService.pollShadowingStats = $interval(function () {
           $rootScope.$broadcast("pollAnalyticsShadowingStats");
-          }, statsRefreshInterval);
+        }, statsRefreshInterval);
 
         $scope.$on('$destroy', function () {
           $interval.cancel(cwQueryService.pollShadowingStats);
-            cwQueryService.pollShadowingStats = null;
-          });
+          cwQueryService.pollShadowingStats = null;
+        });
       }
 
       // get the list of buckets
@@ -1258,26 +1251,26 @@
       $timeout(updateEditorSizes(),100);
     }
 
-      // hide & show the datasets sidebar + the main navigation sidebar
-      function toggleFullscreen() {
-        if (!qc.fullscreen) {
-          $(".insights-sidebar").removeClass("width-3");
-          $(".insights-sidebar").addClass("fix-width-0");
-          $(".wb-main-wrapper").removeClass("width-9");
-          $(".wb-main-wrapper").addClass("width-12");
-          $(".wb-refresh-btn").addClass("hidden");
-          mnPoolDefault.setHideNavSidebar(true);
-        }
-        else {
-          $(".insights-sidebar").removeClass("fix-width-0");
-          $(".insights-sidebar").addClass("width-3");
-          $(".wb-main-wrapper").removeClass("width-12");
-          $(".wb-main-wrapper").addClass("width-9");
-          $(".wb-refresh-btn").removeClass("hidden");
-          mnPoolDefault.setHideNavSidebar(false);
-        }
-        qc.fullscreen = !qc.fullscreen;
+    // hide & show the datasets sidebar + the main navigation sidebar
+    function toggleFullscreen() {
+      if (!qc.fullscreen) {
+        $(".insights-sidebar").removeClass("width-3");
+        $(".insights-sidebar").addClass("fix-width-0");
+        $(".wb-main-wrapper").removeClass("width-9");
+        $(".wb-main-wrapper").addClass("width-12");
+        $(".wb-refresh-btn").addClass("hidden");
+        mnPoolDefault.setHideNavSidebar(true);
       }
+      else {
+        $(".insights-sidebar").removeClass("fix-width-0");
+        $(".insights-sidebar").addClass("width-3");
+        $(".wb-main-wrapper").removeClass("width-12");
+        $(".wb-main-wrapper").addClass("width-9");
+        $(".wb-refresh-btn").removeClass("hidden");
+        mnPoolDefault.setHideNavSidebar(false);
+      }
+      qc.fullscreen = !qc.fullscreen;
+    }
 
     function containsValidStatements(input) {
       var statements = input.split(";");

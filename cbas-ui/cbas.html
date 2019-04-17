@@ -20,7 +20,7 @@
 <!-- query editor header, main editor area, and results footer ---------------->
     <div class="wb-query-editor">
 <!-- Editor "header row" ------------------------------------------------------>
-      <div class="wb-query-editor-header">
+      <div class="wb-query-editor-header" ng-click="qc.handleClick('editor')">
         <h4>Analytics Query Editor</h4>
         <span>
           <button
@@ -52,7 +52,7 @@
 
 <!-- Ace editor --------------------------------------------------------------->
       <div
-         class="wb-ace-editor"
+         class="wb-ace-editor" ng-click="qc.handleClick('editor')"
          ui-ace="qc.aceInputOptions"
          ng-disabled="qc.executingQuery.busy"
          ng-model="qc.lastResult.query">{{qc.renderPage()}}
@@ -121,7 +121,7 @@
     </div>
 
 <!-- query results ------------------------------------------------------------>
-    <div class="wb-results-header">
+    <div class="wb-results-header" ng-click="qc.handleClick('results')">
       <h4>Analytics Query Results
         <a
            ng-click="qc.copyResultAsCSV()"
@@ -144,7 +144,7 @@
       </span>
     </div>
 
-    <div class="wb-results-wrapper">
+    <div class="wb-results-wrapper" ng-click="qc.handleClick('results')">
       <div class="wb-results-show-anyway" ng-if="!qc.showBigDatasets && qc.dataTooBig()">
         <div ng-bind-html="qc.getBigDataMessage()"></div>
         <a ng-click="qc.setShowBigData(true)" class="text-medium link-heavy">
