@@ -2,13 +2,17 @@
 
   <mn-element-cargo depot="actions" ng-if="qc.validated.valid()">
     <div class="header-controls">
+      <a ng-if="qc.showOptions"
+         ng-click="qc.options()">
+        <span class="icon fa-cog fa-lg"></span>
+      </a>
       <input type="file" id="loadQuery" name="files" style="display:none" accept="text/plain">
       <a ng-if="qc.fileSupport"
          id="loadQueryButton"
          ng-click="qc.load_query()"
          onchange="console.log('changed files')">
-         IMPORT
-       </a>
+        IMPORT
+      </a>
       <a ng-click="qc.unified_save()">
         EXPORT
       </a>
@@ -103,19 +107,11 @@
         </div>
 
 <!-- run-time preferences ----------------------------------------------------->
-          <a
-             ng-disabled="qc.executingQuery.busy"
-             ng-click="qc.format()"
-             class="text-smallish nowrap resp-hide-xsml">
-            <span class="icon fa-align-right"></span>
-            format&nbsp;&nbsp;
-          </a>
-        <a
-           ng-if="qc.showOptions"
-           ng-click="qc.options()"
-           class="row resp-hide-xsml">
-          <span class="icon fa-cog margin-right"></span>
-          <span class="text-smaller">preferences</span>
+        <a ng-disabled="qc.executingQuery.busy"
+           ng-click="qc.format()"
+           class="text-smallish nowrap resp-hide-xsml">
+          <span class="icon fa-align-right"></span>
+          format
         </a>
       </div>
     </div>
