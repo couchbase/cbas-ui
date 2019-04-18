@@ -2052,10 +2052,10 @@
           result = data.results[0];
 
           // we need to reformat the duration values coming back
-          // since they are in the most useless format ever.
+          // since they are numbers, convert to time
 
           for (var i=0; i< result.length; i++) if (result[i].elapsedTime) {
-            result[i].elapsedTime = qwQueryPlanService.convertTimeToNormalizedString(result[i].elapsedTime);
+            result[i].elapsedTime = qwQueryPlanService.convertTimeFloatToFormattedString(result[i].elapsedTime);
           }
         }
         else {
