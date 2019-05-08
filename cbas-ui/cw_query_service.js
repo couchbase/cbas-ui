@@ -1591,7 +1591,7 @@
       }
 
       function removeExplainPlanFormat(queryText, explainIndex, format) {
-        return "explain " + queryText.substring(explainIndex + planFormatStartIndex + format.length);
+        return queryText.substring(0, explainIndex) + " explain " + queryText.substring(explainIndex + planFormatStartIndex + format.length);
       }
 
       function isAllowedMultiStatement(statement) {
