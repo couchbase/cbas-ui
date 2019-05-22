@@ -17,7 +17,7 @@
   </div>
 
   <div ng-if="!qc.validated.inProgress() && !qc.validated.valid()" class="margin-top-half">
-    <p>The analytics interface is only available on Couchbase nodes running the analytics service.</p>
+    <p>The analytics interface is only available on Couchbase clusters running the analytics service.</p>
     <div ng-if="qc.validNodes.length">
       <span ng-if="qc.validated.otherStatus() == 404">
         <p>The analytics service was found on the following nodes:</p>
