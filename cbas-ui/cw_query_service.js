@@ -14,7 +14,7 @@
 
     cwQueryService.outputTab = 1;     // remember selected output tab
     cwQueryService.datasetDisconnectedState = -1;
-    cwQueryService.dataseUnknownState = -2;
+    cwQueryService.datasetUnknownState = -2;
     cwQueryService.selectTab = function(newTab) {cwQueryService.outputTab = newTab;};
     cwQueryService.isSelected = function(checkTab) {return cwQueryService.outputTab === checkTab;};
     cwQueryService.validated = validateCbasService;
@@ -1479,7 +1479,7 @@
             if (resp) {
               processClusterBuckets(resp.data);
             }
-            return getAnalyticsShadowingStats();
+            return getAnalyticsShadowingStats(true);
           })
           .catch(function (resp) {
             var error = "Failed to get bucket insights.";
@@ -1512,7 +1512,7 @@
           var record = data.results[i];
           if (record.isDataset) {
             record.expanded = true;
-            record.remaining = cwQueryService.dataseUnknownState;
+            record.remaining = cwQueryService.datasetUnknownState;
             constructIndexesKeys(record);
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
@@ -1600,11 +1600,11 @@
       }
 
       function pollAnalyticsShadowingStats() {
-          getAnalyticsShadowingStats();
+          getAnalyticsShadowingStats(false);
       }
 
-      function getAnalyticsShadowingStats() {
-          if (!validateCbasService.canAccessStats() || cwQueryService.fetchingStats) {
+      function getAnalyticsShadowingStats(force) {
+          if (!validateCbasService.canAccessStats() || (cwQueryService.fetchingStats && !force)) {
               return;
           }
           cwQueryService.fetchingStats = true;
@@ -1616,7 +1616,7 @@
               // ignore stats failure, will be retried
           }).finally(function () {
               cwQueryService.fetchingStats = false;
-          });;
+          });
       }
 
       function getAnalyticsStats() {

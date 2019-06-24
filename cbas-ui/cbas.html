@@ -202,6 +202,11 @@
                     </strong>
                   </span>
                   <span
+                     ng-show="shadow.remaining === qc.datasetUnknownState"
+                     title="fetching dataset state..."
+                     class="icon fa-spinner fa-pulse grayblack-3">
+                  </span>
+                  <span
                      ng-show="shadow.remaining === qc.datasetDisconnectedState"
                      title="disconnected"
                      class="icon fa-unlink red-3">
