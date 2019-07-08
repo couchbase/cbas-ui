@@ -61,7 +61,7 @@
           <span
              class="cbui-table-cell flex-grow-3 cursor-pointer"
              uib-tooltip="{{result.statement}}"
-             tooltip-placement="top"
+             tooltip-placement="auto top"
              tooltip-append-to-body="true"
              tooltip-class="break-word">
             {{result.statement}}
@@ -127,7 +127,7 @@
           <span
              class="cbui-table-cell flex-grow-3 cursor-pointer"
              uib-tooltip="{{result.statement}}"
-             tooltip-placement="top"
+             tooltip-placement="auto top"
              tooltip-append-to-body="true"
              tooltip-class="break-word">
             {{result.statement}}
@@ -147,7 +147,7 @@
                 class="fa-warning icon orange-3 cursor-pointer" uib-tooltip="{{result.errors}}"></span>
           </span>
           <span class="cbui-table-cell cursor-pointer" uib-tooltip="{{result.requestTime}}"
-             tooltip-placement="top"
+             tooltip-placement="auto top"
              tooltip-append-to-body="true"
              tooltip-class="break-word">
             {{result.requestTime | limitTo:8:11}} {{result.requestTime | limitTo:3:-3}}
