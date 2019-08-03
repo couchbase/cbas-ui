@@ -2,9 +2,12 @@
 
   angular.module('cwCbas').factory('cwQueryService', getcwQueryService);
 
-  getcwQueryService.$inject = ['$rootScope','$q', '$uibModal', '$timeout', '$http', 'mnPendingQueryKeeper', 'validateCbasService', '$httpParamSerializer','cwConstantsService','qwQueryPlanService','mnPoolDefault','mnPools','mnAuthService', 'mnServersService'];
+  getcwQueryService.$inject = ['$rootScope','$q', '$uibModal', '$timeout', '$http', 'mnPendingQueryKeeper',
+    'validateCbasService', 'cwConstantsService','qwQueryPlanService','mnPoolDefault',
+    'mnPools','mnAuthService', 'mnServersService'];
 
-  function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPendingQueryKeeper, validateCbasService, $httpParamSerializer,cwConstantsService,qwQueryPlanService,mnPoolDefault,mnPools,mnAuthService,mnServersService) {
+  function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPendingQueryKeeper, validateCbasService,
+      cwConstantsService,qwQueryPlanService,mnPoolDefault,mnPools,mnAuthService,mnServersService) {
 
     var cwQueryService = {};
 
@@ -788,8 +791,7 @@
       // are there options we need to add to the query request?
 
       if (queryOptions) {
-        if (queryOptions.timings && mnPoolDefault.export.compat &&
-            mnPoolDefault.export.compat.atLeast50) // keep track of timings for each op?
+        if (queryOptions.timings) // keep track of timings for each op?
           queryData.profile = "timings";
 
         if (queryOptions.max_parallelism && queryOptions.max_parallelism.length > 0)
@@ -818,8 +820,7 @@
       }
 
       //
-      // build the query request appropriately for the server version. 4.5 and later
-      // work with JSON encoding, 4.1 requires URL encoding
+      // build the query request
       //
 
       var queryRequest;
@@ -831,53 +832,19 @@
           cwQueryService.options.query_timeout = defaultProxyTimeout;
       }
 
-      if (mnPoolDefault.export.compat && mnPoolDefault.export.compat.atLeast45) {
+      var queryRequest = {
+        url: cwConstantsService.queryURL,
+        method: "POST",
+        headers: {'Content-Type':'application/json',
+                  'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,
+                  'ignore-401':'true','CB-User-Agent': userAgent, 'Analytics-Priority': priority},
+        data: queryData,
+        mnHttp: {
+          isNotForm: true,
+          group: "global"
+        }
+      };
 
-        // An alternate way to get around Angular's encoding is "isNotForm: true". But
-        // that triggers bug MB-16964, where the server currently fails to parse creds
-        // when they are JSON encoded.
-        // MB-16964 is fixed as of 4.5, so for that version we'll send queries this
-        // way and avoid URL encoding
-
-        //console.log("JSON Encoding Query");
-        var queryRequest = {
-            url: cwConstantsService.queryURL,
-            method: "POST",
-            headers: {'Content-Type':'application/json',
-                      'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,
-                      'ignore-401':'true','CB-User-Agent': userAgent, 'Analytics-Priority': priority},
-            data: queryData,
-            mnHttp: {
-              isNotForm: true,
-              group: "global"
-            }
-        };
-      }
-
-      // Because Angular automatically urlencodes JSON parameters, but has a special
-      // algorithm that doesn't encode semicolons, any semicolons inside the query
-      // will get mis-parsed by the server as the end of the parameter (see MB-18621
-      // for an example). To bypass this, we will url-encode ahead of time, and then
-      // make sure the semicolons get urlencoded as well.
-
-      else {
-        //console.log("URL Encoding Query");
-        if (queryData.creds)
-          queryData.creds = JSON.stringify(queryData.creds);
-        var encodedQuery = $httpParamSerializer(queryData).replace(/;/g,"%3B");
-        queryRequest = {url: cwConstantsService.queryURL,
-            method: "POST",
-            headers: {'Content-Type': 'application/x-www-form-urlencoded',
-                      'ns-server-proxy-timeout':cwQueryService.options.query_timeout*1000,'CB-User-Agent': userAgent,
-                      'Analytics-Priority': priority},
-            data: encodedQuery,
-            mnHttp: {
-              group: "global"
-            }
-        };
-        //console.log("Query data: " + JSON.stringify(queryData));
-        //console.log("Encoded query: " + encodedQuery);
-      }
       queryRequest.planFormat = planFormat;
 
       // if it's a userQuery, make sure to handle really long ints, and remember the
@@ -1706,7 +1673,7 @@
       // error status from query about indexes
       function errorCallback(resp) {
         var data = resp.data, status = resp.status;
-        // for 4.5+, auth errors come back here
+        // auth errors come back here
         if (data && data.errors && _.isArray(data.errors) && data.errors.length > 0 && data.errors[0].code == 10000) {
           bucket.passwordNeeded = true;
           failure();
@@ -1720,10 +1687,10 @@
 
     function getSchemaForBucket(bucket) {
 
-      // no schema inferencing until version 4.5, and then only enterprise
+      // schema inferencing only in enterprise
 
-      if (!mnPoolDefault.export.compat.atLeast45 || !mnPools.export.isEnterprise) {
-        bucket.schema_error = "Version 4.5 EE or above needed for Schema inferencing.";
+      if (!mnPools.export.isEnterprise) {
+        bucket.schema_error = "Enterprise Edition needed for Schema inferencing.";
         return;
       }
 
