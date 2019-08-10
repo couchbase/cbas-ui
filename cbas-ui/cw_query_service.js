@@ -1590,7 +1590,7 @@
           var statsRequest = {
               url: cwConstantsService.analyticsStatsURL,
               method: "GET",
-              headers: {'Content-Type': 'application/json', 'ignore-401':'true'}
+              headers: {'Content-Type': 'application/json', 'ignore-401':'true', 'Analytics-Priority': '-1'}
           };
           return ($http(statsRequest));
       }

@@ -130,7 +130,7 @@
           var pingRequest = {
             url: cwConstantsService.healthCheckURL,
             method: "GET",
-            headers: {'ignore-401': 'true'}
+            headers: {'ignore-401': 'true', 'Analytics-Priority': '-1'}
           };
           $http(pingRequest).then(function success(resp) {
                 checkUserPermissions();
