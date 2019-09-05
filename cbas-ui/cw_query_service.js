@@ -185,7 +185,7 @@
     //
 
     function QueryResult(status,elapsedTime,executionTime,resultCount,resultSize,result,
-        data,query,requestID,explainResult,mutationCount, processedObjects) {
+        data,query,requestID,explainResult,mutationCount,processedObjects,warningCount,warnings) {
       this.status = status;
       this.resultCount = resultCount;
       this.resultCount = mutationCount;
@@ -203,6 +203,8 @@
 
       this.elapsedTime = truncateTime(elapsedTime);
       this.executionTime = truncateTime(executionTime);
+      this.warningCount = warningCount;
+      this.warnings = warnings;
     };
 
     function getBucketState() {
@@ -244,7 +246,8 @@
     QueryResult.prototype.clone = function()
     {
       return new QueryResult(this.status,this.elapsedTime,this.executionTime,this.resultCount,
-          this.resultSize,this.result,this.data,this.query,this.requestID,this.explainResult,this.mutationCount,this.processedObjects);
+          this.resultSize,this.result,this.data,this.query,this.requestID,this.explainResult,this.mutationCount,
+          this.processedObjects,this.warningCount, this.warnings);
     };
     QueryResult.prototype.copyIn = function(other)
     {
@@ -261,6 +264,8 @@
       this.requestID = other.requestID;
       this.explainResult = other.explainResult;
       this.explainResultText = other.explainResultText;
+      this.warningCount = other.warningCount;
+      this.warnings = other.warnings;
     };
 
 
@@ -289,6 +294,7 @@
     executingQueryTemplate.resultSize = 0;
     executingQueryTemplate.resultCount = 0;
     executingQueryTemplate.processedObjects = 0;
+    executingQueryTemplate.warningCount = 0;
 
 
     var pastQueries = [];       // keep a history of past queries and their results
@@ -966,6 +972,7 @@
       lastResult.resultSize = executingQueryTemplate.resultSize;
       lastResult.resultCount = executingQueryTemplate.resultCount;
       lastResult.processedObjects = executingQueryTemplate.processedObjects;
+      lastResult.warningCount = executingQueryTemplate.warningCount;
 
       var pre_post_ms = new Date().getTime(); // when did we start?
 
@@ -989,6 +996,7 @@
           newResult.resultCount = 0;
           newResult.resultSize = 0;
           newResult.processedObjects = 0;
+          newResult.warningCount = 0;
           newResult.queryDone = true;
 
           // can't recover from error, finish query
@@ -1009,6 +1017,9 @@
                 analysis: lists,
                 plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan, null, lists)
             };
+
+            if (_.isArray(lists.warnings) && lists.warnings.length > 0)
+              newResult.warnings = JSON.stringify(lists.warnings);
 
             // let's check all the fields to make sure they are all valid
             var problem_fields = getProblemFields(newResult.explainResult.analysis.fields);
@@ -1121,6 +1132,7 @@
         newResult.resultCount = 0;
         newResult.resultSize = 0;
         newResult.processedObjects = 0;
+        newResult.warningCount = 0;
         newResult.queryDone = true;
 
         // make sure to only finish if the explain query is also done
@@ -1139,45 +1151,45 @@
 //        console.log("Success Headers: " + JSON.stringify(headers));
 //        console.log("Success Config: " + JSON.stringify(config));
 
-          var result;
+          var result; // hold the result, or a combination of errors and result
+          var isEmptyResult = (!_.isArray(data.results) || data.results.length == 0);
 
-          //      var post_post_ms = new Date().getTime();
+          // empty result, fill it with any errors or warnings
+          if (isEmptyResult) {
+            if (data.errors)
+              result = data.errors;
+            else if (data.warnings)
+              result = data.warnings;
 
-          // make sure we show errors if the query did not succeed
-          if (data.status == "success") {
-            // if the results are empty, show some of the surrounding data
-            if (_.isArray(data.results) && data.results.length == 0) {
+            // otherwise show some context, make it obvious that results are empty
+            else {
               result = {};
               result.results = data.results;
-              //result.metrics = data.metrics;
             }
-            // otherwise, use the results
-            else
-              result = data.results;
           }
-          else if (data.errors) {
-            var failed = "Authorization Failed";
-            // hack - detect authorization failed, make a suggestion
-//          for (var i=0; i < data.errors.length; i++)
-//          if (data.errors[i].msg &&
-//          data.errors[i].msg.length >= failed.length &&
-//          data.errors[i].msg.substring(0,failed.length) == failed)
-//          data.errors[i].suggestion = "Try reloading bucket information by refreshing the Bucket Analysis pane.";
+          // non-empty result: use it
+          else
+            result = data.results;
 
-            result = data.errors;
-          }
-          else if (data.status == "stopped") {
+          // if we have results, but also errors, record them in the result's warning object
+          if (data.warnings && data.errors)
+            newResult.warnings = "'" + JSON.stringify(data.warnings,null,2) + JSON.stringify(data.errors,null,2) + "'";
+          else if (data.warnings)
+          // if we have results, but also errors, record them in the result's warning object
+            newResult.warnings = "'" + JSON.stringify(data.warnings, null, 2) + "'";
+          else if (data.errors)
+            newResult.warnings = "'" + JSON.stringify(data.errors,null,2) + "'";
+          if (data.status == "stopped") {
             result = {status: "Query stopped on server."};
-//          console.log("Success/Error Data: " + JSON.stringify(data));
-//          console.log("Success/Error Status: " + JSON.stringify(status));
-//          console.log("Success/Error Headers: " + JSON.stringify(headers));
-//          console.log("Success/Error Config: " + JSON.stringify(config));
           }
+
+          if (_.isString(newResult.warnings))
+            newResult.warnings = newResult.warnings.replace(/\n/g,'<br>').replace(/ /g,'&nbsp;');
 
           // if we got no metrics, create a dummy version
 
           if (!data.metrics) {
-            data.metrics = {elapsedTime: 0.0, executionTime: 0.0, resultCount: 0, resultSize: "0", elapsedTime: 0.0, processedObjects: 0}
+            data.metrics = {elapsedTime: 0.0, executionTime: 0.0, resultCount: 0, resultSize: "0", elapsedTime: 0.0, processedObjects: 0, warningCount: 0}
           }
 
           newResult.status = data.status;
@@ -1185,6 +1197,7 @@
           newResult.executionTime = data.metrics.executionTime;
           newResult.resultCount = data.metrics.resultCount;
           newResult.processedObjects = data.metrics.processedObjects;
+          newResult.warningCount = data.metrics.warningCount;
           if (data.metrics.mutationCount)
             newResult.mutationCount = data.metrics.mutationCount;
           newResult.resultSize = data.metrics.resultSize;
@@ -1277,6 +1290,7 @@
           newResult.resultCount = 0;
           newResult.resultSize = 0;
           newResult.processedObjects = 0;
+          newResult.warningCount = 0;
           newResult.queryDone = true;
 
           // make sure to only finish if the explain query is also done
@@ -1309,6 +1323,7 @@
           newResult.resultCount = 0;
           newResult.resultSize = 0;
           newResult.processedObjects = 0;
+          newResult.warningCount = 0;
           newResult.queryDone = true;
 
           // make sure to only finish if the explain query is also done
@@ -1330,6 +1345,7 @@
           newResult.resultCount = 0;
           newResult.resultSize = 0;
           newResult.processedObjects = 0;
+          newResult.warningCount = 0;
           newResult.queryDone = true;
 
           // make sure to only finish if the explain query is also done
@@ -1390,7 +1406,9 @@
           if (data.metrics.mutationCount)
             newResult.mutationCount = data.metrics.mutationCount;
           newResult.resultSize = data.metrics.resultSize;
-          newResult.processedObjects = data.metrics.processedObjects;;
+          newResult.processedObjects = data.metrics.processedObjects;
+          if (data.metrics.warningCount)
+            newResult.warningCount = data.metrics.warningCount;
         }
 
         if (data.requestID)

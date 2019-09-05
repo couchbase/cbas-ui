@@ -104,6 +104,9 @@
           <span ng-if="qc.lastResult.resultSize" class="nowrap pipe">
             size: {{qc.lastResult.resultSize}} bytes
           </span>
+          <span ng-if="qc.lastResult.warningCount == 0 || qc.lastResult.warningCount" class="nowrap pipe">
+            warnings: {{qc.lastResult.warningCount}}
+          </span>
         </div>
 
 <!-- run-time preferences ----------------------------------------------------->
@@ -125,6 +128,12 @@
            title="Copy results in tabular format">
           <span class="icon fa-copy"></span>
         </a>
+        <span ng-if="qc.lastResult.warnings"
+              tooltip-trigger="'mouseenter'"
+              tooltip-append-to-body="true"
+              class="fa-warning icon force-orange-3 cursor-pointer"
+              uib-tooltip-html="{{qc.lastResult.warnings}}">
+          </span>
       </h4>
       <span class="pills">
         <a ng-click="qc.selectTab(1)"
