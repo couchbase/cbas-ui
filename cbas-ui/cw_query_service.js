@@ -185,7 +185,7 @@
     //
 
     function QueryResult(status,elapsedTime,executionTime,resultCount,resultSize,result,
-        data,query,requestID,explainResult,mutationCount,processedObjects,warningCount,warnings) {
+        data,query,requestID,explainResult,mutationCount,processedObjects,warningCount,warnings,limitedWarningsCount) {
       this.status = status;
       this.resultCount = resultCount;
       this.resultCount = mutationCount;
@@ -205,6 +205,7 @@
       this.executionTime = truncateTime(executionTime);
       this.warningCount = warningCount;
       this.warnings = warnings;
+      this.limitedWarningsCount = limitedWarningsCount;
     };
 
     function getBucketState() {
@@ -247,7 +248,7 @@
     {
       return new QueryResult(this.status,this.elapsedTime,this.executionTime,this.resultCount,
           this.resultSize,this.result,this.data,this.query,this.requestID,this.explainResult,this.mutationCount,
-          this.processedObjects,this.warningCount, this.warnings);
+          this.processedObjects,this.warningCount, this.warnings, this.limitedWarningsCount);
     };
     QueryResult.prototype.copyIn = function(other)
     {
@@ -266,6 +267,7 @@
       this.explainResultText = other.explainResultText;
       this.warningCount = other.warningCount;
       this.warnings = other.warnings;
+      this.limitedWarningsCount = other.limitedWarningsCount;
     };
 
 
@@ -973,6 +975,8 @@
       lastResult.resultCount = executingQueryTemplate.resultCount;
       lastResult.processedObjects = executingQueryTemplate.processedObjects;
       lastResult.warningCount = executingQueryTemplate.warningCount;
+      lastResult.warnings = executingQueryTemplate.warnings;
+      lastResult.limitedWarningsCount = executingQueryTemplate.limitedWarningsCount;
 
       var pre_post_ms = new Date().getTime(); // when did we start?
 
@@ -1018,8 +1022,10 @@
                 plan_nodes: qwQueryPlanService.convertAnalyticsPlanToPlanNodes(data.results[0].plan, null, lists)
             };
 
-            if (_.isArray(lists.warnings) && lists.warnings.length > 0)
+            if (_.isArray(lists.warnings) && lists.warnings.length > 0) {
+              newResult.limitedWarningsCount = lists.warnings.length;
               newResult.warnings = JSON.stringify(lists.warnings);
+            }
 
             // let's check all the fields to make sure they are all valid
             var problem_fields = getProblemFields(newResult.explainResult.analysis.fields);
@@ -1171,6 +1177,9 @@
           else
             result = data.results;
 
+          if (data.warnings) {
+            newResult.limitedWarningsCount = data.warnings.length;
+          }
           // if we have results, but also errors, record them in the result's warning object
           if (data.warnings && data.errors)
             newResult.warnings = "'" + JSON.stringify(data.warnings,null,2) + JSON.stringify(data.errors,null,2) + "'";

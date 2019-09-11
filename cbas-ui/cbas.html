@@ -1,3 +1,9 @@
+<style>
+  .tooltip-custom-wide .tooltip-inner {
+    max-width: 1024px;
+    width: auto;
+  }
+</style>
 <div ng-show="qc.validated.valid()" class="wb-wrapper">
 
   <mn-element-cargo depot="actions" ng-if="qc.validated.valid()">
@@ -131,8 +137,10 @@
         <span ng-if="qc.lastResult.warnings"
               tooltip-trigger="'mouseenter'"
               tooltip-append-to-body="true"
+              tooltip-class="tooltip-custom-wide"
               class="fa-warning icon force-orange-3 cursor-pointer"
-              uib-tooltip-html="{{qc.lastResult.warnings}}">
+              uib-tooltip-html="'Showing {{qc.lastResult.limitedWarningsCount}} of {{qc.lastResult.warningCount}} warnings:<br/>'
+                                 + {{qc.lastResult.warnings}}">
           </span>
       </h4>
       <span class="pills">
