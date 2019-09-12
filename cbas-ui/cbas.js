@@ -4,7 +4,7 @@
   angular
   .module('cwCbas', ["ui.router", "mnPluggableUiRegistry", "mnJquery",
     'qwJsonTree',
-    'qwJsonTable',
+    'qwJsonDataTable',
     'qwJsonTableEditor',
     'qwLongPress',
     'mnPendingQueryKeeper',
