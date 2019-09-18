@@ -1239,7 +1239,6 @@
 
           if(explainOnly || queryIsExplain) {
             newResult.result = isJsonPlan ? newResult.explainResultText : "";
-            newResult.data = isJsonPlan ? newResult.explainResultText : "";
           }
           newResult.requestID = data.requestID;
 
