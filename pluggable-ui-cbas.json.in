@@ -4,9 +4,6 @@
   "rest-api-prefixes": {
     "cbas": {
       "portName": "cbas_http_port"
-    },
-    "cbas-admin": {
-      "portName": "cbas_admin_port"
     }
   },
   "version-dirs": [
