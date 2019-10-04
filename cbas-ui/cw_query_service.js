@@ -825,6 +825,7 @@
         queryData.client_context_id = cwQueryService.currentQueryRequestID;
         queryData["optimized-logical-plan"] = true;
         queryData["plan-format"] = planFormat;
+        queryData["max-warnings"] = cwConstantsService.maxWarnings;
       }
 
       //

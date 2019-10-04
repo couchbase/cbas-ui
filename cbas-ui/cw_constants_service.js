@@ -120,6 +120,9 @@
     // should we show the query options button?
     cwConstantsService.showOptions = true;
 
+    // default max warnings returned by user queries
+    cwConstantsService.maxWarnings = 10;
+
     //
     //
     // all done creating the service, now return it
