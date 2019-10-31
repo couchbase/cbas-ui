@@ -180,7 +180,7 @@
 
     // helper functions //
     qc.forceReload = forceReload;
-
+    qc.lastResultWarnings = lastResultWarnings;
     //
     // call the activate method for initialization
     //
@@ -1286,6 +1286,14 @@
         }
       }
       return statementCount >= 1;
+    }
+
+    function lastResultWarnings() {
+      let warnings = qc.lastResult.warnings;
+      if (_.isString(warnings)) {
+        return warnings.replace(/\n/g,'<br>').replace(/ /g,'&nbsp;').replace(/'/g, '\\\'');
+      }
+      return warnings;
     }
   }
 

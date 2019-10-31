@@ -140,7 +140,7 @@
               tooltip-class="tooltip-custom-wide"
               class="fa-warning icon force-orange-3 cursor-pointer"
               uib-tooltip-html="'Showing {{qc.lastResult.limitedWarningsCount}} of {{qc.lastResult.warningCount}} warnings:<br/>'
-                                 + {{qc.lastResult.warnings}}">
+                                 + '{{qc.lastResultWarnings()}}'">
           </span>
       </h4>
       <span class="pills">

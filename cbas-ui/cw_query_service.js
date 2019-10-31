@@ -1161,15 +1161,12 @@
           var result; // hold the result, or a combination of errors and result
           var isEmptyResult = (!_.isArray(data.results) || data.results.length == 0);
 
-          // empty result, fill it with any errors or warnings
+          // empty result, fill it with errors if any
           if (isEmptyResult) {
-            if (data.errors)
+            if (data.errors) {
               result = data.errors;
-            else if (data.warnings)
-              result = data.warnings;
-
-            // otherwise show some context, make it obvious that results are empty
-            else {
+            } else {
+              // otherwise show some context, make it obvious that results are empty
               result = {};
               result.results = data.results;
             }
@@ -1183,18 +1180,15 @@
           }
           // if we have results, but also errors, record them in the result's warning object
           if (data.warnings && data.errors)
-            newResult.warnings = "'" + JSON.stringify(data.warnings,null,2) + JSON.stringify(data.errors,null,2) + "'";
+            newResult.warnings = JSON.stringify(data.warnings,null,2) + JSON.stringify(data.errors,null,2);
           else if (data.warnings)
           // if we have results, but also errors, record them in the result's warning object
-            newResult.warnings = "'" + JSON.stringify(data.warnings, null, 2) + "'";
+            newResult.warnings = JSON.stringify(data.warnings, null, 2);
           else if (data.errors)
-            newResult.warnings = "'" + JSON.stringify(data.errors,null,2) + "'";
+            newResult.warnings = JSON.stringify(data.errors,null,2);
           if (data.status == "stopped") {
             result = {status: "Query stopped on server."};
           }
-
-          if (_.isString(newResult.warnings))
-            newResult.warnings = newResult.warnings.replace(/\n/g,'<br>').replace(/ /g,'&nbsp;');
 
           // if we got no metrics, create a dummy version
 
