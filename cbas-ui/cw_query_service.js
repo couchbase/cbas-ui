@@ -1627,11 +1627,14 @@
       function updateDatasetShadowingProgress(shadowingStats) {
           for (var i = 0; i < cwQueryService.shadows.length; i++) {
               var shadow = cwQueryService.shadows[i];
-              if (shadowingStats.hasOwnProperty(shadow.fullName)) {
-                  shadow.remaining = shadowingStats[shadow.fullName];
-              } else {
-                  shadow.remaining = cwQueryService.datasetDisconnectedState;
+              if (shadowingStats.hasOwnProperty(shadow.DataverseName)) {
+                  var shadowingDataverseStats = shadowingStats[shadow.DataverseName];
+                  if (shadowingDataverseStats.hasOwnProperty(shadow.id)) {
+                      shadow.remaining = shadowingDataverseStats[shadow.id];
+                      continue;
+                  }
               }
+              shadow.remaining = cwQueryService.datasetDisconnectedState;
           }
       }
 
