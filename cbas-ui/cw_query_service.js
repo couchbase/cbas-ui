@@ -799,9 +799,6 @@
       // are there options we need to add to the query request?
 
       if (queryOptions) {
-        if (queryOptions.timings) // keep track of timings for each op?
-          queryData.profile = "timings";
-
         if (queryOptions.max_parallelism && queryOptions.max_parallelism.length > 0)
           queryData.max_parallelism = queryOptions.max_parallelism;
 
