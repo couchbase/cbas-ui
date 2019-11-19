@@ -4,11 +4,11 @@
 
   cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService',
     'mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService',
-    'mnAnalyticsService','mnStatisticsNewService'];
+    'mnAnalyticsService','mnStatisticsNewService','mnPermissions'];
 
   function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools,
       $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, mnAnalyticsService,
-      mnStatisticsNewService) {
+      mnStatisticsNewService,mnPermissions) {
 
     var qmc = this;
 
@@ -37,6 +37,9 @@
      qmc.get_toggle_label = get_toggle_label;
      qmc.get_update_flag = function() {return(cwQueryService.getMonitoringAutoUpdate());}
      qmc.options = cwQueryService.getMonitoringOptions;
+
+     qmc.getLatestStat = getLatestStat;
+     qmc.getAverageStat = getAverageStat;
 
      //
      // sorting for each of the two result tables
@@ -117,6 +120,50 @@
       return result;
     }
 
+    qmc.statsConfig = {
+        bucket: mnPermissions.export.bucketNames['.stats!read'] &&
+          mnPermissions.export.bucketNames['.stats!read'][0],
+        node: "all",
+        zoom: 5000,
+        step: 1,
+        stats: [
+         'cbas_disk_used',            // disk used in bytes
+         'cbas_gc_count',             // gc/second (i.e., rate)
+         'cbas_gc_time',              // ms/sec spent in gc
+         'cbas_heap_used',            // heap size in bytes
+         'cbas_system_load_average',  //
+         'cbas_thread_count'         //
+        ]
+    };
+
+    //
+    // get the latest stat from the server
+    //
+
+    function getLatestStat(name) {
+      var s = $scope.mnUIStats;
+      if (s && s.stats && s.stats[name] && _.isArray(s.stats[name].aggregate)) {
+          return(s.stats[name].aggregate.slice(-1)[0]);
+      }
+      else
+        return null;
+    }
+
+    //
+    // get the average stat from the server
+    //
+
+    function getAverageStat(name) {
+      var s = $scope.mnUIStats;
+      if (s && s.stats && s.stats[name] && _.isArray(s.stats[name].aggregate)) {
+          var sum = 0;
+          s.stats[name].aggregate.forEach(function(n) {sum+=n});
+          return(sum/s.stats[name].aggregate.length);
+      }
+      else
+        return null;
+    }
+
      //
      // call the activate method for initialization
      //
@@ -138,6 +185,9 @@
 
        if (cwQueryService.getMonitoringAutoUpdate())
          update();
+
+      // subscribe to stats
+       qmc.statsPoller = mnStatisticsNewService.subscribeUIStatsPoller(qmc.statsConfig,$scope);
      }
 
      function toggle_update() {
@@ -168,41 +218,6 @@
      function update() {
        // update the currently selected tab
        cwQueryService.updateQueryMonitoring(cwQueryService.getMonitoringSelectedTab());
-
-       var stats = [
-         'cbas_disk_used',            // disk used in bytes
-         'cbas_gc_count',             // gc/second (i.e., rate)
-         'cbas_gc_time',              // ms/sec spent in gc
-         'cbas_heap_used',            // heap size in bytes
-         'cbas_system_load_average',  //
-         'cbas_thread_count',         //
-
-         // the following stats are only valid per-bucket, so we will leave them out here
-//       cbas_io_reads: '',
-//       cbas_io_writes: '',
-//       ep_dcp_cbas_backoff: '',
-//       ep_dcp_cbas_count: ''
-//       ep_dcp_cbas_items_remaining: '',
-//       ep_dcp_cbas_items_sent: '',
-//       ep_dcp_cbas_producer_count: '',
-//       ep_dcp_cbas_total_bytes: '',
-//       'cbas/incoming_records_count': '',
-//       'cbas/failed_at_parser_records_count_total': '',
-//       'cbas/incoming_records_count_total': null,
-
-         ];
-
-       cwQueryService.getStats(stats)
-           .then(function success(data) {
-             // each stat is a separate HTTP request, so the stats will come back as an array of responses
-             // each response should have a 'data' field which will have a 'statName',
-               data.forEach(function(resp){
-                 var len = resp.data.stats.aggregate.samples.length;
-                 qmc.stats[resp.data.statName] = resp.data.stats.aggregate.samples[len-1];
-               });
-
-               qmc.stats_updated_at = Date.now();
-           },function error(resp) {console.log("Error getting analytics stats data");});
 
        // do it again in 5 seconds
        if (cwQueryService.getMonitoringAutoUpdate()) {
