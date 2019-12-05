@@ -1549,9 +1549,18 @@
       }
 
       function getExplainIndex(queryText) {
-        var match = /^\s*explain/gmi.exec(queryText);
-        if (match) {
-          return match.index;
+        var statements = queryText.split(";");
+        for (var i = 0; i < statements.length; i++) {
+          var statement = statements[i].trim();
+          if (statement.length === 0) {
+            continue;
+          }
+          if (!isAllowedMultiStatement(statement)) {
+            var match = /^\s*explain/gmi.exec(statement);
+            if (match) {
+              return queryText.indexOf(statement);
+            }
+          }
         }
         return -1;
       }
