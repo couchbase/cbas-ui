@@ -1,6 +1,21 @@
-(function() {
+import angular from "/ui/web_modules/angular.js";
+import _ from "/ui/web_modules/lodash.js";
+import ace from '/ui/libs/ace/ace-wrapper.js';
+import cwQueryService from "/_p/ui/cbas/cw_query_service.js";
+import cwCbasMonitorController from "/_p/ui/cbas/cw_cbas_monitor_controller.js";
+import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
 
-  angular.module('cwCbas').controller('cwCbasController', cbasController);
+export default "cwCbasUI";
+
+
+
+ace.config.set('basePath','/ui/libs/ace');
+
+angular.module('cwCbasUI',[])
+  .controller('cwCbasController', cbasController)
+  .factory('cwQueryService', cwQueryService)
+  .controller('cwCbasMonitorController', cwCbasMonitorController)
+  .factory('cwConstantsService', cwConstantsService);
 
   cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService'];
 
@@ -353,10 +368,10 @@
 
     var langTools = ace.require("ace/ext/language_tools");
     var autocomplete = ace.require("ace/autocomplete");
-    var mode_n1ql;
+    var mode_sql_plus_plus;
 
     function aceInputLoaded(_editor) {
-      mode_sql_plus_plus = ace.require("ace/mode/sql-plus-plus");
+      mode_sql_plus_plus = ace.require("ace/mode/sql_plus_plus");
       _editor.$blockScrolling = Infinity;
       _editor.setFontSize('13px');
       _editor.renderer.setPrintMarginColumn(false);
@@ -1302,5 +1317,3 @@
       location.reload();
     }
   }
-
-})();

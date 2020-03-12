@@ -1,18 +1,41 @@
-(function () {
-  "use strict";
+import angular from "/ui/web_modules/angular.js";
+import uiRouter from "/ui/web_modules/@uirouter/angularjs.js";
+import mnPluggableUiRegistry from "/ui/app/components/mn_pluggable_ui_registry.js";
 
-  angular
-  .module('cwCbas', ["ui.router", "mnPluggableUiRegistry", "mnJquery",
-    'qwJsonTree',
-    'qwJsonDataTable',
-    'qwJsonTableEditor',
-    'qwLongPress',
-    'mnPendingQueryKeeper',
-    'mnServersService',
-    'mnPoolDefault',
-    'mnPermissions',
-    'ui.ace',
-    'ui.bootstrap'])
+import ace from '/ui/libs/ace/ace-wrapper.js';
+import uiAce from "/ui/libs/ui-ace.js";
+import uiBootstrap from "/ui/web_modules/angular-ui-bootstrap.js";
+
+import cwCbasUI from "/_p/ui/cbas/cw_cbas_controller.js";
+
+import mnPendingQueryKeeper from "/ui/app/components/mn_pending_query_keeper.js";
+import mnServersService from "/ui/app/mn_admin/mn_servers_service.js";
+import mnPoolDefault from "/ui/app/components/mn_pool_default.js";
+import mnPermissions from "/ui/app/components/mn_permissions.js";
+
+import qwLongPress from "/_p/ui/query/long_press/qw-long-press.directive.js";
+import qwJsonTableEditor from "/_p/ui/query/ui-current/data_display/qw-json-table-editor.directive.js";
+import qwJsonDataTable from "/_p/ui/query/ui-current/data_display/qw-json-datatable.directive.js";
+import qwJsonTree from "/_p/ui/query/ui-current/data_display/qw-json-tree.directive.js";
+
+export default "cwCbas";
+
+
+angular
+  .module('cwCbas', [
+    uiRouter,
+    mnPluggableUiRegistry,
+    qwJsonTree,
+    qwJsonDataTable,
+    qwJsonTableEditor,
+    qwLongPress,
+    cwCbasUI,
+    mnPendingQueryKeeper,
+    mnServersService,
+    mnPoolDefault,
+    mnPermissions,
+    uiAce,
+    uiBootstrap])
     .config(function($stateProvider, $transitionsProvider, mnPluggableUiRegistryProvider, mnPermissionsProvider) {
 
       $stateProvider
@@ -77,7 +100,7 @@
 //      })
 
     })
-    .run(function(jQuery, $timeout, $http) {
+    .run(function($timeout, $http) {
     })
 
     // we can only work if we have an analytics node. This service checks for
@@ -167,7 +190,3 @@
         // now return the service
         return service;
       });
-
-
-  angular.module('mnAdmin').requires.push('cwCbas');
-}());
