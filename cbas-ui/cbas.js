@@ -51,7 +51,7 @@
         name: 'Analytics',
         state: 'app.admin.cbas.workbench',
         plugIn: 'workbenchTab',
-        ngShow: "rbac.cluster.analytics.select",
+        ngShow: "rbac.cluster.bucket['.'].analytics.select",
         index: 3
       });
 
@@ -69,12 +69,12 @@
         cwQueryService.updateBuckets();
       });
 
-      mnPermissionsProvider.set("cluster.analytics!select");
-//      mnPermissionsProvider.setBucketSpecific(function (name) {
-//        return [
-//          "cluster.bucket[" + name + "].n1ql.select!execute"
-//        ]
-//      })
+     // mnPermissionsProvider.set("cluster.analytics!select");
+     mnPermissionsProvider.setBucketSpecific(function (name) {
+       return [
+         "cluster.bucket[" + name + "].analytics!select"
+       ]
+     })
 
     })
     .run(function(jQuery, $timeout, $http) {
