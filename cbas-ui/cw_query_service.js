@@ -1,7 +1,8 @@
+import angular from "/ui/web_modules/angular.js";
 import _ from "/ui/web_modules/lodash.js";
+import js_beautify from "/ui/web_modules/beautify.js";
 
 export default getcwQueryService;
-
 
 
 
@@ -332,7 +333,6 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
 
     $timeout(function(){
       lastResult.copyIn(pastQueries[currentQueryIndex]);
-      currentQuery = lastResult.query;
     },50);
   }
 
@@ -589,7 +589,6 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
 
       $timeout(function(){
         lastResult.copyIn(pastQueries[currentQueryIndex]);
-        currentQuery = lastResult.query;
       },50);
     }
   }
@@ -609,7 +608,6 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
 
       $timeout(function(){
         lastResult.copyIn(pastQueries[currentQueryIndex]);
-        currentQuery = lastResult.query;
       },50);
     }
 
@@ -842,7 +840,7 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
       cwQueryService.options.query_timeout = defaultProxyTimeout;
     }
 
-    var queryRequest = {
+    queryRequest = {
       url: cwConstantsService.queryURL,
       method: "POST",
       headers: {'Content-Type':'application/json',
@@ -1016,7 +1014,7 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
 
           // now check the status of what came back
           if (data && data.status == "success" && data.results && data.results.length > 0) {
-            var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
+            let lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
             newResult.explainResult =
               {explain: data.results[0],
                mode: "analytics",
@@ -1241,7 +1239,7 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
             // did we get query timings in the result? If so, update the plan
 
             if (data.profile && data.profile.executionTimings) {
-              var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.profile.executionTimings,null);
+              let lists = qwQueryPlanService.analyzeAnalyticsPlan(data.profile.executionTimings,null);
               newResult.explainResult =
                 {explain: data.profile.executionTimings,
                  mode: "analytics",
@@ -1264,7 +1262,7 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
             // explain plan
 
             if (queryIsExplain && cwConstantsService.autoExplain) {
-              var lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
+              let lists = qwQueryPlanService.analyzeAnalyticsPlan(data.results[0].plan,null);
               newResult.explainResult =
                 {explain: data.results[0],
                  mode: "analytics",
@@ -1685,9 +1683,9 @@ function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPending
 
   function testAuth(bucket, success, failure) {
     // start by getting the document count for each bucket
-    queryText = "select count(*) cnt from `" + bucket.id + '`';
+    let queryText = "select count(*) cnt from `" + bucket.id + '`';
 
-    res1 = executeQueryUtil(queryText, false, false)
+    let res1 = executeQueryUtil(queryText, false, false)
       .then(function successCallback(resp) {
         var data = resp.data, status = resp.status;
 

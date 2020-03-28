@@ -1,5 +1,8 @@
 import angular from "/ui/web_modules/angular.js";
 import _ from "/ui/web_modules/lodash.js";
+import mnJquery from "/ui/app/components/mn_jquery.js";
+import saveAs from "/ui/web_modules/file-saver.js";
+
 import ace from '/ui/libs/ace/ace-wrapper.js';
 import cwQueryService from "/_p/ui/cbas/cw_query_service.js";
 import cwCbasMonitorController from "/_p/ui/cbas/cw_cbas_monitor_controller.js";
@@ -11,15 +14,16 @@ export default "cwCbasUI";
 
 ace.config.set('basePath','/ui/libs/ace');
 
-angular.module('cwCbasUI',[])
+angular.module('cwCbasUI',[mnJquery])
   .controller('cwCbasController', cbasController)
   .factory('cwQueryService', cwQueryService)
   .controller('cwCbasMonitorController', cwCbasMonitorController)
   .factory('cwConstantsService', cwConstantsService);
 
-  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService'];
+  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService', 'jQuery'];
 
-  function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService) {
+  function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, jQuery) {
+    var $ = jQuery;
     var qc = this;
     var statsRefreshInterval = 5000;
     //console.log("Start controller at: " + new Date().toTimeString());

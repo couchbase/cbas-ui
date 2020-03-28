@@ -17,6 +17,7 @@ import qwLongPress from "/_p/ui/query/long_press/qw-long-press.directive.js";
 import qwJsonTableEditor from "/_p/ui/query/ui-current/data_display/qw-json-table-editor.directive.js";
 import qwJsonDataTable from "/_p/ui/query/ui-current/data_display/qw-json-datatable.directive.js";
 import qwJsonTree from "/_p/ui/query/ui-current/data_display/qw-json-tree.directive.js";
+import qwQueryUI from "/_p/ui/query/qw_query_controller.js";
 
 export default "cwCbas";
 
@@ -30,6 +31,7 @@ angular
     qwJsonTableEditor,
     qwLongPress,
     cwCbasUI,
+    qwQueryUI,
     mnPendingQueryKeeper,
     mnServersService,
     mnPoolDefault,

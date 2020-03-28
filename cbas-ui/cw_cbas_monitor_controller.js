@@ -1,14 +1,10 @@
 import _ from "/ui/web_modules/lodash.js";
 
-export default cbasController;
+export default cwCbasMonitorController;
 
-cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService',
-                          'mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService',
-                          'mnAnalyticsService','mnStatisticsNewService','mnPermissions'];
+cwCbasMonitorController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService', 'mnPools','$scope', 'cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService', 'mnAnalyticsService', 'mnStatisticsNewService', 'mnPermissions', 'qwQueryService'];
 
-function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools,
-                         $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, mnAnalyticsService,
-                         mnStatisticsNewService,mnPermissions) {
+function cwCbasMonitorController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, mnAnalyticsService, mnStatisticsNewService, mnPermissions, qwQueryService) {
 
   var qmc = this;
 
