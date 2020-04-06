@@ -1,6 +1,6 @@
 import angular from "/ui/web_modules/angular.js";
 import _ from "/ui/web_modules/lodash.js";
-import js_beautify from "/ui/web_modules/beautify.js";
+import js_beautify from "/ui/web_modules/js-beautify.js";
 
 export default getcwQueryService;
 
