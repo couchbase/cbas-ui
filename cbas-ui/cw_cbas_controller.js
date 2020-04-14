@@ -8,6 +8,8 @@ export default cbasController;
     var $ = jQuery;
     var qc = this;
     var statsRefreshInterval = 5000;
+    var updateEditorSizes = _.debounce(updateEditorSizesInner, 100);
+
     //console.log("Start controller at: " + new Date().toTimeString());
 
     //
@@ -578,9 +580,7 @@ export default cbasController;
     // since it doesn't auto-resize
     //
 
-    // var updateEditorSizes = _.debounce(updateEditorSizes2, 100);
-
-    function updateEditorSizes() {
+    function updateEditorSizesInner() {
 //      function updateEditorSizesInner() {
       var totalHeight = window.innerHeight - 130; // window minus header size
       var aceEditorHeight = 0;

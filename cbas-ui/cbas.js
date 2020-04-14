@@ -106,4 +106,4 @@ angular.module('cwCbas', [
 
   })
   .controller('cwCbasController', cbasController)
-  .controller('cwCbasMonitorController', cwCbasMonitorController)
+  .controller('cwCbasMonitorController', cwCbasMonitorController);
