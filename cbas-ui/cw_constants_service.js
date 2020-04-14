@@ -1,6 +1,10 @@
+import angular from "/ui/web_modules/angular.js";
 
+export default 'cwConstantsService';
 
-export default getCwConstantsService;
+angular
+  .module('cwConstantsService', [])
+  .factory('cwConstantsService', getCwConstantsService);
 
 
 
@@ -12,8 +16,6 @@ export default getCwConstantsService;
 //
 
 
-
-getCwConstantsService.$inject = [];
 
 function getCwConstantsService() {
 

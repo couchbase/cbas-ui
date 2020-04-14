@@ -1,18 +1,24 @@
 import angular from "/ui/web_modules/angular.js";
 import _ from "/ui/web_modules/lodash.js";
 import js_beautify from "/ui/web_modules/js-beautify.js";
+import uiBootstrap from "/ui/web_modules/angular-ui-bootstrap.js";
 
-export default getcwQueryService;
+import mnPendingQueryKeeper from "/ui/app/components/mn_pending_query_keeper.js";
+import mnPoolDefault from "/ui/app/components/mn_pool_default.js";
+import mnPools from "/ui/app/components/mn_pools.js";
+
+import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
+import qwQueryPlanService from "/_p/ui/query/qw_query_plan_service.js";
+import validateCbasService from "./validate_cbas_service.js";
+
+export default 'cwQueryService';
+
+angular
+  .module('cwQueryService', [uiBootstrap, validateCbasService, mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools])
+  .factory('cwQueryService', cwQueryServiceFactory);
 
 
-
-
-getcwQueryService.$inject = ['$rootScope','$q', '$uibModal', '$timeout', '$http', 'mnPendingQueryKeeper',
-                             'validateCbasService', 'cwConstantsService','qwQueryPlanService','mnPoolDefault',
-                             'mnPools','mnAuthService', 'mnServersService'];
-
-function getcwQueryService($rootScope, $q, $uibModal, $timeout, $http, mnPendingQueryKeeper, validateCbasService,
-                           cwConstantsService,qwQueryPlanService,mnPoolDefault,mnPools,mnAuthService,mnServersService) {
+function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService, mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools) {
 
   var cwQueryService = {};
 

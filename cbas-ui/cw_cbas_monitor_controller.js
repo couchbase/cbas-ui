@@ -2,10 +2,7 @@ import _ from "/ui/web_modules/lodash.js";
 
 export default cwCbasMonitorController;
 
-cwCbasMonitorController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService', 'mnPools','$scope', 'cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService', 'mnAnalyticsService', 'mnStatisticsNewService', 'mnPermissions', 'qwQueryService'];
-
-function cwCbasMonitorController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, mnAnalyticsService, mnStatisticsNewService, mnPermissions, qwQueryService) {
-
+function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions, qwQueryService) {
   var qmc = this;
 
   //

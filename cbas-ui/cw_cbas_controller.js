@@ -1,28 +1,10 @@
-import angular from "/ui/web_modules/angular.js";
 import _ from "/ui/web_modules/lodash.js";
-import mnJquery from "/ui/app/components/mn_jquery.js";
+import ace from '/ui/libs/ace/ace-wrapper.js';
 import saveAs from "/ui/web_modules/file-saver.js";
 
-import ace from '/ui/libs/ace/ace-wrapper.js';
-import cwQueryService from "/_p/ui/cbas/cw_query_service.js";
-import cwCbasMonitorController from "/_p/ui/cbas/cw_cbas_monitor_controller.js";
-import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
+export default cbasController;
 
-export default "cwCbasUI";
-
-
-
-ace.config.set('basePath','/ui/libs/ace');
-
-angular.module('cwCbasUI',[mnJquery])
-  .controller('cwCbasController', cbasController)
-  .factory('cwQueryService', cwQueryService)
-  .controller('cwCbasMonitorController', cwCbasMonitorController)
-  .factory('cwConstantsService', cwConstantsService);
-
-  cbasController.$inject = ['$rootScope', '$stateParams', '$uibModal', '$timeout', 'cwQueryService', 'validateCbasService','mnPools','$scope','cwConstantsService', 'mnPoolDefault', 'mnServersService', '$interval', 'qwJsonCsvService', 'jQuery'];
-
-  function cbasController ($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, jQuery) {
+  function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, jQuery) {
     var $ = jQuery;
     var qc = this;
     var statsRefreshInterval = 5000;
@@ -596,7 +578,7 @@ angular.module('cwCbasUI',[mnJquery])
     // since it doesn't auto-resize
     //
 
-    //var updateEditorSizes = _.debounce(updateEditorSizes2,100);
+    // var updateEditorSizes = _.debounce(updateEditorSizes2, 100);
 
     function updateEditorSizes() {
 //      function updateEditorSizesInner() {

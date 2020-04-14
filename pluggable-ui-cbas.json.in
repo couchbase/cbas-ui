@@ -9,5 +9,6 @@
   "version-dirs": [
     {"version": [5, 0], "dir": "."}
   ],
-  "doc-root": "@BIN_PREFIX@cbas-ui"
+  "doc-root": "@BIN_PREFIX@cbas-ui",
+  "module": "main.js"
 }
