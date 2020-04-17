@@ -1,6 +1,5 @@
 import angular from "/ui/web_modules/angular.js";
 import _ from "/ui/web_modules/lodash.js";
-import ace from '/ui/libs/ace/ace-wrapper.js';
 import saveAs from "/ui/web_modules/file-saver.js";
 
 import uiRouter from "/ui/web_modules/@uirouter/angularjs.js";

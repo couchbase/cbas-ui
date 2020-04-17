@@ -359,7 +359,7 @@ export default cbasController;
     var mode_sql_plus_plus;
 
     function aceInputLoaded(_editor) {
-      mode_sql_plus_plus = ace.require("ace/mode/sql_plus_plus");
+      mode_sql_plus_plus = ace.require("ace/mode/sql-plus-plus");
       _editor.$blockScrolling = Infinity;
       _editor.setFontSize('13px');
       _editor.renderer.setPrintMarginColumn(false);
