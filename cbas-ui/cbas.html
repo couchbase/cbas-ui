@@ -65,7 +65,7 @@
          class="wb-ace-editor" ng-click="qc.handleClick('editor')"
          ui-ace="qc.aceInputOptions"
          ng-disabled="qc.executingQuery.busy"
-         ng-model="qc.lastResult.query">{{qc.renderPage()}}
+         ng-model="qc.lastResult.query">
       </div>
 
 <!-- wrapper under query editor for button and stats -------------------------->
@@ -169,7 +169,7 @@
            ng-model="qc.lastResult.result"></div>
 
       <div class="wb-results-table"
-           ng-if="qc.isSelected(2) && (!qc.dataTooBig() || qc.showBigDatasets)"
+           ng-if="qc.isSelected(2)"
            qw-json-data-table="qc.lastResult.data"></div>
 
       <div class="wb-results-tree"

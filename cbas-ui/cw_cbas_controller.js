@@ -8,7 +8,7 @@ export default cbasController;
     var $ = jQuery;
     var qc = this;
     var statsRefreshInterval = 5000;
-    var updateEditorSizes = _.debounce(updateEditorSizesInner, 100);
+    var updateEditorSizes = _.throttle(updateEditorSizesInner, 100);
 
     //console.log("Start controller at: " + new Date().toTimeString());
 
@@ -150,8 +150,6 @@ export default cbasController;
     qc.dataTooBig = dataTooBig;
     qc.setShowBigData = setShowBigData;
     qc.getBigDataMessage = getBigDataMessage;
-
-    qc.renderPage = function() {updateEditorSizes();};
 
     // should we have the extra explain tabs?
 
@@ -581,7 +579,6 @@ export default cbasController;
     //
 
     function updateEditorSizesInner() {
-//      function updateEditorSizesInner() {
       var totalHeight = window.innerHeight - 130; // window minus header size
       var aceEditorHeight = 0;
 
