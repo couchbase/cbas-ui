@@ -70,6 +70,7 @@
       "  BucketName AS bucketName, " +
       "  `Filter` AS `filter`, " +
       "  LinkName,  " +
+      "  DatasetType,  " +
       "  ( SELECT " +
       "      idx.IndexName, " +
       "      idx.SearchKey, " +
@@ -78,11 +79,12 @@
       "      Metadata.`Index` AS idx " +
       "    WHERE idx.IsPrimary = false " +
       "      AND idx.DatasetName = ds.DatasetName" +
-      "      AND idx.DataverseName = ds.DataverseName) AS indexes " +
+      "      AND idx.DataverseName = ds.DataverseName) AS indexes, " +
+      "      ExternalDetails.Properties AS externalDetails " +
       "FROM " +
       "  Metadata.`Dataset` AS ds " +
       "WHERE " +
-      "  BucketName IS NOT missing " +
+      "  (BucketName IS NOT missing OR  DatasetType = 'EXTERNAL')" +
       "UNION ALL " +
       "SELECT " +
       "  dv.DataverseName, " +
@@ -113,7 +115,7 @@
     cwConstantsService.analysisSecondSection = "Cluster Buckets";
 
     // list of trigger queries to update update the bucket insights after
-    cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE DATAVERSE", "DROP DATAVERSE", "CONNECT LINK", "DISCONNECT LINK", "CREATE DATASET", "DROP DATASET", "CREATE INDEX", "DROP INDEX"];
+    cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE DATAVERSE", "DROP DATAVERSE", "CONNECT LINK", "DISCONNECT LINK", "CREATE DATASET", "CREATE EXTERNAL DATASET", "DROP DATASET", "CREATE INDEX", "DROP INDEX"];
 
     cwConstantsService.healthCheckURL = "../_p/cbas/admin/ping";
 

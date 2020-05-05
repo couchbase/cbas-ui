@@ -233,13 +233,24 @@
                      title="connected"
                      class="icon fa-link grayblack-3">
                   </span>
+                  <span
+                     ng-show="shadow.remaining === qc.externalDatasetState"
+                     title="external"
+                     class="icon fa-cloud grayblack-3">
+                  </span>
                 </span>
 
                 <div class="margin-bottom-half padding-left-half" ng-show="shadow.expanded">
-                  <p class="margin-bottom-half">
+                  <p ng-show="!shadow.external" class="margin-bottom-half">
                     Bucket:<br>
                     {{shadow.LinkName}}.{{shadow.bucketName}}
                     <span ng-show="shadow.filter">|</span> {{shadow.filter}}
+                  </p>
+                  <p ng-show="shadow.external" class="margin-bottom-half">
+                    Container:<br>
+                    {{shadow.container}}.{{shadow.bucketName}}
+                    <span ng-show="shadow.definition">|</span> {{shadow.definition}}
+                    <span ng-show="shadow.format">({{shadow.format}})</span>
                   </p>
                   <p class="margin-bottom-half" ng-show="shadow.indexes.length > 0">
                     Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>

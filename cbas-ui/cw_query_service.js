@@ -18,6 +18,7 @@
     cwQueryService.outputTab = 1;     // remember selected output tab
     cwQueryService.datasetDisconnectedState = -1;
     cwQueryService.datasetUnknownState = -2;
+    cwQueryService.externalDatasetState = -3;
     cwQueryService.selectTab = function(newTab) {cwQueryService.outputTab = newTab;};
     cwQueryService.isSelected = function(checkTab) {return cwQueryService.outputTab === checkTab;};
     cwQueryService.validated = validateCbasService;
@@ -1497,8 +1498,15 @@
           var record = data.results[i];
           if (record.isDataset) {
             record.expanded = true;
-            record.remaining = cwQueryService.datasetUnknownState;
-            constructIndexesKeys(record);
+            if (record.DatasetType === "INTERNAL") {
+              record.external = false;
+              record.remaining = cwQueryService.datasetUnknownState;
+              constructIndexesKeys(record);
+            } else if(record.DatasetType === "EXTERNAL") {
+              record.external = true;
+              record.remaining = cwQueryService.externalDatasetState;
+              parseExternalDetails(record);
+            }
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
           } else if (record.isDataverse) {
@@ -1530,6 +1538,15 @@
               idx.keys.push(idx.SearchKey[j]);
             }
           }
+        }
+      }
+    }
+
+    function parseExternalDetails(dataset) {
+      if (dataset.externalDetails && dataset.externalDetails.length > 0) {
+        for (let i = 0; i < dataset.externalDetails.length; i++) {
+          const property = dataset.externalDetails[i];
+          dataset[property.Name] = property.Value;
         }
       }
     }
@@ -1623,15 +1640,17 @@
 
       function updateDatasetShadowingProgress(shadowingStats) {
           for (var i = 0; i < cwQueryService.shadows.length; i++) {
-              var shadow = cwQueryService.shadows[i];
-              if (shadowingStats.hasOwnProperty(shadow.DataverseName)) {
+            var shadow = cwQueryService.shadows[i];
+            if(!shadow.external) {
+                if (shadowingStats.hasOwnProperty(shadow.DataverseName)) {
                   var shadowingDataverseStats = shadowingStats[shadow.DataverseName];
                   if (shadowingDataverseStats.hasOwnProperty(shadow.id)) {
-                      shadow.remaining = shadowingDataverseStats[shadow.id];
-                      continue;
+                    shadow.remaining = shadowingDataverseStats[shadow.id];
+                    continue;
                   }
+                }
+                shadow.remaining = cwQueryService.datasetDisconnectedState;
               }
-              shadow.remaining = cwQueryService.datasetDisconnectedState;
           }
       }
 
