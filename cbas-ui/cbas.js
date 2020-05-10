@@ -51,7 +51,7 @@
         name: 'Analytics',
         state: 'app.admin.cbas.workbench',
         plugIn: 'workbenchTab',
-        ngShow: "rbac.cluster.bucket['.'].analytics.select",
+        ngShow: "rbac.cluster.bucket['.'].analytics.select || rbac.cluster.analytics.manage",
         index: 3
       });
 
@@ -72,7 +72,7 @@
      // mnPermissionsProvider.set("cluster.analytics!select");
      mnPermissionsProvider.setBucketSpecific(function (name) {
        return [
-         "cluster.bucket[" + name + "].analytics!select"
+         "cluster.bucket[" + name + "].analytics!select", "cluster.analytics!manage"
        ]
      })
 
@@ -157,7 +157,8 @@
               if(perms.bucket["."] && perms.bucket["."].settings.read) {
                  _userHasAnyBuckets = true;
               }
-              if (perms.settings && perms.settings.read) {
+              if ((perms.bucket["."] && perms.bucket["."].analytics && perms.bucket["."].analytics.select) ||
+                  (perms.analytics && perms.analytics.manage)) {
                 _userCanAccessStats = true;
               }
             }
