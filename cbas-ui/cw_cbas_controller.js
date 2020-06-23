@@ -36,6 +36,7 @@ export default cbasController;
     qc.planFormat = cwQueryService.planFormat;
     qc.datasetDisconnectedState = cwQueryService.datasetDisconnectedState;
     qc.datasetUnknownState = cwQueryService.datasetUnknownState;
+    qc.externalDatasetState = cwQueryService.externalDatasetState;
     qc.isAllowedMultiStatement = cwQueryService.isAllowedMultiStatement;
 
     qc.toggleFullscreen = toggleFullscreen;

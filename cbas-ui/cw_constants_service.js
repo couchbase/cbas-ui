@@ -68,48 +68,50 @@ function getCwConstantsService() {
   // 'has_sec' indicating secondary indexes. For a different system, just make sure
   // the returned schema has 'id' and 'has_prim'.
   cwConstantsService.keyspaceQuery =
-    "SELECT " +
-    "  DataverseName, " +
-    "  DataverseName || '.' || DatasetName AS fullName, " +
-    "  DatasetName AS id, " +
-    "  TRUE AS isDataset, " +
-    "  BucketName AS bucketName, " +
-    "  `Filter` AS `filter`, " +
-    "  LinkName,  " +
-    "  ( SELECT " +
-    "      idx.IndexName, " +
-    "      idx.SearchKey, " +
-    "      idx.SearchKeyType " +
-    "    FROM " +
-    "      Metadata.`Index` AS idx " +
-    "    WHERE idx.IsPrimary = false " +
-    "      AND idx.DatasetName = ds.DatasetName" +
-    "      AND idx.DataverseName = ds.DataverseName) AS indexes " +
-    "FROM " +
-    "  Metadata.`Dataset` AS ds " +
-    "WHERE " +
-    "  BucketName IS NOT missing " +
-    "UNION ALL " +
-    "SELECT " +
-    "  dv.DataverseName, " +
-    "  TRUE AS isDataverse, " +
-    "  ( SELECT " +
-    "      l.Name " +
-    "    FROM " +
-    "      Metadata.`Link` AS l " +
-    "    WHERE " +
-    "      l.DataverseName = dv.DataverseName) AS links " +
-    "FROM " +
-    "  Metadata.`Dataverse` AS dv " +
-    "WHERE " +
-    "  dv.DataverseName != 'Metadata' " +
-    "UNION ALL " +
-    "SELECT " +
-    "  DataverseName, " +
-    "  Name, " +
-    "  TRUE as isLink " +
-    "FROM " +
-    "  Metadata.`Link`;"
+      "SELECT " +
+      "  DataverseName, " +
+      "  DataverseName || '.' || DatasetName AS fullName, " +
+      "  DatasetName AS id, " +
+      "  TRUE AS isDataset, " +
+      "  BucketName AS bucketName, " +
+      "  `Filter` AS `filter`, " +
+      "  LinkName,  " +
+      "  DatasetType,  " +
+      "  ( SELECT " +
+      "      idx.IndexName, " +
+      "      idx.SearchKey, " +
+      "      idx.SearchKeyType " +
+      "    FROM " +
+      "      Metadata.`Index` AS idx " +
+      "    WHERE idx.IsPrimary = false " +
+      "      AND idx.DatasetName = ds.DatasetName" +
+      "      AND idx.DataverseName = ds.DataverseName) AS indexes, " +
+      "      ExternalDetails.Properties AS externalDetails " +
+      "FROM " +
+      "  Metadata.`Dataset` AS ds " +
+      "WHERE " +
+      "  (BucketName IS NOT missing OR  DatasetType = 'EXTERNAL')" +
+      "UNION ALL " +
+      "SELECT " +
+      "  dv.DataverseName, " +
+      "  TRUE AS isDataverse, " +
+      "  ( SELECT " +
+      "      l.Name " +
+      "    FROM " +
+      "      Metadata.`Link` AS l " +
+      "    WHERE " +
+      "      l.DataverseName = dv.DataverseName) AS links " +
+      "FROM " +
+      "  Metadata.`Dataverse` AS dv " +
+      "WHERE " +
+      "  dv.DataverseName != 'Metadata' " +
+      "UNION ALL " +
+      "SELECT " +
+      "  DataverseName, " +
+      "  Name, " +
+      "  TRUE as isLink " +
+      "FROM " +
+      "  Metadata.`Link`;"
 
   // should we permit schema inquiries in the bucket analysis pane?
   cwConstantsService.showSchemas = false;
@@ -119,7 +121,7 @@ function getCwConstantsService() {
   cwConstantsService.analysisSecondSection = "Cluster Buckets";
 
   // list of trigger queries to update update the bucket insights after
-  cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE DATAVERSE", "DROP DATAVERSE", "CONNECT LINK", "DISCONNECT LINK", "CREATE DATASET", "DROP DATASET", "CREATE INDEX", "DROP INDEX"];
+  cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE DATAVERSE", "DROP DATAVERSE", "CONNECT LINK", "DISCONNECT LINK", "CREATE DATASET", "CREATE EXTERNAL DATASET", "DROP DATASET", "CREATE INDEX", "DROP INDEX"];
 
   cwConstantsService.healthCheckURL = "../_p/cbas/admin/ping";
 

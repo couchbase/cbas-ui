@@ -15,11 +15,15 @@ angular
       name: 'Analytics',
       state: 'app.admin.cbas.workbench',
       plugIn: 'workbenchTab',
-      ngShow: "rbac.cluster.analytics.select",
+      ngShow: "rbac.cluster.bucket['.'].analytics.select || rbac.cluster.analytics.manage",
       index: 3
     });
 
-    mnPermissionsProvider.set("cluster.analytics!select");
+    mnPermissionsProvider.setBucketSpecific(function (name) {
+      return [
+        "cluster.bucket[" + name + "].analytics!select", "cluster.analytics!manage"
+      ]
+    })
 
   });
 
