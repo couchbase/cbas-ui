@@ -80,7 +80,7 @@ angular
               if(perms.bucket["."] && perms.bucket["."].settings.read) {
                  _userHasAnyBuckets = true;
               }
-              if ((perms.bucket["."] && perms.bucket["."].analytics && perms.bucket["."].analytics.select) ||
+              if ((perms.collection[".:.:."] && perms.collection[".:.:."].analytics && perms.collection[".:.:."].analytics.select) ||
                   (perms.analytics && perms.analytics.manage)) {
                 _userCanAccessStats = true;
               }
