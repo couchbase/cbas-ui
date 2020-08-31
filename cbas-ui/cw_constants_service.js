@@ -94,6 +94,7 @@ function getCwConstantsService() {
       "UNION ALL " +
       "SELECT " +
       "  dv.DataverseName, " +
+      "  '`' || string_join(decode_dataverse_name(dv.DataverseName), '`,`') || '`' AS dataverseDisplayName, " +
       "  TRUE AS isDataverse, " +
       "  ( SELECT " +
       "      l.Name " +

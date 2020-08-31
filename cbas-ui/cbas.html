@@ -207,7 +207,7 @@
         <div ng-if="!qc.qqs.bucket_errors">
           <section class="text-small" ng-repeat="dataverse in qc.dataverses">
             <p class="margin-bottom-0 margin-top-half">
-              Dataverse: {{dataverse.DataverseName}}
+              Dataverse: {{dataverse.dataverseDisplayName}}
             </p>
             <span ng-repeat="shadow in qc.shadows">
               <div ng-if="shadow.DataverseName === dataverse.DataverseName" ng-init="shadow.expanded = false">
