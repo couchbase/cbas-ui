@@ -1659,8 +1659,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     for (var i = 0; i < cwQueryService.shadows.length; i++) {
       var shadow = cwQueryService.shadows[i];
       if(!shadow.external) {
-        if (shadowingStats.hasOwnProperty(shadow.DataverseName)) {
-          var shadowingDataverseStats = shadowingStats[shadow.DataverseName];
+        if (shadowingStats.hasOwnProperty(shadow.dataverseDisplayName)) {
+          var shadowingDataverseStats = shadowingStats[shadow.dataverseDisplayName];
           if (shadowingDataverseStats.hasOwnProperty(shadow.id)) {
             shadow.remaining = shadowingDataverseStats[shadow.id];
             continue;

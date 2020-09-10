@@ -70,7 +70,7 @@ function getCwConstantsService() {
   cwConstantsService.keyspaceQuery =
       "SELECT " +
       "  DataverseName, " +
-      "  DataverseName || '.' || DatasetName AS fullName, " +
+      "  decode_dataverse_display_name(DataverseName) AS dataverseDisplayName, " +
       "  DatasetName AS id, " +
       "  TRUE AS isDataset, " +
       "  BucketName AS bucketName, " +
@@ -94,7 +94,7 @@ function getCwConstantsService() {
       "UNION ALL " +
       "SELECT " +
       "  dv.DataverseName, " +
-      "  '`' || string_join(decode_dataverse_name(dv.DataverseName), '`,`') || '`' AS dataverseDisplayName, " +
+      "  decode_dataverse_display_name(dv.DataverseName) AS dataverseDisplayName, " +
       "  TRUE AS isDataverse, " +
       "  ( SELECT " +
       "      l.Name " +
