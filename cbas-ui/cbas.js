@@ -7,6 +7,7 @@
     'qwJsonDataTable',
     'qwJsonTableEditor',
     'qwLongPress',
+    'mnAutocompleteOff',
     'mnPendingQueryKeeper',
     'mnServersService',
     'mnPoolDefault',

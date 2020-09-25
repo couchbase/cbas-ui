@@ -1,0 +1,106 @@
+<div class="dialog-med">
+  <div class="panel-header">
+    <h2 ng-show="options.is_new">Add Dataset to {{options.link_name}}</h2>
+    <h2 ng-show="!options.is_new">View Dataset Details</h2>
+  </div>
+  <form class="forms">
+    <div class="panel-content">
+      <div class="error error-form">
+        <div ng-repeat="error in errors">
+          Attention: {{error}}
+        </div>
+      </div>
+      <div class="formrow">
+        <label for="cluster_reference_name">Dataset Name</label>
+        <input ng-disabled="!options.is_new"ng-model="options.dataset_name" type="text" autocorrect="off"
+           spellcheck="false" autocapitalize="off">
+      </div>
+
+      <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
+      <div class="formrow">
+
+        <label for="cluster_reference_name">Bucket Name</label>
+
+        <select ng-disabled="!options.is_new" ng-if="options.clusterBuckets"
+                ng-model="options.bucket_name">
+          <option ng-repeat="bucket in options.clusterBuckets">{{bucket}}</option>
+        </select>
+
+        <input
+           ng-disabled="!options.is_new"
+           ng-if="!options.clusterBuckets"
+           ng-model="options.bucket_name"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off">
+      </div>
+
+      <div class="formrow">
+        <label>Where (optional)</label>
+        <textarea
+           ng-disabled="!options.is_new"
+           rows="3"
+           autocorrect="off"
+           autocompleterg="off"
+           spellcheck="false"
+           ng-model="options.where"
+           placeholder="Optional WHERE clause to filter documents in the dataset.">
+        </textarea>
+      </div>
+
+      <div ng-if="options.link_details.type == 's3'">
+        <div class="formrow">
+          <label>S3 Path</label>
+          <input ng-model="options.external_dataset.s3_path" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
+        </div>
+
+        <div class="formrow">
+          <label>File Format</label>
+          <select ng-disabled="!options.is_new" ng-model="options.external_dataset.format">
+            <option>json</option>
+            <option>csv</option>
+            <option>tsv</option>
+          </select>
+        </div>
+
+        <div class="formrow margin-left-1" ng-if="options.external_dataset.format != 'json'">
+          <input ng-model="options.external_dataset.header" type="checkbox"
+                 ng-disabled="!options.is_new" name="header">
+          <label for="header">header</label>
+        </div>
+
+        <div class="formrow margin-left-1" ng-if="options.external_dataset.format != 'json'">
+          <label>Null Value</label>
+          <input ng-model="options.external_dataset.null_value" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
+        </div>
+
+        <div class="formrow">
+          <label>Include</label>
+          <input ng-model="options.external_dataset.include" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
+        </div>
+
+        <div class="formrow">
+          <label>Exclude</label>
+          <input ng-model="options.external_dataset.exclude" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
+        </div>
+
+
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <a ng-if="options.is_new" ng-click="$dismiss('cancel')">Cancel</a>
+      <button ng-if="options.is_new" type="submit" ng-click="$close('ok')">Save</button>
+
+      <div ng-if="!options.is_new" class="row width-12">
+        <button ng-click="$close('drop')">Drop Dataset</button>
+        <a ng-click="$close('close')">Close</a>
+      </div>
+    </div>
+  </form>
+</div>

@@ -53,6 +53,10 @@
     cwQueryService.updateQueryMonitoring = updateQueryMonitoring;
     cwQueryService.getStats = getStats;
 
+    cwQueryService.showErrorDialog = showErrorDialog;
+    cwQueryService.showWarningDialog = showWarningDialog;
+    cwQueryService.showConfirmationDialog = showConfirmationDialog;
+
     var defaultProxyTimeout = 1800; // default ns_server proxy timeout in seconds
     var active_requests = [];
     var completed_requests = [];
@@ -83,6 +87,16 @@
     cwQueryService.emptyResult = emptyResult;
 
     //
+    // managing links
+    //
+    
+    cwQueryService.createLink = createLink;
+    cwQueryService.deleteLink = deleteLink;
+    cwQueryService.editLink = editLink;
+    cwQueryService.getLink = getLink;
+    cwQueryService.getCachedLinkInfo = getCachedLinkInfo;
+    cwQueryService.convertAPIdataToDialogScope = convertAPIdataToDialogScope;     
+    //
     // keep track of the bucket and field names we have seen, for use in autocompletion
     //
 
@@ -110,6 +124,7 @@
     cwQueryService.shadows = [];
     cwQueryService.indexes = [];
     cwQueryService.dataverses = [];
+    cwQueryService.dataverse_links = {};
     cwQueryService.links = [];
     cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
     cwQueryService.getSchemaForBucket = getSchemaForBucket;   // get schema
@@ -1456,6 +1471,7 @@
     function updateBucketsCallback() {
       cwQueryService.loadingBuckets = true;
       var queryText = cwConstantsService.keyspaceQuery;
+      // run a query to get the dataverse, link, and dataset info from Metadata
       executeQueryUtil(queryText, false, true)
           .then(function (resp) {
             processMetadataQueryResult(resp.data);
@@ -1467,14 +1483,15 @@
             }
             return getAnalyticsShadowingStats(true);
           })
-          .catch(function (resp) {
+          .catch(function (err) {
+            console.log("Error: " + JSON.stringify(err));
             var error = "Failed to get bucket insights.";
             error = error + "\nTry refreshing the bucket insights.";
             cwQueryService.buckets.length = 0;
             cwQueryService.shadows.length = 0;
             cwQueryService.clusterBuckets.length = 0;
             cwQueryService.dataverses.length = 0;
-            cwQueryService.links.length = 0;
+            cwQueryService.dataverse_links = {};
             cwQueryService.autoCompleteTokens = {};
             cwQueryService.bucket_errors = error;
             logWorkbenchError(error);
@@ -1482,6 +1499,23 @@
           .finally(function () {
             cwQueryService.loadingBuckets = false;
           });
+          
+      // we need more details about links, however, so use the REST API to get that also
+      $http({
+          url: "/_p/cbas/analytics/link",
+          method: "GET",
+      }).then(function success(resp) {
+        if (resp && resp.data && _.isArray(resp.data)) {
+            cwQueryService.links = resp.data;
+            console.log(resp.data);
+            }
+        else
+            cwQueryService.links = [];
+    }, function error(resp) {
+        console.log("Got link info fail: " + JSON.stringify(resp,null,2));
+        cwQueryService.links = [];
+    });
+
     }
 
     function processMetadataQueryResult(data) {
@@ -1489,10 +1523,10 @@
       cwQueryService.buckets.length = 0;
       cwQueryService.shadows.length = 0;
       cwQueryService.dataverses.length = 0;
-      cwQueryService.links.length = 0;
       cwQueryService.clusterBuckets.length = 0;
       cwQueryService.bucket_errors = null;
       cwQueryService.bucket_names.length = 0;
+      cwQueryService.dataverse_links = {};
       if (data && data.results) {
         for (var i = 0; i < data.results.length; i++) {
           var record = data.results[i];
@@ -1509,10 +1543,39 @@
             }
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
+            
+            // every dataset is part of a dataverse, but it can use a link from another
+            // dataverse. Thus we must keep track of all the links used by any dataset in 
+            // the dataverse, even if the link is in another dataverse. Our data structure
+            // will be an object with keys for each dataverse name, whose value is an array 
+            // of link/dataverse name pairs.
+            
+            // ensure an entry for the dataverse
+            if (!cwQueryService.dataverse_links[record.DataverseName])
+              cwQueryService.dataverse_links[record.DataverseName] = [];
+            // add the link if not already there
+            var theLink = cwQueryService.dataverse_links[record.DataverseName].find(element => element.LinkName == record.LinkName && element.DVName == record.bucketDataverseName);
+            if (theLink == null) {
+              if (record.DatasetType == "EXTERNAL")
+                theLink = {LinkName: record.name, DVName: record.dataverse};
+              else
+                theLink = {LinkName: record.LinkName, DVName: record.bucketDataverseName};
+              cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+            }
+            // be able to access the link from the shadow record
+            record.link = theLink;
+            theLink.remaining = record.remaining;
           } else if (record.isDataverse) {
               cwQueryService.dataverses.push(record);
           } else if (record.isLink) {
-              cwQueryService.links.push(record);
+            // have we seen the link yet associated with a dataset?
+            if (!cwQueryService.dataverse_links[record.DataverseName])
+              cwQueryService.dataverse_links[record.DataverseName] = [];
+            var theLink = cwQueryService.dataverse_links[record.DataverseName].find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
+            if (theLink == null) {
+                theLink = {LinkName: record.Name, DVName: record.DataverseName};
+                cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+            }                
           }
         }
       }
@@ -1646,10 +1709,14 @@
                   var shadowingDataverseStats = shadowingStats[shadow.DataverseName];
                   if (shadowingDataverseStats.hasOwnProperty(shadow.id)) {
                     shadow.remaining = shadowingDataverseStats[shadow.id];
+                    if (shadow.link)
+                      shadow.link.remaining = shadow.remaining;
                     continue;
                   }
                 }
                 shadow.remaining = cwQueryService.datasetDisconnectedState;
+                if (shadow.link)
+                  shadow.link.remaining = shadow.remaining;
               }
           }
       }
@@ -2170,6 +2237,118 @@
         templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',
         scope: dialogScope
       });
+    }
+
+    function showConfirmationDialog(message) {
+      var subdirectory = '/ui-current';
+
+      var dialogScope = $rootScope.$new(true);
+      dialogScope.error_title = "Are you sure?";
+      dialogScope.error_detail = message;
+
+      return($uibModal.open({
+        templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',
+        scope: dialogScope
+      })).result;
+    }
+    //
+    // functions for creating, changing, and removing remote links
+    //
+    
+    function getCachedLinkInfo(dataverse,linkName) {
+        if (_.isArray(cwQueryService.links))
+          return cwQueryService.links.find(element => element.name == linkName && element.dataverse == dataverse);
+
+        return(null);
+    }
+
+    function getLink(dataverse,linkName) {
+      return $http({
+          url: "/_p/cbas/analytics/link",
+          method: "GET",
+          data: {dataverse: dataverse, name: linkName},
+      });
+    }
+
+    function deleteLink(datverse,linkName) {
+      return $http({
+          url: "/_p/cbas/analytics/link",
+          method: "DELETE",
+          data: {dataverse: dataverse, name: linkName},
+      });
+    }
+
+    function editLink(linkDialogScope) {
+      return $http({
+          url: "/_p/cbas/analytics/link",
+          method: "PUT",
+          data: convertDialogScopeToAPIdata(linkDialogScope),
+      });
+    }
+
+    function createLink(linkDialogScope) {
+      var request = {
+          url: "/_p/cbas/analytics/link",
+          method: "POST",
+          data: convertDialogScopeToAPIdata(linkDialogScope),
+      };
+      console.log(JSON.stringify(request,null,2));
+      return $http(request);
+    }
+
+    function convertDialogScopeToAPIdata(scope) {
+        var formData = {
+            dataverse: scope.dataverse,
+            name: scope.link_name,
+            type: scope.link_type
+        };
+        
+        if (scope.link_type == "couchbase") {
+            formData.hostname = scope.couchbase_link.hostname;
+            formData.username = scope.couchbase_link.username;
+            if (scope.couchbase_link.password)
+                formData.password = scope.couchbase_link.password;
+            formData.encryption = scope.couchbase_link.encryption_type;
+            if (scope.couchbase_link.encryption_type != "none") {
+                formData.certificate = scope.couchbase_link.certificate;
+                formData.clientCertificate = scope.couchbase_link.client_certificate;
+                formData.clientKey = scope.couchbase_link.client_key;
+            }
+        }
+        else if (scope.link_type == "s3") {
+            formData.accessKeyId = scope.s3_link.access_key_id;
+            if (scope.s3_link.access_key)
+              formData.secretAccessKey = scope.s3_link.access_key;
+            formData.region = scope.s3_link.region;
+            if (scope.s3_link.endpoint)
+              formData.serviceEndpoint = scope.s3_link.endpoint;
+        }
+        
+        return formData;
+    }
+
+    function convertAPIdataToDialogScope(apiData,scope) {
+        scope.link_name = apiData.name;
+        scope.link_type = apiData.type;
+        scope.dataverse = apiData.dataverse;
+        if (apiData.type == "couchbase") {
+            scope.couchbase_link.hostname = apiData.activeHostname;
+            scope.couchbase_link.username = apiData.username;
+            scope.couchbase_link.passward = apiData.password;
+            scope.couchbase_link.encryption_type = apiData.encryption;
+            if (apiData.encryption != "none") {
+                scope.couchbase_link.demand_encryption = true;
+                scope.couchbase_link.certificate = apiData.certificate;
+                scope.couchbase_link.client_certificate = apiData.clientCertificate;
+                scope.couchbase_link.client_key = apiData.clientKey;
+            }
+
+        } else if (apiData.type == "s3") {
+            scope.s3_link.access_key_id = apiData.accessKeyId;
+            scope.s3_link.access_key = apiData.secretAccessKey;
+            scope.s3_link.region = apiData.region;
+            scope.s3_link.endpoint = apiData.serviceEndpoint; 
+        }
     }
 
     //

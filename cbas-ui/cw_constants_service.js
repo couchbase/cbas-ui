@@ -62,12 +62,13 @@
     // 'has_sec' indicating secondary indexes. For a different system, just make sure
     // the returned schema has 'id' and 'has_prim'.
     cwConstantsService.keyspaceQuery =
-      "SELECT " +
+      "select i.* from (SELECT " +
       "  DataverseName, " +
       "  DataverseName || '.' || DatasetName AS fullName, " +
       "  DatasetName AS id, " +
       "  TRUE AS isDataset, " +
       "  BucketName AS bucketName, " +
+      "  BucketDataverseName as bucketDataverseName, " +
       "  `Filter` AS `filter`, " +
       "  LinkName,  " +
       "  DatasetType,  " +
@@ -105,7 +106,7 @@
       "  Name, " +
       "  TRUE as isLink " +
       "FROM " +
-      "  Metadata.`Link`;"
+      "  Metadata.`Link`) i order by i.isDataset desc;"
 
     // should we permit schema inquiries in the bucket analysis pane?
     cwConstantsService.showSchemas = false;
