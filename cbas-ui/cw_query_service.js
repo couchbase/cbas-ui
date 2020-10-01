@@ -1507,7 +1507,7 @@
       }).then(function success(resp) {
         if (resp && resp.data && _.isArray(resp.data)) {
             cwQueryService.links = resp.data;
-            console.log(resp.data);
+            //console.log(resp.data);
             }
         else
             cwQueryService.links = [];

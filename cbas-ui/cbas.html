@@ -1,14 +1,4 @@
-<style>
-  .tooltip-custom-wide .tooltip-inner {
-    max-width: 1024px;
-    width: auto;
-  }
-  .icon-button {
-    border: 1px solid #ccd3d7;
-  }
-</style>
 <div ng-show="qc.validated.valid()" class="wb-wrapper">
-
   <mn-element-cargo depot="actions" ng-if="qc.validated.valid()">
     <div class="header-controls">
       <a ng-if="qc.showOptions"
@@ -34,7 +24,7 @@
     <div class="wb-query-editor">
 <!-- Editor "header row" ------------------------------------------------------>
       <div class="wb-query-editor-header" ng-click="qc.handleClick('editor')">
-        <h4>Analytics Query Editor</h4>
+        <h4>Query Editor</h4>
         <span>
           <button
              title="View previous queries/results"
@@ -130,21 +120,19 @@
 
 <!-- query results ------------------------------------------------------------>
     <div class="wb-results-header" ng-click="qc.handleClick('results')">
-      <h4>Analytics Query Results
-        <a
-           ng-click="qc.copyResultAsCSV()"
-           class="margin-left-half"
-           title="Copy results in tabular format">
+      <h4>Query Results
+        <a ng-click="qc.copyResultAsCSV()" title="Copy results in tabular format">
           <span class="icon fa-copy"></span>
         </a>
-        <span ng-if="qc.lastResult.warnings"
-              tooltip-trigger="'mouseenter'"
-              tooltip-append-to-body="true"
-              tooltip-class="tooltip-custom-wide"
-              class="fa-warning icon force-orange-3 cursor-pointer"
-              uib-tooltip-html="'Showing {{qc.lastResult.limitedWarningsCount}} of {{qc.lastResult.warningCount}} warnings:<br/>'
-                                 + '{{qc.lastResultWarnings()}}'">
-          </span>
+        <span
+           ng-if="qc.lastResult.warnings"
+           tooltip-trigger="'mouseenter'"
+           tooltip-append-to-body="true"
+           tooltip-class="tooltip-custom-wide"
+           class="fa-warning icon force-orange-3 cursor-pointer"
+           uib-tooltip-html="'Showing {{qc.lastResult.limitedWarningsCount}} of {{qc.lastResult.warningCount}} warnings:<br/>'
+                             + '{{qc.lastResultWarnings()}}'">
+        </span>
       </h4>
       <span class="pills">
         <a ng-click="qc.selectTab(1)"
@@ -189,11 +177,11 @@
     </div>
   </div>
 
-<!-- datasets  sidebar -------------------------------------------------------->
+<!-- manage dataverses sidebar --------------------------------------------- -->
   <div class="insights-sidebar width-3 show-scrollbar resp-hide-sml">
     <div class="insights-sidebar-body">
-      <div class="row margin-bottom-half">
-        <h4>Dataverses</h4>
+      <div class="row margin-bottom-1">
+        <h4>Dataverses, Links, & Datasets</h4>
         <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
           <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
           <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
@@ -209,108 +197,116 @@
         </div>
         <div ng-if="!qc.qqs.bucket_errors">
           <section class="text-small" ng-repeat="dataverse in qc.dataverses">
-            <span class="row margin-bottom-0 margin-top-half">
-              <p class="margin-bottom-0">
-                Dataverse: {{dataverse.DataverseName}}
-              </p>
-              <span title="Add new link" ng-click="qc.createNewLink(dataverse)" class="icon-button grayblack-3">+<span class="icon fa-link"></span></span>
-            </span>
-            <span ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)">
-              <span class="row margin-bottom-0">
-                <p class="margin-bottom-0 margin-left-1 margin-top-half" ng-click="qc.editLink(link)" title="Edit link">
-                <span ng-if="link.DVName != dataverse.DataverseName">{{link.DVName}}.</span>{{link.LinkName}}
-                </p>
+            <div class="row grayblack-bg-7 margin-bottom-half" style="padding: .25rem .5rem .5rem 1rem">
+              <span>
+              <h6>dataverse</h6>
+              <h5>{{dataverse.DataverseName}}</h5>
+              </span>
+              <a ng-click="qc.createNewLink(dataverse)" class="text-smallish">
+                add link
+              </a>
+            </div>
+            <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)">
+              <div class="row margin-left-1-5 margin-right-half margin-top-half">
                 <span>
-                <span title="Add new dataset to link" ng-click="qc.createNewDataset(link)" class="icon-button grayblack-3">+<span class="icon fa-database"></span></span>
+                  <h5 class="inline">
+                    <span ng-if="link.DVName != dataverse.DataverseName">{{link.DVName}}.</span>
+                    {{link.LinkName}}
+                    <span ng-if="link.LinkName == 'Local'">Link</span>
+                  </h5>
+                  <span ng-hide="link.LinkName == 'Local'" class="label lt-blue sup">remote link</span>
                   <span
-                     ng-show="link.remaining === qc.datasetUnknownState"
+                     ng-if="link.remaining === qc.datasetUnknownState"
                      title="fetching link state..."
                      class="icon fa-spinner fa-pulse grayblack-3">
                   </span>
                   <span
-                     ng-show="link.remaining === qc.datasetDisconnectedState"
-                     title="disconnected, click to connect"
-                     class="icon-button icon fa-unlink red-3"
-                     ng-click="qc.connectLink(link)">
+                     ng-if="link.remaining === qc.datasetDisconnectedState"
+                     class="icon fa-unlink orange-1 cursor-pointer"
+                     ng-click="qc.connectLink(link)"
+                     tooltip-placement="auto top"
+                     tooltip-trigger="'mouseenter'"
+                     tooltip-append-to-body="true"
+                     uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'">
                   </span>
                   <span
-                     ng-show="link.remaining > 0 || link.remaining == 0  || link.remaining === qc.externalDatasetState"
-                     title="connected, click to disconnect"
-                     class="icon-button icon fa-link grayblack-3"
-                     ng-click="qc.disconnectLink(link)">
+                     ng-if="link.remaining > 0 || link.remaining == 0  || link.remaining === qc.externalDatasetState"
+                     class="icon fa-link cursor-pointer grayblue-1"
+                     ng-click="qc.disconnectLink(link)"
+                     tooltip-placement="auto top"
+                     tooltip-trigger="'mouseenter'"
+                     tooltip-append-to-body="true"
+                     uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'">
                   </span>
                 </span>
-              </span>
-            <span ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
-              <div
-               ng-init="shadow.expanded = false">
-                <span class="row margin-bottom-0 margin-left-2">
-                    <strong ng-class="{error : shadow.remaining === qc.datasetDisconnectedState}"
-                    ng-click="qc.editDataset(link,shadow)">
-                      {{shadow.id}}
-                    </strong>
-                   </span>
-
-                <div class="margin-bottom-half padding-left-half" ng-show="shadow.expanded">
-                  <p ng-show="!shadow.external" class="margin-bottom-half">
-                    Bucket:<br>
-                    {{shadow.LinkName}}.{{shadow.bucketName}}
-                    <span ng-show="shadow.filter">|</span> {{shadow.filter}}
-                  </p>
-                  <p ng-show="shadow.external" class="margin-bottom-half">
-                    Container:<br>
-                    {{shadow.container}}.{{shadow.bucketName}}
-                    <span ng-show="shadow.definition">|</span> {{shadow.definition}}
-                    <span ng-show="shadow.format">({{shadow.format}})</span>
-                  </p>
-                  <p class="margin-bottom-half" ng-show="shadow.indexes.length > 0">
-                    Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
-                    <span ng-repeat="idx in shadow.indexes">
-                      {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
+                <a
+                   title="Add new dataset to link"
+                   ng-click="qc.createNewDataset(link)"
+                   class="text-smallish">
+                  add dataset
+                </a>
+              </div>
+              <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
+                <div ng-init="shadow.expanded = false">
+                  <div class="row margin-left-1-5 margin-top-half">
+                    <span>
+                      <div
+                         class="disclosure inline"
+                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                         ng-click="shadow.expanded = !shadow.expanded">
+                        {{shadow.id}}
+                      </div>
+                      <span
+                         class="icon fa-database text-smaller grayblue-2 sup"
+                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
                     </span>
-                  </p>
-                </div>
-
-                <div class="margin-bottom-1 padding-left-half" ng-show="shadow.remaining > 0">
-                  <em class="text-smaller">
-                    remaining mutations: {{shadow.remaining}}
-                  </em>
+                  </div>
+<!-- expando section for details on each dataset -------------------------- -->
+                  <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
+                    <a
+                       ng-click="qc.editDataset(link,shadow)"
+                       class="inline margin-bottom-half margin-top-half">
+                      edit dataset
+                    </a>
+                    <p ng-show="!shadow.external" class="margin-bottom-half">
+                      {{shadow.LinkName}}.{{shadow.bucketName}}
+                      <span ng-show="shadow.filter">|</span> {{shadow.filter}}
+                    </p>
+                    <p ng-show="shadow.external" class="margin-bottom-half">
+                      Container:<br>
+                      {{shadow.container}}.{{shadow.bucketName}}
+                      <span ng-show="shadow.definition">|</span> {{shadow.definition}}
+                      <span ng-show="shadow.format">({{shadow.format}})</span>
+                    </p>
+                    <p class="margin-bottom-half" ng-show="shadow.indexes.length > 0">
+                      Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
+                      <span ng-repeat="idx in shadow.indexes">
+                        {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
+                      </span>
+                    </p>
+                  </div>
+                  <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
+                    <em class="text-smaller">
+                      remaining mutations: {{shadow.remaining}}
+                    </em>
+                  </div>
                 </div>
               </div>
-            </span>
-            </span>
-            <span
-               ng-show="shadow.remaining === qc.datasetDisconnectedState"
-               title="disconnected"
-               class="icon fa-unlink"
-               style="color: #e07f82">
-            </span>
-            <span
-               ng-show="shadow.remaining > 0 || shadow.remaining == 0"
-               title="connected"
-               class="icon fa-link">
-            </span>
+            </div>
           </section>
-
-          <!-- section class="margin-top-1">
-            <h5>Local Couchbase Buckets</h5>
-            <span class="text-small" ng-repeat="bucket in qc.clusterBuckets">
-              {{bucket}}<br>
-            </span>
-          </section -->
+        </div>
 
 <!-- datasets refresh button -------------------------------------------------->
-          <div class="row flex-right fix-position-br wb-refresh-btn">
-            <button
-               title="Refresh dataset insights"
-               ng-click="qc.updateBuckets()"
-               class="outline"
-               ng-disabled="qc.qqs.loadingBuckets">
-              Refresh &nbsp;
-              <span ng-if="qc.qqs.loadingBuckets" class="icon fa-refresh"></span>
-              <span ng-if="!qc.qqs.loadingBuckets" class="icon fa-refresh"></span>
-            </button>
-          </div>
+        <div class="row flex-right fix-position-br wb-refresh-btn">
+          <button
+             title="Refresh dataverses"
+             ng-click="qc.updateBuckets()"
+             class="outline"
+             ng-disabled="qc.qqs.loadingBuckets">
+            Refresh &nbsp;
+            <span ng-if="qc.qqs.loadingBuckets" class="icon fa-refresh"></span>
+            <span ng-if="!qc.qqs.loadingBuckets" class="icon fa-refresh"></span>
+          </button>
         </div>
       </div>
     </div>

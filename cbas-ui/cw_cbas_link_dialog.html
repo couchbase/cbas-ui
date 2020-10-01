@@ -1,7 +1,7 @@
 <div class="dialog-med">
   <div class="panel-header">
-    <h2 ng-show="options.is_new">Add Remote Link to {{options.dataverse}}</h2>
-    <h2 ng-show="!options.is_new">Edit Remote Link</h2>
+    <h2 ng-show="options.is_new">Add Link to {{options.dataverse}}</h2>
+    <h2 ng-show="!options.is_new">Edit Link</h2>
   </div>
   <form class="forms">
     <div class="panel-content">
@@ -20,7 +20,7 @@
            spellcheck="false"
            autocapitalize="off">
       </div>
-      
+
       <div class="formrow">
         <label for="cluster_reference_name">Link Type</label>
         <div class="checkbox-list formrow">
@@ -151,7 +151,7 @@
              placeholder="Copy/paste the certificate information from your remote cluster into this field. You can find the certificate information on the Couchbase Web Console in the security area.">
           </textarea>
         </div>
-        <div class="formrow" ng-if="couchbase_link.encryption_type == 'full'">
+        <div class="formrow" ng-if="options.couchbase_link.encryption_type == 'full'">
           <textarea
              rows="4"
              autocorrect="off"
@@ -172,7 +172,7 @@
         </textarea>
       </div>
       </div>
-            
+
       <!-- Options for S3 Links -->
       <div ng-if="options.link_type == 's3'">
 
@@ -233,9 +233,9 @@
            spellcheck="false"
            autocapitalize="off">
       </div>
-      
+
       </div>
-      
+
     </div>
 
     <div class="panel-footer">
