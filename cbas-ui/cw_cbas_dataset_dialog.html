@@ -1,7 +1,7 @@
 <div class="dialog-med">
   <div class="panel-header">
     <h2 ng-show="options.is_new">Add Dataset to {{options.link_name}}</h2>
-    <h2 ng-show="!options.is_new">View Dataset Details</h2>
+    <h2 ng-show="!options.is_new">Dataset Details</h2>
   </div>
   <form class="forms">
     <div class="panel-content">
@@ -18,14 +18,11 @@
 
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
       <div class="formrow">
-
         <label for="cluster_reference_name">Bucket Name</label>
-
         <select ng-disabled="!options.is_new" ng-if="options.clusterBuckets"
                 ng-model="options.bucket_name">
           <option ng-repeat="bucket in options.clusterBuckets">{{bucket}}</option>
         </select>
-
         <input
            ng-disabled="!options.is_new"
            ng-if="!options.clusterBuckets"
@@ -88,8 +85,6 @@
           <input ng-model="options.external_dataset.exclude" type="text" autocorrect="off"
                  spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
         </div>
-
-
       </div>
     </div>
 
@@ -98,8 +93,8 @@
       <button ng-if="options.is_new" type="submit" ng-click="$close('ok')">Save</button>
 
       <div ng-if="!options.is_new" class="row width-12">
-        <button ng-click="$close('drop')">Drop Dataset</button>
-        <a ng-click="$close('close')">Close</a>
+        <button class="outline" ng-click="$close('drop')">Drop Dataset</button>
+        <button class="outline"  ng-click="$close('close')">Close Dialog</button>
       </div>
     </div>
   </form>
