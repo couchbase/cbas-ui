@@ -209,7 +209,9 @@
             <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)">
               <div class="row margin-left-1-5 margin-right-half margin-top-half">
                 <span>
-                  <h5 class="inline">
+                  <h5 class="inline"
+                      ng-class="{'cursor-pointer' : link.LinkName != 'Local'}"
+                      ng-click="link.LinkName != 'Local' && qc.editLink(link)">
                     <span ng-if="link.DVName != dataverse.DataverseName">{{link.DVName}}.</span>
                     {{link.LinkName}}
                     <span ng-if="link.LinkName == 'Local'">Link</span>
@@ -266,7 +268,7 @@
                     <a
                        ng-click="qc.editDataset(link,shadow)"
                        class="inline margin-bottom-half margin-top-half">
-                      edit dataset
+                      dataset details
                     </a>
                     <p ng-show="!shadow.external" class="margin-bottom-half">
                       {{shadow.LinkName}}.{{shadow.bucketName}}

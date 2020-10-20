@@ -1431,6 +1431,12 @@
     };
     var linkDialogScope = $rootScope.$new(true);
     linkDialogScope.options = linkOptions;
+    linkDialogScope.change_encryption = function() {
+      if (!linkDialogScope.options.couchbase_link.demand_encryption)
+        linkDialogScope.options.couchbase_link.encryption_type = "none";
+      else
+        linkDialogScope.options.couchbase_link.encryption_type = "half";
+    }
 
     function createNewLink(dataverse) {
       linkDialogScope.options.dataverse = dataverse.DataverseName;
@@ -1457,7 +1463,7 @@
     }
 
     function editLink(link) {
-      console.log("Edit Link");
+      //console.log("Edit Link");
       // get the info about the link
       var linkInfo = cwQueryService.getCachedLinkInfo(link.DVName, link.LinkName);
       if (linkInfo) {
@@ -1509,7 +1515,7 @@
     };
 
     function createNewDataset(link) {
-      console.log("Creating new dataset for: " + JSON.stringify(link));
+      //console.log("Creating new dataset for: " + JSON.stringify(link));
       if (link.LinkName == "Local")
         dataset_options.clusterBuckets = qc.clusterBuckets;
       else
@@ -1553,7 +1559,7 @@
             queryText += " }";
           }
 
-          console.log("Got create query: " + queryText);
+          //console.log("Got create query: " + queryText);
 
           cwQueryService.executeQueryUtil(queryText, false, false)
             .then(function success() {
@@ -1592,7 +1598,7 @@
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
-          console.log("showed dataset, got resp: " + resp);
+          //console.log("showed dataset, got resp: " + resp);
           if (resp == "drop") {
             $uibModalStack.dismissAll();
             cwQueryService.showConfirmationDialog("Are you sure you want to delete dataset: " +

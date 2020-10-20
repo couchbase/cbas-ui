@@ -2302,28 +2302,35 @@
             name: scope.link_name,
             type: scope.link_type
         };
-        
+
         if (scope.link_type == "couchbase") {
             formData.hostname = scope.couchbase_link.hostname;
-            formData.username = scope.couchbase_link.username;
+            if (scope.couchbase_link.username)
+              formData.username = scope.couchbase_link.username;
             if (scope.couchbase_link.password)
                 formData.password = scope.couchbase_link.password;
-            formData.encryption = scope.couchbase_link.encryption_type;
-            if (scope.couchbase_link.encryption_type != "none") {
+            if (!scope.couchbase_link.demand_encryption)
+              formData.encryption = "none";
+            else
+              formData.encryption = scope.couchbase_link.encryption_type;
+            if (formData.encryption != "none") {
+              if (scope.couchbase_link.certificate)
                 formData.certificate = scope.couchbase_link.certificate;
+              if (scope.couchbase_link.client_certificate)
                 formData.clientCertificate = scope.couchbase_link.client_certificate;
+              if (scope.couchbase_link.client_key)
                 formData.clientKey = scope.couchbase_link.client_key;
             }
         }
         else if (scope.link_type == "s3") {
-            formData.accessKeyId = scope.s3_link.access_key_id;
-            if (scope.s3_link.access_key)
-              formData.secretAccessKey = scope.s3_link.access_key;
-            formData.region = scope.s3_link.region;
-            if (scope.s3_link.endpoint)
-              formData.serviceEndpoint = scope.s3_link.endpoint;
+          formData.accessKeyId = scope.s3_link.access_key_id;
+          if (scope.s3_link.access_key)
+            formData.secretAccessKey = scope.s3_link.access_key;
+          formData.region = scope.s3_link.region;
+          if (scope.s3_link.endpoint)
+            formData.serviceEndpoint = scope.s3_link.endpoint;
         }
-        
+
         return formData;
     }
 

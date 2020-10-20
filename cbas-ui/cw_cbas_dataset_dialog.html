@@ -3,7 +3,7 @@
     <h2 ng-show="options.is_new">Add Dataset to {{options.link_name}}</h2>
     <h2 ng-show="!options.is_new">Dataset Details</h2>
   </div>
-  <form class="forms">
+  <form class="forms" name="datasetForm">
     <div class="panel-content">
       <div class="error error-form">
         <div ng-repeat="error in errors">
@@ -13,14 +13,14 @@
       <div class="formrow">
         <label for="cluster_reference_name">Dataset Name</label>
         <input ng-disabled="!options.is_new"ng-model="options.dataset_name" type="text" autocorrect="off"
-           spellcheck="false" autocapitalize="off">
+           spellcheck="false" autocapitalize="off" required>
       </div>
 
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
       <div class="formrow">
         <label for="cluster_reference_name">Bucket Name</label>
         <select ng-disabled="!options.is_new" ng-if="options.clusterBuckets"
-                ng-model="options.bucket_name">
+                ng-model="options.bucket_name" required>
           <option ng-repeat="bucket in options.clusterBuckets">{{bucket}}</option>
         </select>
         <input
@@ -30,7 +30,7 @@
            type="text"
            autocorrect="off"
            spellcheck="false"
-           autocapitalize="off">
+           autocapitalize="off" required>
       </div>
 
       <div class="formrow">
@@ -42,7 +42,7 @@
            autocompleterg="off"
            spellcheck="false"
            ng-model="options.where"
-           placeholder="Optional WHERE clause to filter documents in the dataset.">
+           placeholder="Optional WHERE clause to filter documents in the dataset. Do not include the 'WHERE' keyword. E.g.,&nbsp;&nbsp;`type` = 'beer'">
         </textarea>
       </div>
 
@@ -77,20 +77,20 @@
         <div class="formrow">
           <label>Include</label>
           <input ng-model="options.external_dataset.include" type="text" autocorrect="off"
-                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new || options.external_dataset.exclude">
         </div>
 
         <div class="formrow">
           <label>Exclude</label>
           <input ng-model="options.external_dataset.exclude" type="text" autocorrect="off"
-                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new || options.external_dataset.include">
         </div>
       </div>
     </div>
 
     <div class="panel-footer">
       <a ng-if="options.is_new" ng-click="$dismiss('cancel')">Cancel</a>
-      <button ng-if="options.is_new" type="submit" ng-click="$close('ok')">Save</button>
+      <button ng-disabled="datasetForm.$invalid" ng-if="options.is_new" type="submit" ng-click="$close('ok')">Save</button>
 
       <div ng-if="!options.is_new" class="row width-12">
         <button class="outline" ng-click="$close('drop')">Drop Dataset</button>

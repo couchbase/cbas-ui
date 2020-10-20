@@ -3,7 +3,7 @@
     <h2 ng-show="options.is_new">Add Link to {{options.dataverse}}</h2>
     <h2 ng-show="!options.is_new">Edit Link</h2>
   </div>
-  <form class="forms">
+  <form class="forms" name="linkForm">
     <div class="panel-content">
       <div class="error error-form">
         <div ng-repeat="error in errors">
@@ -18,7 +18,8 @@
            type="text"
            autocorrect="off"
            spellcheck="false"
-           autocapitalize="off">
+           autocapitalize="off"
+           required>
       </div>
 
       <div class="formrow">
@@ -73,7 +74,8 @@
            type="text"
            autocorrect="off"
            spellcheck="false"
-           autocapitalize="off">
+           autocapitalize="off"
+           required>
       </div>
       <div class="formrow">
         <label>Username for Remote Cluster</label>
@@ -88,9 +90,10 @@
         <label>Password</label>
         <input
            ng-model="options.couchbase_link.password"
-           type="text"
+           type="password"
            autocorrect="off"
            spellcheck="false"
+           autocomplete="one-time-code"
            mn-autocomplete-off>
       </div>
 
@@ -99,6 +102,7 @@
          class="formrow checkbox-list">
         <input
            ng-model="options.couchbase_link.demand_encryption"
+           ng-click="change_encryption()"
            id="for_encryption_enable"
            type="checkbox">
         <label for="for_encryption_enable" class="margin-right-zero">
@@ -106,7 +110,7 @@
         </label>
         <span
            class="fa-stack icon-info"
-           uib-tooltip="XDCR will employ SCRAM-SHA to secure only the password
+           uib-tooltip="SCRAM-SHA will be employed to secure only the password
           (if Half is selected), or will encrypt both data and password using
           TLS (if Full is selected)."
            tooltip-placement="auto top">
@@ -141,7 +145,7 @@
             </label>
           </div>
         </div>
-        <div class="formrow">
+        <div class="formrow" ng-if="options.couchbase_link.encryption_type == 'full'">
           <textarea
              rows="4"
              autocorrect="off"
@@ -162,7 +166,7 @@
           </textarea>
         </div>
         <textarea
-           ng-if="couchbase_link.encryption_type == 'full'"
+           ng-if="options.couchbase_link.encryption_type == 'full'"
            rows="4"
            autocorrect="off"
            autocompleterg="off"
@@ -183,21 +187,26 @@
            type="text"
            autocorrect="off"
            spellcheck="false"
-           autocapitalize="off">
+           autocapitalize="off"
+           required>
       </div>
       <div class="formrow">
         <label>Secret Access Key</label>
-        <textarea
+        <input
            rows=4
            ng-model="options.s3_link.access_key"
            autocorrect="off"
            spellcheck="false"
-           mn-autocomplete-off>
-         </textarea>
+           mn-autocomplete-off
+           type="password"
+           name="secret_s3_key"
+           autocomplete="one-time-code"
+           required>
+         </input>
       </div>
       <div class="formrow">
         <label>Region</label>
-        <select ng-model="options.s3_link.region">
+        <select ng-model="options.s3_link.region" required>
           <option>af-south-1</option>
           <option>ap-east-1</option>
           <option>ap-northeast-1</option>
@@ -240,7 +249,7 @@
 
     <div class="panel-footer">
       <a  ng-click="$dismiss('cancel')">Cancel</a>
-      <button type="submit" ng-click="$close('ok')">Save</button>
+      <button ng-disabled="linkForm.$invalid" type="submit" ng-click="$close('ok')">Save</button>
     </div>
   </form>
 </div>
