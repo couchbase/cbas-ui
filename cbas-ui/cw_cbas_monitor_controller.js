@@ -2,7 +2,7 @@ import _ from "/ui/web_modules/lodash.js";
 
 export default cwCbasMonitorController;
 
-function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions, qwQueryService) {
+function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions) {
   var qmc = this;
 
   //
@@ -43,8 +43,6 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
       qmc.options().active_sort_reverse = !qmc.active_sort_reverse;
     else
       qmc.options().active_sort_by = field;
-
-    qwQueryService.saveStateToStorage();
   };
   qmc.show_up_caret_active = function(field) {
     return(qmc.options().active_sort_by == field && qmc.options().active_sort_reverse);
@@ -58,8 +56,6 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
       qmc.options().completed_sort_reverse = !qmc.options().completed_sort_reverse;
     else
       qmc.options().completed_sort_by = field;
-
-    qwQueryService.saveStateToStorage();
   };
   qmc.show_up_caret_completed = function(field) {
     return(qmc.options().completed_sort_by == field && qmc.options().completed_sort_reverse);
@@ -195,7 +191,6 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
       cwQueryService.setMonitoringAutoUpdate(true);
       update();
     }
-    //qwQueryService.userAutoUpdate = qwQueryService.monitoringAutoUpdate;
   }
 
   function get_toggle_label() {

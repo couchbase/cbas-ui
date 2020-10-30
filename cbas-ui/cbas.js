@@ -21,7 +21,6 @@ import mnStatisticsNewService from "/ui/app/mn_admin/mn_statistics_service.js";
 import cwCbasMonitorController from "/_p/ui/cbas/cw_cbas_monitor_controller.js";
 import cbasController from "/_p/ui/cbas/cw_cbas_controller.js";
 
-import qwQueryService from "/_p/ui/query/qw_query_service.js";
 import cwQueryService from "/_p/ui/cbas/cw_query_service.js";
 import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
 import validateCbasService from "./validate_cbas_service.js"
@@ -47,7 +46,6 @@ angular.module('cwCbas', [
   mnServersService,
   mnStatisticsNewService,
 
-  qwQueryService,
   cwQueryService,
   cwConstantsService,
   validateCbasService,
