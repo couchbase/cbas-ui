@@ -1,8 +1,9 @@
-import _ from "/ui/web_modules/lodash.js";
+import {is} from '/ui/web_modules/ramda.js';
+import mnStatsDesc from "/ui/app/mn_admin/mn_statistics_description.js";
 
 export default cwCbasMonitorController;
 
-function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions) {
+function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions, mnPoolDefault) {
   var qmc = this;
 
   //
@@ -31,8 +32,11 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
   qmc.get_update_flag = function() {return(cwQueryService.getMonitoringAutoUpdate());}
   qmc.options = cwQueryService.getMonitoringOptions;
 
-  qmc.getLatestStat = getLatestStat;
-  qmc.getAverageStat = getAverageStat;
+  qmc.getLatestStat =
+    mnPoolDefault.export.compat.atLeast70 ? getLatestStat70 : getLatestStat;
+
+  qmc.getAverageStat =
+    mnPoolDefault.export.compat.atLeast70 ? getAverageStat70 : getAverageStat;
 
   //
   // sorting for each of the two result tables
@@ -98,7 +102,7 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
     case 2: result = qmc.monitoring.completed_updated; break;
     }
 
-    if (_.isDate(result)) {
+    if (is(Date, result)) {
       var minutes = result.getMinutes() > 9 ? result.getMinutes() : "0" + result.getMinutes();
       var seconds = result.getSeconds() > 9 ? result.getSeconds() : "0" + result.getSeconds();
       var dateStr = result.toString();
@@ -109,20 +113,25 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
     return result;
   }
 
+  let statsNames = [
+      '@cbas.cbas_disk_used',            // disk used in bytes
+      '@cbas.cbas_gc_count',             // gc/second (i.e., rate)
+      '@cbas.cbas_gc_time',              // ms/sec spent in gc
+      '@cbas.cbas_heap_used',            // heap size in bytes
+      '@cbas.cbas_system_load_average',  //
+      '@cbas.cbas_thread_count'         //
+  ];
+
+  statsNames =
+    mnPoolDefault.export.compat.atLeast70 ? statsNames.map(mnStatsDesc.mapping65) : statsNames;
+
   qmc.statsConfig = {
     bucket: mnPermissions.export.bucketNames['.stats!read'] &&
       mnPermissions.export.bucketNames['.stats!read'][0],
     node: "all",
     zoom: 5000,
     step: 1,
-    stats: [
-      'cbas_disk_used',            // disk used in bytes
-      'cbas_gc_count',             // gc/second (i.e., rate)
-      'cbas_gc_time',              // ms/sec spent in gc
-      'cbas_heap_used',            // heap size in bytes
-      'cbas_system_load_average',  //
-      'cbas_thread_count'         //
-    ]
+    stats: statsNames
   };
 
   //
@@ -131,8 +140,18 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
 
   function getLatestStat(name) {
     var s = $scope.mnUIStats;
-    if (s && s.stats && s.stats[name] && _.isArray(s.stats[name].aggregate)) {
+    if (s && s.stats && s.stats[name] && Array.isArray(s.stats[name].aggregate)) {
       return(s.stats[name].aggregate.slice(-1)[0]);
+    }
+    else
+      return null;
+  }
+
+  function getLatestStat70(name) {
+    var s = $scope.mnUIStats;
+    name = mnStatsDesc.mapping65(name);
+    if (s && s.stats && s.stats[name] && Array.isArray(s.stats[name].aggregate)) {
+      return(s.stats[name].aggregate.values.slice(-1)[0]);
     }
     else
       return null;
@@ -144,10 +163,21 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
 
   function getAverageStat(name) {
     var s = $scope.mnUIStats;
-    if (s && s.stats && s.stats[name] && _.isArray(s.stats[name].aggregate)) {
+    if (s && s.stats && s.stats[name] && Array.isArray(s.stats[name].aggregate)) {
       var sum = 0;
       s.stats[name].aggregate.forEach(function(n) {sum+=n});
       return(sum/s.stats[name].aggregate.length);
+    }
+    else
+      return null;
+  }
+
+  function getAverageStat70(name) {
+    var s = $scope.mnUIStats;
+    name = mnStatsDesc.mapping65(name);
+    if (s && s.stats && s.stats[name] && s.stats[name].aggregate) {
+      let sum = s.stats[name].aggregate.values.reduce((sum, n) => sum + (Number(n) || 0), 0);
+      return sum / s.stats[name].aggregate.values.length;
     }
     else
       return null;
