@@ -150,8 +150,8 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
   function getLatestStat70(name) {
     var s = $scope.mnUIStats;
     name = mnStatsDesc.mapping65(name);
-    if (s && s.stats && s.stats[name] && Array.isArray(s.stats[name].aggregate)) {
-      return(s.stats[name].aggregate.values.slice(-1)[0]);
+    if (s && s.stats && s.stats[name] && s.stats[name].aggregate) {
+      return(s.stats[name].aggregate.values.slice(-1)[0][1]);
     }
     else
       return null;
@@ -176,7 +176,7 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
     var s = $scope.mnUIStats;
     name = mnStatsDesc.mapping65(name);
     if (s && s.stats && s.stats[name] && s.stats[name].aggregate) {
-      let sum = s.stats[name].aggregate.values.reduce((sum, n) => sum + (Number(n) || 0), 0);
+      let sum = s.stats[name].aggregate.values.reduce((sum, n) => sum + (Number(n[1]) || 0), 0);
       return sum / s.stats[name].aggregate.values.length;
     }
     else
