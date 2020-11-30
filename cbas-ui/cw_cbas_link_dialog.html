@@ -1,0 +1,255 @@
+<div class="dialog-med">
+  <div class="panel-header">
+    <h2 ng-show="options.is_new">Add Link to {{options.dataverse}}</h2>
+    <h2 ng-show="!options.is_new">Edit Link</h2>
+  </div>
+  <form class="forms" name="linkForm">
+    <div class="panel-content">
+      <div class="error error-form">
+        <div ng-repeat="error in errors">
+          Attention: {{error}}
+        </div>
+      </div>
+      <div class="formrow">
+        <label for="cluster_reference_name">Link Name</label>
+        <input
+           ng-disabled="!options.is_new"
+           ng-model="options.link_name"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off"
+           required>
+      </div>
+
+      <div class="formrow">
+        <label for="cluster_reference_name">Link Type</label>
+        <div class="checkbox-list formrow">
+          <div>
+            <input
+               ng-disabled="!options.is_new"
+               type="radio"
+               value="couchbase"
+               id="couchbase_link"
+               ng-model="options.link_type">
+            <label
+               ng-disabled="!options.is_new"
+               for="couchbase_link"
+               class="checkbox">
+              Couchbase
+            </label>
+          </div>
+          <div>
+            <input
+               ng-disabled="!options.is_new"
+               type="radio"
+               value="s3"
+               id="s3_link"
+               ng-model="options.link_type">
+            <label
+               ng-disabled="!options.is_new"
+               for="s3_link"
+               class="checkbox">
+              S3
+            </label>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Options for Couchbase Links -->
+      <div ng-if="options.link_type == 'couchbase'">
+      <div class="formrow">
+        <label for="cluster_reference_hostname" class="inline">Remote IP/Hostname</label>
+        <span
+           class="fa-stack icon-info"
+           uib-tooltip="This is the hostname or IP address of a node in the remote cluster you want to link. IPv6 addresses need to be enclosed in square brackets."
+           tooltip-placement="auto right">
+          <span class="icon fa-circle-thin fa-stack-2x"></span>
+          <span class="icon fa-info fa-stack-1x"></span>
+        </span>
+        <input
+           ng-model="options.couchbase_link.hostname"
+           id="cluster_reference_hostname"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off"
+           required>
+      </div>
+      <div class="formrow">
+        <label>Username for Remote Cluster</label>
+        <input
+           ng-model="options.couchbase_link.username"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off">
+      </div>
+      <div class="formrow">
+        <label>Password</label>
+        <input
+           ng-model="options.couchbase_link.password"
+           type="password"
+           autocorrect="off"
+           spellcheck="false"
+           autocomplete="one-time-code"
+           mn-autocomplete-off>
+      </div>
+
+      <!-- encryption options -->
+      <div
+         class="formrow checkbox-list">
+        <input
+           ng-model="options.couchbase_link.demand_encryption"
+           ng-click="change_encryption()"
+           id="for_encryption_enable"
+           type="checkbox">
+        <label for="for_encryption_enable" class="margin-right-zero">
+          Enable Secure Connection
+        </label>
+        <span
+           class="fa-stack icon-info"
+           uib-tooltip="SCRAM-SHA will be employed to secure only the password
+          (if Half is selected), or will encrypt both data and password using
+          TLS (if Full is selected)."
+           tooltip-placement="auto top">
+          <span class="icon fa-circle-thin fa-stack-2x"></span>
+          <span class="icon fa-info fa-stack-1x"></span>
+        </span>
+      </div>
+      <div class="formrow" ng-show="options.couchbase_link.demand_encryption">
+        <div class="checkbox-list formrow">
+          <div>
+            <input
+               type="radio"
+               value="half"
+               id="for_encription_type_half"
+               ng-model="options.couchbase_link.encryption_type">
+            <label
+               for="for_encription_type_half"
+               class="checkbox">
+              Half (secure password with SCRAM-SHA)
+            </label>
+          </div>
+          <div>
+            <input
+               type="radio"
+               value="full"
+               id="for_encription_type_full"
+               ng-model="options.couchbase_link.encryption_type">
+            <label
+               for="for_encription_type_full"
+               class="checkbox">
+              Full (TLS encrypt password and data)
+            </label>
+          </div>
+        </div>
+        <div class="formrow" ng-if="options.couchbase_link.encryption_type == 'full'">
+          <textarea
+             rows="4"
+             autocorrect="off"
+             autocompleterg="off"
+             spellcheck="false"
+             ng-model="options.couchbase_link.certificate"
+             placeholder="Copy/paste the certificate information from your remote cluster into this field. You can find the certificate information on the Couchbase Web Console in the security area.">
+          </textarea>
+        </div>
+        <div class="formrow" ng-if="options.couchbase_link.encryption_type == 'full'">
+          <textarea
+             rows="4"
+             autocorrect="off"
+             autocompleterg="off"
+             spellcheck="false"
+             ng-model="options.couchbase_link.client_certificate"
+             placeholder="Client Certificate">
+          </textarea>
+        </div>
+        <textarea
+           ng-if="options.couchbase_link.encryption_type == 'full'"
+           rows="4"
+           autocorrect="off"
+           autocompleterg="off"
+           spellcheck="false"
+           ng-model="options.couchbase_link.client_key"
+           placeholder="Client Key">
+        </textarea>
+      </div>
+      </div>
+
+      <!-- Options for S3 Links -->
+      <div ng-if="options.link_type == 's3'">
+
+      <div class="formrow">
+        <label>Access Key ID</label>
+        <input
+           ng-model="options.s3_link.access_key_id"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off"
+           required>
+      </div>
+      <div class="formrow">
+        <label>Secret Access Key</label>
+        <input
+           rows=4
+           ng-model="options.s3_link.access_key"
+           autocorrect="off"
+           spellcheck="false"
+           mn-autocomplete-off
+           type="password"
+           name="secret_s3_key"
+           autocomplete="one-time-code"
+           required>
+         </input>
+      </div>
+      <div class="formrow">
+        <label>Region</label>
+        <select ng-model="options.s3_link.region" required>
+          <option>af-south-1</option>
+          <option>ap-east-1</option>
+          <option>ap-northeast-1</option>
+          <option>ap-northeast-2</option>
+          <option>ap-northeast-3</option>
+          <option>ap-south-1</option>
+          <option>ap-southeast-1</option>
+          <option>ap-southeast-2</option>
+          <option>ca-central-1</option>
+          <option>cn-north-1</option>
+          <option>cn-northwest-1</option>
+          <option>eu-central-1</option>
+          <option>eu-north-1</option>
+          <option>eu-south-1</option>
+          <option>eu-west-1</option>
+          <option>eu-west-2</option>
+          <option>eu-west-3</option>
+          <option>me-south-1</option>
+          <option>sa-east-1</option>
+          <option>us-east-1</option>
+          <option>us-east-2</option>
+          <option>us-west-1</option>
+          <option>us-west-2</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <label>Endpoint</label>
+        <input
+           ng-model="options.s3_link.endpoint"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off">
+      </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-footer">
+      <a  ng-click="$dismiss('cancel')">Cancel</a>
+      <button ng-disabled="linkForm.$invalid" type="submit" ng-click="$close('ok')">Save</button>
+    </div>
+  </form>
+</div>

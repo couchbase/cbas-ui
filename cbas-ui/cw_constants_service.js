@@ -74,6 +74,7 @@ function getCwConstantsService() {
       "  DatasetName AS id, " +
       "  TRUE AS isDataset, " +
       "  BucketName AS bucketName, " +
+      "  BucketDataverseName as bucketDataverseName, " +
       "  `Filter` AS `filter`, " +
       "  LinkName,  " +
       "  DatasetType,  " +
