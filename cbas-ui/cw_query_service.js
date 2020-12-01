@@ -89,13 +89,13 @@
     //
     // managing links
     //
-    
+
     cwQueryService.createLink = createLink;
     cwQueryService.deleteLink = deleteLink;
     cwQueryService.editLink = editLink;
     cwQueryService.getLink = getLink;
     cwQueryService.getCachedLinkInfo = getCachedLinkInfo;
-    cwQueryService.convertAPIdataToDialogScope = convertAPIdataToDialogScope;     
+    cwQueryService.convertAPIdataToDialogScope = convertAPIdataToDialogScope;
     //
     // keep track of the bucket and field names we have seen, for use in autocompletion
     //
@@ -1499,7 +1499,7 @@
           .finally(function () {
             cwQueryService.loadingBuckets = false;
           });
-          
+
       // we need more details about links, however, so use the REST API to get that also
       $http({
           url: "/_p/cbas/analytics/link",
@@ -1543,23 +1543,22 @@
             }
             cwQueryService.shadows.push(record);
             addToken(record.id, "shadow");
-            
+
             // every dataset is part of a dataverse, but it can use a link from another
-            // dataverse. Thus we must keep track of all the links used by any dataset in 
+            // dataverse. Thus we must keep track of all the links used by any dataset in
             // the dataverse, even if the link is in another dataverse. Our data structure
-            // will be an object with keys for each dataverse name, whose value is an array 
+            // will be an object with keys for each dataverse name, whose value is an array
             // of link/dataverse name pairs.
-            
+
             // ensure an entry for the dataverse
             if (!cwQueryService.dataverse_links[record.DataverseName])
               cwQueryService.dataverse_links[record.DataverseName] = [];
             // add the link if not already there
-            var theLink = cwQueryService.dataverse_links[record.DataverseName].find(element => element.LinkName == record.LinkName && element.DVName == record.bucketDataverseName);
+            var linkName = (record.DatasetType == "EXTERNAL") ? record.name : record.LinkName;
+            var theLink = cwQueryService.dataverse_links[record.DataverseName]
+              .find(element => element.LinkName == linkName && element.DVName == record.DataverseName);
             if (theLink == null) {
-              if (record.DatasetType == "EXTERNAL")
-                theLink = {LinkName: record.name, DVName: record.dataverse};
-              else
-                theLink = {LinkName: record.LinkName, DVName: record.bucketDataverseName};
+              theLink = {LinkName: linkName, DVName: record.DataverseName, LinkType: record.DatasetType };
               cwQueryService.dataverse_links[record.DataverseName].push(theLink);
             }
             // be able to access the link from the shadow record
@@ -1571,11 +1570,13 @@
             // have we seen the link yet associated with a dataset?
             if (!cwQueryService.dataverse_links[record.DataverseName])
               cwQueryService.dataverse_links[record.DataverseName] = [];
-            var theLink = cwQueryService.dataverse_links[record.DataverseName].find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
+            var theLink = cwQueryService.dataverse_links[record.DataverseName]
+              .find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
             if (theLink == null) {
-                theLink = {LinkName: record.Name, DVName: record.DataverseName};
-                cwQueryService.dataverse_links[record.DataverseName].push(theLink);
-            }                
+              var linkType = (record.LinkType == "S3") ? "EXTERNAL" : "INTERNAL";
+              theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType};
+              cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+            }
           }
         }
       }
@@ -2254,7 +2255,7 @@
     //
     // functions for creating, changing, and removing remote links
     //
-    
+
     function getCachedLinkInfo(dataverse,linkName) {
         if (_.isArray(cwQueryService.links))
           return cwQueryService.links.find(element => element.name == linkName && element.dataverse == dataverse);
@@ -2354,7 +2355,7 @@
             scope.s3_link.access_key_id = apiData.accessKeyId;
             scope.s3_link.access_key = apiData.secretAccessKey;
             scope.s3_link.region = apiData.region;
-            scope.s3_link.endpoint = apiData.serviceEndpoint; 
+            scope.s3_link.endpoint = apiData.serviceEndpoint;
         }
     }
 

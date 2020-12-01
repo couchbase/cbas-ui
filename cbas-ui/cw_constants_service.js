@@ -104,9 +104,10 @@
       "SELECT " +
       "  DataverseName, " +
       "  Name, " +
+      "  `Type` as LinkType, " +
       "  TRUE as isLink " +
       "FROM " +
-      "  Metadata.`Link`) i order by i.isDataset desc;"
+      "  Metadata.`Link`) i order by i.isDataset desc;";
 
     // should we permit schema inquiries in the bucket analysis pane?
     cwConstantsService.showSchemas = false;
