@@ -1601,12 +1601,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           if (!cwQueryService.dataverse_links[record.DataverseName])
             cwQueryService.dataverse_links[record.DataverseName] = [];
           // add the link if not already there
-          var theLink = cwQueryService.dataverse_links[record.DataverseName].find(element => element.LinkName == record.LinkName && element.DVName == record.bucketDataverseName);
+          var linkName = (record.DatasetType == "EXTERNAL") ? record.name : record.LinkName;
+          var theLink = cwQueryService.dataverse_links[record.DataverseName]
+            .find(element => element.LinkName == linkName && element.DVName == record.DataverseName);
           if (theLink == null) {
-            if (record.DatasetType == "EXTERNAL")
-              theLink = {LinkName: record.name, DVName: record.dataverse};
-            else
-              theLink = {LinkName: record.LinkName, DVName: record.bucketDataverseName};
+            theLink = { LinkName: linkName, DVName: record.dataverse, LinkType: record.DatasetType };
             cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           }
           // be able to access the link from the shadow record
@@ -1618,9 +1617,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           // have we seen the link yet associated with a dataset?
           if (!cwQueryService.dataverse_links[record.DataverseName])
             cwQueryService.dataverse_links[record.DataverseName] = [];
-          var theLink = cwQueryService.dataverse_links[record.DataverseName].find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
+          var theLink = cwQueryService.dataverse_links[record.DataverseName]
+            .find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
           if (theLink == null) {
-            theLink = {LinkName: record.Name, DVName: record.DataverseName};
+            var linkType = (record.LinkType == "S3") ? "EXTERNAL" : "INTERNAL";
+            theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType};
             cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           }
         }

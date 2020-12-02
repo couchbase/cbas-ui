@@ -111,9 +111,10 @@ function getCwConstantsService() {
       "SELECT " +
       "  DataverseName, " +
       "  Name, " +
+      "  `Type` as LinkType, " +
       "  TRUE as isLink " +
       "FROM " +
-      "  Metadata.`Link`;"
+      "  Metadata.`Link`;";
 
   // should we permit schema inquiries in the bucket analysis pane?
   cwConstantsService.showSchemas = false;

@@ -217,12 +217,14 @@
                     {{link.LinkName}}
                     <span ng-if="link.LinkName == 'Local'">Link</span>
                   </h5>
-                  <span ng-hide="link.LinkName == 'Local'" class="label lt-blue sup">remote link</span>
+                  <span ng-if="link.LinkName != 'Local' && link.LinkType == 'INTERNAL'" class="label lt-blue sup">couchbase link</span>
+                  <span ng-if="link.LinkName != 'Local' && link.LinkType == 'EXTERNAL'" class="label lt-blue sup">s3 link</span>
                   <span
                      ng-if="link.remaining === qc.datasetUnknownState"
                      title="fetching link state..."
                      class="icon fa-spinner fa-pulse grayblack-3">
                   </span>
+                  <span ng-if="link.LinkType == 'INTERNAL'">
                   <span
                      ng-if="link.remaining === qc.datasetDisconnectedState"
                      class="icon fa-unlink orange-1 cursor-pointer"
@@ -240,6 +242,7 @@
                      tooltip-trigger="'mouseenter'"
                      tooltip-append-to-body="true"
                      uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'">
+                  </span>
                   </span>
                 </span>
                 <a
