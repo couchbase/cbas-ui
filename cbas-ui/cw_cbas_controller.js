@@ -1294,6 +1294,9 @@ export default cbasController;
       // get the list of buckets
       qc.updateBuckets();
 
+      // load the AWS supported regions
+      cwQueryService.getAwsSupportedRegions();
+
       //
       // now let's make sure the window is the right size
       //
@@ -1435,6 +1438,7 @@ export default cbasController;
     function createNewLink(dataverse) {
       linkDialogScope.options.dataverse = dataverse.DataverseName;
       linkDialogScope.options.is_new = true;
+      linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
 
       // bring up the dialog
       $uibModal.open({
@@ -1458,6 +1462,8 @@ export default cbasController;
 
     function editLink(link) {
       //console.log("Edit Link");
+      linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
+
       // get the info about the link
       var linkInfo = cwQueryService.getCachedLinkInfo(link.DVName, link.LinkName);
       if (linkInfo) {

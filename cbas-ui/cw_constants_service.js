@@ -42,6 +42,9 @@ function getCwConstantsService() {
   // URL to use to get the analytics stats
   cwConstantsService.analyticsStatsURL = "../_p/cbas/analytics/node/agg/stats/remaining";
 
+  // URL to use to get AWS supported regions
+  cwConstantsService.awsRegionsURL = "../_p/cbas/analytics/link/enum/s3/region";
+
   // should we get passwords from the Couchbase server?
   cwConstantsService.getCouchbaseBucketPasswords = false;
 

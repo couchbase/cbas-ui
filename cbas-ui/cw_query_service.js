@@ -125,10 +125,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   // managing links
   //
 
+  cwQueryService.awsRegions = [];
   cwQueryService.createLink = createLink;
   cwQueryService.deleteLink = deleteLink;
   cwQueryService.editLink = editLink;
   cwQueryService.getLink = getLink;
+  cwQueryService.getAwsSupportedRegions = getAwsSupportedRegions;
   cwQueryService.getCachedLinkInfo = getCachedLinkInfo;
   cwQueryService.convertAPIdataToDialogScope = convertAPIdataToDialogScope;
 
@@ -2363,6 +2365,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     };
     console.log(JSON.stringify(request, null, 2));
     return $http(request);
+  }
+
+  function getAwsSupportedRegions() {
+    $http({
+      url: cwConstantsService.awsRegionsURL,
+      method: "GET"
+    }).then(function success(resp) {
+      cwQueryService.awsRegions = resp.data;
+    }, function error(resp) {
+      cwQueryService.awsRegions = [];
+    });;
   }
 
   function convertDialogScopeToAPIdata(scope) {
