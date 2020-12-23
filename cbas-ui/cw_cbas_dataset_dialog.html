@@ -17,7 +17,26 @@
       </div>
 
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
-      <div class="formrow">
+      <div class="formrow" ng-if="options.clusterBuckets" ng-disabled="!options.is_new">
+        <qw-collection-menu
+                            label="Source"
+                            [initialSelection]="options"
+                            [callback]="options.collectionMenuCallback"
+                            (onSelection)="options.collectionMenuCallback($event)"
+        </qw-collection-menu>
+      </div>
+
+      <div class="formrow" ng-if="!options.clusterBuckets" ng-disabled="!options.is_new">
+        <label for="cluster_reference_name">Source</label>
+        <input ng-model="options.selected_bucket" type="text" autocorrect="off"
+               spellcheck="false" autocapitalize="off" required placeholder="Bucket on remote cluster">
+        <input ng-model="options.selected_scope" type="text" autocorrect="off"
+               spellcheck="false" autocapitalize="off" placeholder="Scope (omit for pre-7.0 clusters)">
+        <input ng-model="options.selected_collection" type="text" autocorrect="off"
+               spellcheck="false" autocapitalize="off" placeholder="Collection (omit for pre-7.0 clusters)">
+      </div>
+
+      <div class="formrow" ng-if="false">
         <label for="cluster_reference_name">Bucket Name</label>
         <select ng-disabled="!options.is_new" ng-if="options.clusterBuckets"
                 ng-model="options.bucket_name" required>

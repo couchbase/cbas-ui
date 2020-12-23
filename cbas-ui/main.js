@@ -5,6 +5,9 @@ import ace from '/ui/libs/ace/ace-wrapper.js';
 import { NgModule } from '/ui/web_modules/@angular/core.js';
 import { UIRouterUpgradeModule } from '/ui/web_modules/@uirouter/angular-hybrid.js';
 
+import { QwCollectionMenu }       from "/_p/ui/query/angular-directives/qw.collection.menu.component.js";
+import { QwCollectionsService }   from "/_p/ui/query/angular-services/qw.collections.service.js";
+
 angular
   .module(app)
   .config(function (mnPluggableUiRegistryProvider, mnPermissionsProvider) {
@@ -42,6 +45,16 @@ class CbasUI {
             }
           }]
         })
+      ],
+      // because the Analytics Workbench is still AngularJS, yet relies on
+      // downgradeInjectable versions of the following Angular services,
+      // we need to list them as providers here to ensure that they are loaded.
+      // otherwise we get "missing provider" errors when reloading the UI
+      providers: [
+        QwCollectionsService
+      ],
+      entryComponents: [
+        QwCollectionMenu
       ]
     })
   ]}

@@ -26,6 +26,8 @@ import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
 import validateCbasService from "./validate_cbas_service.js"
 import qwJsonCsvService from "/_p/ui/query/qw_json_csv_service.js";
 
+import { QwCollectionMenu } from "/_p/ui/query/angular-directives/qw.collection.menu.component.js";
+import {downgradeComponent} from "/ui/web_modules/@angular/upgrade/static.js";
 
 export default "cwCbas";
 
@@ -51,6 +53,7 @@ angular.module('cwCbas', [
   validateCbasService,
   qwJsonCsvService
 ])
+  .directive('qwCollectionMenu', downgradeComponent({component: QwCollectionMenu}))
   .config(function($stateProvider, $transitionsProvider) {
 
     $stateProvider

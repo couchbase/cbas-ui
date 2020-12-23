@@ -1504,6 +1504,9 @@ export default cbasController;
       where: "",
       is_new: true,
       bucket_name: "",
+      selected_bucket: "", // used for local datasets
+      selected_scope: "",
+      selected_collection: "",
       external_dataset: {
         s3_path: "",
         format: "json",
@@ -1511,6 +1514,14 @@ export default cbasController;
         null_value: "",
         include: "",
         exclude: ""
+      }
+    };
+
+    dataset_options.collectionMenuCallback = function(event) {
+      if (event) {
+        dataset_options.selected_bucket = event.bucket;
+        dataset_options.selected_scope = event.scope;
+        dataset_options.selected_collection = event.collection;
       }
     };
 
@@ -1535,8 +1546,14 @@ export default cbasController;
 
           var external = (dataset_options.link_details && dataset_options.link_details.type == "s3") ? " EXTERNAL " : "";
           var queryText = "CREATE " + external + " DATASET `" + link.DVName + "`.`" + dataset_options.dataset_name +
-            "` ON `" + dataset_options.bucket_name +
-            "` at `" + link.DVName + "`.`" + link.LinkName + "`";
+            "` ON `" + dataset_options.selected_bucket;
+
+          // pre-7.0 remote clusters won't have scope and collection.
+          if (dataset_options.selected_scope && dataset_options.selected_collection)
+            queryText += "`.`" + dataset_options.selected_scope + "`.`" +  dataset_options.selected_collection;
+
+          queryText += "` at `" + link.DVName + "`.`" + link.LinkName + "`";
+
           if (dataset_options.where)
             queryText += " WHERE " + dataset_options.where;
 
