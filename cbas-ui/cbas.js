@@ -90,6 +90,7 @@
         var _InProgress = false;    // are we retrieving the list of buckets?
         var _userHasAnyBuckets = false;
         var _userCanAccessStats = false;
+        var _userCanAccessLinks = false;
         var _otherStatus;
         var _otherError;
         var service = {
@@ -111,6 +112,9 @@
           canAccessStats: function() {
             return _userCanAccessStats;
           },
+          canAccessLinks: function() {
+            return _userCanAccessLinks;
+          },
           checkLiveness: checkLiveness
         };
 
@@ -123,6 +127,7 @@
           _valid = false;
           _userHasAnyBuckets = false;
           _userCanAccessStats = false;
+          _userCanAccessLinks = false;
           _checked = true;
           _otherStatus = null;
           _otherError = null;
@@ -134,12 +139,8 @@
             headers: {'ignore-401': 'true', 'Analytics-Priority': '-1'}
           };
           $http(pingRequest).then(function success(resp) {
-                checkUserPermissions();
                 _valid = true;
-                _InProgress = false;
-                if (callback) {
-                  callback();
-                }
+                checkUserPermissions(callback);
               },
               // Error from $http
               function error(resp) {
@@ -151,19 +152,32 @@
               });
         }
 
-        function checkUserPermissions() {
+        function checkUserPermissions(callback) {
           mnPermissions.check().then(function success() {
             var perms = mnPermissions.export.cluster;
             if (perms) {
               if(perms.bucket["."] && perms.bucket["."].settings.read) {
                  _userHasAnyBuckets = true;
               }
+              var analyticsAdmin = isAnalyticsAdmin(perms);
               if ((perms.bucket["."] && perms.bucket["."].analytics && perms.bucket["."].analytics.select) ||
-                  (perms.analytics && perms.analytics.manage)) {
+                  analyticsAdmin) {
                 _userCanAccessStats = true;
               }
+              if (analyticsAdmin) {
+                _userCanAccessLinks = true;
+              }
+            }
+          }).finally(function () {
+            _InProgress = false;
+            if (callback) {
+              callback();
             }
           });
+        }
+
+        function isAnalyticsAdmin(perms) {
+          return perms.analytics && perms.analytics.manage;
         }
 
         // now return the service

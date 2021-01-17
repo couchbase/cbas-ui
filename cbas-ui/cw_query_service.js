@@ -1469,6 +1469,9 @@
     }
 
     function updateBucketsCallback() {
+      if (!validateCbasService.canAccessStats()) {
+        return;
+      }
       cwQueryService.loadingBuckets = true;
       var queryText = cwConstantsService.keyspaceQuery;
       // run a query to get the dataverse, link, and dataset info from Metadata
@@ -1501,21 +1504,22 @@
           });
 
       // we need more details about links, however, so use the REST API to get that also
-      $http({
+      if (validateCbasService.canAccessLinks()) {
+        $http({
           url: "/_p/cbas/analytics/link",
           method: "GET",
-      }).then(function success(resp) {
-        if (resp && resp.data && _.isArray(resp.data)) {
+          headers: {'ignore-401': 'true', 'Analytics-Priority': '-1'}
+        }).then(function success(resp) {
+          if (resp && resp.data && _.isArray(resp.data)) {
             cwQueryService.links = resp.data;
             //console.log(resp.data);
-            }
-        else
+          } else
             cwQueryService.links = [];
-    }, function error(resp) {
-        console.log("Got link info fail: " + JSON.stringify(resp,null,2));
-        cwQueryService.links = [];
-    });
-
+        }, function error(resp) {
+          console.log("Got link info fail: " + JSON.stringify(resp, null, 2));
+          cwQueryService.links = [];
+        });
+      }
     }
 
     function processMetadataQueryResult(data) {
