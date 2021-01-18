@@ -126,7 +126,7 @@
         </a>
         <span
            ng-if="qc.lastResult.warnings"
-           tooltip-trigger="'mouseenter'"
+           tooltip-trigger="mouseenter"
            tooltip-append-to-body="true"
            tooltip-class="tooltip-custom-wide"
            class="fa-warning icon force-orange-3 cursor-pointer"
@@ -229,19 +229,19 @@
                      ng-if="link.remaining === qc.datasetDisconnectedState"
                      class="icon fa-unlink orange-1 cursor-pointer"
                      ng-click="qc.connectLink(link)"
+                     uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'"
                      tooltip-placement="auto top"
-                     tooltip-trigger="'mouseenter'"
                      tooltip-append-to-body="true"
-                     uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'">
+                     tooltip-trigger="mouseenter">
                   </span>
                   <span
                      ng-if="link.remaining > 0 || link.remaining == 0  || link.remaining === qc.externalDatasetState"
                      class="icon fa-link cursor-pointer grayblue-1"
                      ng-click="qc.disconnectLink(link)"
+                     uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'"
                      tooltip-placement="auto top"
-                     tooltip-trigger="'mouseenter'"
                      tooltip-append-to-body="true"
-                     uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'">
+                     tooltip-trigger="mouseenter">
                   </span>
                   </span>
                 </span>

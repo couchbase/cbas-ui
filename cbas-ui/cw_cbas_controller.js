@@ -1617,7 +1617,6 @@ export default cbasController;
         .then(function success(resp) {
           //console.log("showed dataset, got resp: " + resp);
           if (resp == "drop") {
-            $uibModalStack.dismissAll();
             cwQueryService.showConfirmationDialog("Are you sure you want to delete dataset: " +
               link.DVName + "." + dataset.id)
               .then(function yes(resp) {
