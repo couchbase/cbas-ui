@@ -24,10 +24,14 @@ import cbasController from "/_p/ui/cbas/cw_cbas_controller.js";
 import cwQueryService from "/_p/ui/cbas/cw_query_service.js";
 import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
 import validateCbasService from "./validate_cbas_service.js"
-import qwJsonCsvService from "/_p/ui/query/qw_json_csv_service.js";
 
-import { QwCollectionMenu } from "/_p/ui/query/angular-directives/qw.collection.menu.component.js";
-import {downgradeComponent} from "/ui/web_modules/@angular/upgrade/static.js";
+import qwJsonCsvService      from "/_p/ui/query/qw_json_csv_service.js";
+import qwExplainVizD3        from "/_p/ui/query/ui-current/query_plan_viz/qw-explain-viz-d3.directive.js";
+import { QwCollectionMenu }  from "/_p/ui/query/angular-directives/qw.collection.menu.component.js";
+import { QwQueryService }    from "/_p/ui/query/angular-services/qw.query.service.js";
+import {downgradeComponent}  from "/ui/web_modules/@angular/upgrade/static.js";
+import {downgradeInjectable} from '/ui/web_modules/@angular/upgrade/static.js';
+
 
 export default "cwCbas";
 
@@ -51,9 +55,11 @@ angular.module('cwCbas', [
   cwQueryService,
   cwConstantsService,
   validateCbasService,
+  qwExplainVizD3,
   qwJsonCsvService
 ])
   .directive('qwCollectionMenu', downgradeComponent({component: QwCollectionMenu}))
+  .factory('qwQueryService', downgradeInjectable(QwQueryService))
   .config(function($stateProvider, $transitionsProvider) {
 
     $stateProvider
