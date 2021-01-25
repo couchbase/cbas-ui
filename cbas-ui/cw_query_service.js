@@ -1767,7 +1767,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         if (shadowingStats.hasOwnProperty(shadow.dataverseDisplayName)) {
           var shadowingDataverseStats = shadowingStats[shadow.dataverseDisplayName];
           if (shadowingDataverseStats.hasOwnProperty(shadow.id)) {
-            shadow.remaining = shadowingDataverseStats[shadow.id];
+            shadow.remaining = shadowingDataverseStats[shadow.id].seqnoLag;
+            shadow.oso = shadowingDataverseStats[shadow.id].oso;
             if (shadow.link)
               shadow.link.remaining = shadow.remaining;
             continue;
