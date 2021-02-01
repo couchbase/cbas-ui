@@ -247,8 +247,10 @@
 
     </div>
 
-    <div class="panel-footer">
-      <a  ng-click="$dismiss('cancel')">Cancel</a>
+    <div class="panel-footer" ng-class="{spaced: !options.is_new}">
+      <a  ng-if="options.is_new" ng-click="$dismiss('cancel')">Cancel</a>
+      <button ng-if="!options.is_new" class="outline" ng-click="$close('drop')">Drop Link</button>
+      <button ng-if="!options.is_new" class="outline"  ng-click="$dismiss('cancel')">Close Dialog</button>
       <button ng-disabled="linkForm.$invalid" type="submit" ng-click="$close('ok')">Save</button>
     </div>
   </form>
