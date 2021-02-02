@@ -1478,7 +1478,28 @@ export default cbasController;
           scope: linkDialogScope
         }).result
           .then(function success(resp) {
-            cwQueryService.editLink(linkDialogScope.options)
+
+            if (resp == "drop") {
+              cwQueryService.showConfirmationDialog("Are you sure you want to delete link: `" +
+                link.DVName + '`.`' + link.LinkName + '`')
+                .then(function yes(resp) {
+                  if (resp == "ok") {
+                    var queryText = "drop link `" + link.DVName + '`.`' + link.LinkName + "`";
+                    cwQueryService.executeQueryUtil(queryText, false, false)
+                      .then(function success() {
+                          qc.updateBuckets()
+                        },
+                        function error(resp) {
+                          console.log("Got drop link error: " + JSON.stringify(resp));
+                          var errorStr = "Error dropping link: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                          cwQueryService.showErrorDialog(errorStr);
+                        });
+                  }
+                });
+            }
+
+            else if (resp == 'ok')
+              cwQueryService.editLink(linkDialogScope.options)
               .then(function success(resp) {
                 qc.updateBuckets();
               }, function error(resp) {

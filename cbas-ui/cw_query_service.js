@@ -2364,7 +2364,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       method: "POST",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };
-    console.log(JSON.stringify(request, null, 2));
     return $http(request);
   }
 
