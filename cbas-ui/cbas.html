@@ -202,7 +202,7 @@
               <h6>dataverse</h6>
               <h5>{{dataverse.DataverseName}}</h5>
               </span>
-              <a ng-click="qc.createNewLink(dataverse)" class="text-smallish">
+              <a ng-show="qc.validated.canAccessLinks()" ng-click="qc.createNewLink(dataverse)" class="text-smallish">
                 add link
               </a>
             </div>
@@ -244,7 +244,7 @@
                   </span>
                   </span>
                 </span>
-                <a
+                <a ng-show="qc.validated.canAccessLinks()"
                    title="Add new dataset to link"
                    ng-click="qc.createNewDataset(link)"
                    class="text-smallish">
