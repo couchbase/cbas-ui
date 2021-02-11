@@ -25,6 +25,7 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
   //
 
   qmc.monitoring = cwQueryService.monitoring;
+  qmc.queryMonitorStatsPoller = mnStatisticsNewService.createStatsPoller($scope);
   qmc.stats = {};
   qmc.updatedTime = updatedTime;
   qmc.toggle_update = toggle_update;
@@ -206,7 +207,7 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
       update();
 
     // subscribe to stats
-    qmc.statsPoller = mnStatisticsNewService.subscribeUIStatsPoller(qmc.statsConfig,$scope);
+    qmc.statsPoller = qmc.queryMonitorStatsPoller.subscribeUIStatsPoller(qmc.statsConfig,$scope);
   }
 
   function toggle_update() {
