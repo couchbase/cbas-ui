@@ -12,6 +12,7 @@ angular
         var _InProgress = false;    // are we retrieving the list of buckets?
         var _userHasAnyBuckets = false;
         var _userCanAccessStats = false;
+        var _userCanAccessLinks = false;
         var _otherStatus;
         var _otherError;
         var service = {
@@ -32,6 +33,9 @@ angular
           },
           canAccessStats: function() {
             return _userCanAccessStats;
+          },
+          canAccessLinks: function() {
+            return _userCanAccessLinks;
           },
           checkLiveness: checkLiveness
         };
@@ -80,14 +84,22 @@ angular
               if(perms.bucket["."] && perms.bucket["."].settings.read) {
                  _userHasAnyBuckets = true;
               }
+              var analyticsAdmin = isAnalyticsAdmin(perms);
               if ((perms.collection[".:.:."] && perms.collection[".:.:."].analytics && perms.collection[".:.:."].analytics.select) ||
                   (perms.analytics && perms.analytics.manage)) {
                 _userCanAccessStats = true;
+              }
+              if (analyticsAdmin) {
+                _userCanAccessLinks = true;
               }
             }
           });
         }
 
-        // now return the service
+        function isAnalyticsAdmin(perms) {
+          return perms.analytics && perms.analytics.manage;
+        }
+
+    // now return the service
         return service;
       });
