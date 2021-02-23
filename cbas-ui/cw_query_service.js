@@ -1629,6 +1629,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     }
+    // sort the dataverses by name, and add everything to the automcomplete index
+    cwQueryService.dataverses.sort((a,b) =>
+      a.dataverseDisplayName ? a.dataverseDisplayName.localeCompare(b.dataverseDisplayName) : -1);
     refreshAutoCompleteArray();
   }
 
