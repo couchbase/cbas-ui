@@ -24,7 +24,7 @@
     <div class="wb-query-editor">
 <!-- Editor "header row" ------------------------------------------------------>
       <div class="wb-query-editor-header" ng-click="qc.handleClick('editor')">
-        <h4>Query Editor</h4>
+        <h5>Query Editor</h5>
         <span>
           <button
              title="View previous queries/results"
@@ -180,8 +180,8 @@
 <!-- manage dataverses sidebar -------------------------------------------------------->
   <div class="insights-sidebar width-3 show-scrollbar resp-hide-sml">
     <div class="insights-sidebar-body">
-      <div class="row margin-bottom-1">
-        <h4>Dataverses, Links, & Datasets</h4>
+      <div class="row">
+       <h5>Dataverses, Links, & Datasets</h5>
         <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
           <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
           <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
@@ -197,9 +197,9 @@
         </div>
         <div ng-if="!qc.qqs.bucket_errors">
           <section class="text-small" ng-repeat="dataverse in qc.dataverses">
-            <div class="row grayblack-bg-7 margin-bottom-0 margin-top-half">
+            <div class="dataverse-box">
               <span>
-              <h6>dataverse</h6>
+              <span class="text-fine">dataverse</span>
               <h5>{{dataverse.dataverseDisplayName}}</h5>
               </span>
               <a ng-show="qc.validated.canAccessLinks()" ng-click="qc.createNewLink(dataverse)" class="text-smallish">
