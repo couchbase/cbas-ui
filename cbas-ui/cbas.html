@@ -181,7 +181,7 @@
   <div class="insights-sidebar width-3 show-scrollbar resp-hide-sml">
     <div class="insights-sidebar-body">
       <div class="row">
-       <h5>Dataverses, Links, & Datasets</h5>
+       <h5>Scopes & Collections</h5>
         <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
           <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
           <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
@@ -199,14 +199,14 @@
           <section class="text-small" ng-repeat="dataverse in qc.dataverses">
             <div class="dataverse-box">
               <span>
-              <span class="text-fine">dataverse</span>
+              <span class="text-fine">scope</span>
               <h5>{{dataverse.dataverseDisplayName}}</h5>
               </span>
               <a ng-show="qc.validated.canAccessLinks()" ng-click="qc.createNewLink(dataverse)" class="text-smallish">
                 add link
               </a>
             </div>
-            <div ng-repeat="link in qc.getLinksInDataverse(dataverse.dataverseDisplayName)">
+            <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)">
 
               <div class="row margin-left-1-5 margin-right-half margin-top-half">
                 <span>
@@ -246,10 +246,10 @@
                   </span>
                 </span>
                 <a ng-show="qc.validated.canAccessLinks()"
-                   title="Add new dataset to link"
+                   title="Add new collection to link"
                    ng-click="qc.createNewDataset(link)"
                    class="text-smallish">
-                  add dataset
+                  add collection
                 </a>
               </div>
               <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
@@ -272,7 +272,7 @@
                     <a
                        ng-click="qc.editDataset(link,shadow)"
                        class="inline margin-bottom-half margin-top-half">
-                      dataset details
+                      collection details
                     </a>
                     <p ng-show="!shadow.external" class="margin-bottom-half">
                       {{shadow.LinkName}}.{{shadow.bucketName}}
