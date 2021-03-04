@@ -1757,9 +1757,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function extractShadowingStats(statsJson) {
     var shadowsStats = {};
-    Object.keys(statsJson).forEach(function (key) {
-      shadowsStats[key] = statsJson[key];
-    });
+    if ('scopes' in statsJson) {
+      var scopes = statsJson['scopes'];
+      for (var i = 0; i < scopes.length; i++) {
+        shadowsStats[scopes[i].name] = scopes[i];
+      }
+    }
     return shadowsStats;
   }
 
@@ -1769,9 +1772,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (!shadow.external) {
         if (shadowingStats.hasOwnProperty(shadow.dataverseDisplayName)) {
           var shadowingDataverseStats = shadowingStats[shadow.dataverseDisplayName];
-          if (shadowingDataverseStats.hasOwnProperty(shadow.id)) {
-            shadow.remaining = shadowingDataverseStats[shadow.id].seqnoLag;
-            shadow.oso = shadowingDataverseStats[shadow.id].oso;
+          var collectionStats = getCollectionStats(shadow.id, shadowingDataverseStats);
+          if (collectionStats != null) {
+            shadow.remaining = collectionStats.seqnoLag;
+            if (collectionStats.osoSeqnoAdvances) {
+              shadow.osoSeqnoAdvances = collectionStats.osoSeqnoAdvances;
+            } else {
+              shadow.osoSeqnoAdvances = -1;
+            }
             if (shadow.link)
               shadow.link.remaining = shadow.remaining;
             continue;
@@ -1782,6 +1790,18 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           shadow.link.remaining = shadow.remaining;
       }
     }
+  }
+
+  function getCollectionStats(collectionId, scopeStats) {
+    if ('collections' in scopeStats) {
+      var collections = scopeStats['collections'];
+      for (var i = 0; i < collections.length; i++) {
+        if (collections[i].name === collectionId) {
+          return collections[i];
+        }
+      }
+    }
+    return null;
   }
 
   //

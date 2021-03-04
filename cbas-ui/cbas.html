@@ -293,7 +293,7 @@
                   </div>
                   <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
                     <em class="text-smaller">
-                      {{shadow.remaining}} messages to process<span ng-show="shadow.oso"> (OSO)</span>
+                      {{shadow.remaining}} messages to process<span ng-show="shadow.osoSeqnoAdvances > 0"> ({{shadow.osoSeqnoAdvances}} OSO processed messages)</span>
                     </em>
                   </div>
                 </div>

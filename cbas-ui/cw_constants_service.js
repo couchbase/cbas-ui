@@ -40,7 +40,7 @@ function getCwConstantsService() {
   cwConstantsService.clusterBucketsURL = "../pools/default/buckets";
 
   // URL to use to get the analytics stats
-  cwConstantsService.analyticsStatsURL = "../_p/cbas/analytics/node/agg/stats/remaining";
+  cwConstantsService.analyticsStatsURL = "../_p/cbas/analytics/status/ingestion";
 
   // URL to use to get AWS supported regions
   cwConstantsService.awsRegionsURL = "../_p/cbas/analytics/link/enum/s3/region";
