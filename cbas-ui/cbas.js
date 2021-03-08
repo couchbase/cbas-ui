@@ -28,6 +28,7 @@ import validateCbasService from "./validate_cbas_service.js"
 import qwJsonCsvService      from "/_p/ui/query/qw_json_csv_service.js";
 import qwExplainVizD3        from "/_p/ui/query/ui-current/query_plan_viz/qw-explain-viz-d3.directive.js";
 import { QwCollectionMenu }  from "/_p/ui/query/angular-directives/qw.collection.menu.component.js";
+import { QwCollectionsService } from "/_p/ui/query/angular-services/qw.collections.service.js";
 import { QwQueryService }    from "/_p/ui/query/angular-services/qw.query.service.js";
 import {downgradeComponent}  from "/ui/web_modules/@angular/upgrade/static.js";
 import {downgradeInjectable} from '/ui/web_modules/@angular/upgrade/static.js';
@@ -60,6 +61,7 @@ angular.module('cwCbas', [
 ])
   .directive('qwCollectionMenu', downgradeComponent({component: QwCollectionMenu}))
   .factory('qwQueryService', downgradeInjectable(QwQueryService))
+  .factory('qwCollectionsService', downgradeInjectable(QwCollectionsService))
   .config(function($stateProvider, $transitionsProvider) {
 
     $stateProvider

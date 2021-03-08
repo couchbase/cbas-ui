@@ -171,6 +171,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.planFormat = 'json';
   cwQueryService.fetchingStats = false;
   cwQueryService.isAllowedMultiStatement = isAllowedMultiStatement;
+  cwQueryService.showEmptyScopes = true;
 
   var explainTextFormat = "text";
   var explainJsonFormat = "json";

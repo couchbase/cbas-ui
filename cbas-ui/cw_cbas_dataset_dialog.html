@@ -1,7 +1,7 @@
 <div class="dialog-med">
   <div class="panel-header">
-    <h2 ng-show="options.is_new">Add Dataset to {{options.link_name}}</h2>
-    <h2 ng-show="!options.is_new">Edit Dataset Details</h2>
+    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Collection to {{options.link_name}}</h2>
+    <h2 ng-show="!options.is_new">Edit Collection Details</h2>
   </div>
   <form class="forms" name="datasetForm">
     <div class="panel-content">
@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="formrow">
-        <label for="cluster_reference_name">Dataset Name</label>
+        <label for="cluster_reference_name">Collection Name</label>
         <input ng-disabled="!options.is_new"ng-model="options.dataset_name" type="text" autocorrect="off"
            spellcheck="false" autocapitalize="off" required>
       </div>

@@ -139,8 +139,6 @@
            ng-class="{selected: qc.isSelected(1)}">JSON</a>
         <a ng-click="qc.selectTab(2)"
            ng-class="{selected: qc.isSelected(2)}">Table</a>
-        <a ng-click="qc.selectTab(3)"
-           ng-class="{selected: qc.isSelected(3)}">Tree</a>
         <a ng-click="qc.selectTab(4)" ng-if="qc.isEnterprise"
            ng-class="{selected: qc.isSelected(4)}">Plan</a>
         <a ng-click="qc.selectTab(5)"
@@ -178,35 +176,119 @@
   </div>
 
 <!-- manage dataverses sidebar -------------------------------------------------------->
-  <div class="insights-sidebar width-3 show-scrollbar resp-hide-sml">
-    <div class="insights-sidebar-body">
-      <div class="row">
-       <h5>Scopes & Collections</h5>
-        <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
-          <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
-          <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
-        </div>
+  <div class="insights-sidebar width-3 resp-hide-sml">
+    <div class="row">
+     <h5>Scopes & Collections</h5>
+      <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
+        <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
+        <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
       </div>
-
-      <div mn-spinner="qc.qqs.loadingBuckets">
-        <div ng-if="qc.qqs.bucket_errors">
-          <br>
-          <p style="white-space:pre-wrap;" class="text-small">
-            {{qc.qqs.bucket_errors}}
-          </p>
-        </div>
-        <div ng-if="!qc.qqs.bucket_errors">
-          <section class="text-small" ng-repeat="dataverse in qc.dataverses">
+    </div>
+    <div mn-spinner="qc.qqs.loadingBuckets">
+      <div ng-if="qc.qqs.bucket_errors">
+        <br>
+        <p style="white-space:pre-wrap;" class="text-small">
+          {{qc.qqs.bucket_errors}}
+        </p>
+      </div>
+      <div ng-if="!qc.qqs.bucket_errors">
+        <div class="insights-sidebar-body">
+          <section class="text-small" ng-repeat="dataverse in qc.dataverses"
+                   ng-if="!qc.scopeEmpty(dataverse) || qc.showEmptyScopes()">
             <div class="dataverse-box">
-              <span>
+              <span class="ellipsis">
               <span class="text-fine">scope</span>
-              <h5>{{dataverse.dataverseDisplayName}}</h5>
+              <h5 class="ellipsis">{{dataverse.dataverseDisplayName}}</h5>
               </span>
-              <a ng-show="qc.validated.canAccessLinks()" ng-click="qc.createNewLink(dataverse)" class="text-smallish">
-                add link
-              </a>
+              <div ng-show="qc.validated.canAccessLinks()">
+                <div class="text-fine">
+                  <span
+                     ng-if="qc.getLocalLink(dataverse).remaining === qc.datasetUnknownState"
+                     title="fetching link state..."
+                     class="icon fa-spinner fa-pulse grayblack-3">
+                  </span>
+                  <span
+                     ng-if="qc.getLocalLink(dataverse).remaining === qc.datasetDisconnectedState"
+                     class="icon fa-unlink orange-1 cursor-pointer"
+                     ng-click="qc.connectLink(qc.getLocalLink(dataverse),dataverse)"
+                     uib-tooltip-html="'<b class=\'orange-1\'>local link disconnected</b><br>click icon to re-connect'"
+                     tooltip-placement="top"
+                     tooltip-append-to-body="true"
+                     tooltip-trigger="mouseenter">
+                    </span>
+                  <span
+                     ng-if="qc.getLocalLink(dataverse).remaining > 0 || qc.getLocalLink(dataverse).remaining == 0  || qc.getLocalLink(dataverse).remaining === qc.externalDatasetState"
+                     class="icon fa-link cursor-pointer grayblue-1"
+                     ng-click="qc.disconnectLink(qc.getLocalLink(dataverse),dataverse)"
+                     uib-tooltip-html="'<b class=\'green-1\'>local link connected</b><br>click icon to disconnect'"
+                     tooltip-placement="auto"
+                     tooltip-append-to-body="true"
+                     tooltip-trigger="mouseenter">
+                  </span>
+                  local
+                </div>
+                <a ng-click="qc.createNewDataset(qc.getLocalLink(dataverse))" class="text-fine nowrap">
+                  +local collection
+                </a><br>
+                <a ng-click="qc.createNewLink(dataverse)" class="text-fine nowrap">
+                  +remote link
+                </a><br>
+              </div>
             </div>
-            <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)">
+
+            <!-- Show datasets in Local Link first, without a Link header -->
+            <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)" ng-if="link.LinkName == 'Local'">
+
+              <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
+                <div ng-init="shadow.expanded = false">
+                  <div class="row margin-left-1-5 margin-top-half">
+                    <span>
+                      <div
+                         class="disclosure inline"
+                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                         ng-click="shadow.expanded = !shadow.expanded">
+                        {{shadow.id}}
+                      </div>
+                      <span
+                         class="icon fa-database text-smaller grayblue-2 sup"
+                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                    </span>
+                  </div>
+                  <!-- expando section for details on each dataset -------------------------- -->
+                  <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
+                    <a
+                       ng-click="qc.editDataset(link,shadow)"
+                       class="inline margin-bottom-half margin-top-half">
+                      collection details
+                    </a>
+                    <p ng-show="!shadow.external" class="margin-bottom-half">
+                      {{shadow.LinkName}}.{{shadow.bucketName}}
+                      <span ng-show="shadow.filter">|</span> {{shadow.filter}}
+                    </p>
+                    <p ng-show="shadow.external" class="margin-bottom-half">
+                      Container:<br>
+                      {{shadow.container}}.{{shadow.bucketName}}
+                      <span ng-show="shadow.definition">|</span> {{shadow.definition}}
+                      <span ng-show="shadow.format">({{shadow.format}})</span>
+                    </p>
+                    <p class="margin-bottom-half" ng-show="shadow.indexes.length > 0">
+                      Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
+                      <span ng-repeat="idx in shadow.indexes">
+                        {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
+                      </span>
+                    </p>
+                  </div>
+                  <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
+                    <em class="text-smaller">
+                      {{shadow.remaining}} messages to process<span ng-show="shadow.oso"> (OSO)</span>
+                    </em>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Then show other Links and their datasets -->
+            <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)" ng-if="link.LinkName != 'Local'">
 
               <div class="row margin-left-1-5 margin-right-half margin-top-half">
                 <span>
@@ -215,9 +297,8 @@
                       ng-click="link.LinkName != 'Local' && qc.editLink(link)">
                     <span ng-if="link.DVName != dataverse.DataverseName">{{link.DVName}}.</span>
                     {{link.LinkName}}
-                    <span ng-if="link.LinkName == 'Local'">Link</span>
                   </h5>
-                  <span ng-if="link.LinkName != 'Local' && link.LinkType == 'INTERNAL'" class="label lt-blue sup">couchbase link</span>
+                  <span ng-if="link.LinkName != 'Local' && link.LinkType == 'INTERNAL'" class="label lt-blue sup">cb link</span>
                   <span ng-if="link.LinkName != 'Local' && link.LinkType == 'EXTERNAL'" class="label lt-blue sup">s3 link</span>
                   <span
                      ng-if="link.remaining === qc.datasetUnknownState"
@@ -228,7 +309,7 @@
                   <span
                      ng-if="link.remaining === qc.datasetDisconnectedState"
                      class="icon fa-unlink orange-1 cursor-pointer"
-                     ng-click="qc.connectLink(link)"
+                     ng-click="qc.connectLink(link,dataverse)"
                      uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'"
                      tooltip-placement="auto top"
                      tooltip-append-to-body="true"
@@ -237,7 +318,7 @@
                   <span
                      ng-if="link.remaining > 0 || link.remaining == 0  || link.remaining === qc.externalDatasetState"
                      class="icon fa-link cursor-pointer grayblue-1"
-                     ng-click="qc.disconnectLink(link)"
+                     ng-click="qc.disconnectLink(link,dataverse)"
                      uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'"
                      tooltip-placement="auto top"
                      tooltip-append-to-body="true"
@@ -249,7 +330,7 @@
                    title="Add new collection to link"
                    ng-click="qc.createNewDataset(link)"
                    class="text-smallish">
-                  add collection
+                  +collection to link
                 </a>
               </div>
               <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
@@ -293,21 +374,31 @@
                   </div>
                   <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
                     <em class="text-smaller">
-                      {{shadow.remaining}} messages to process<span ng-show="shadow.osoSeqnoAdvances > 0"> ({{shadow.osoSeqnoAdvances}} OSO processed messages)</span>
+                      {{shadow.remaining}} messages to process<span ng-show="shadow.osoSeqnoAdvances > 0">
+                      ({{shadow.osoSeqnoAdvances}} OSO processed messages)</span>
                     </em>
                   </div>
                 </div>
               </div>
             </div>
           </section>
+          <a ng-click="qc.toggleEmptyScopes()" class="text-smallish margin-right-half"
+             title="Show/hide analytics scopes that have no collections">
+            <span ng-hide="qc.showEmptyScopes()">show unmapped scopes</span>
+            <span ng-show="qc.showEmptyScopes()">hide unmapped scopes</span>
+          </a>
         </div>
 
-<!-- datasets refresh button -------------------------------------------------->
-        <div class="row flex-right fix-position-br wb-refresh-btn">
+<!-- footer buttons -------------------------------------------------------- -->
+        <div class="row fix-position-br wb-refresh-btn">
+          <button ng-show="qc.validated.canAccessLinks()" ng-click="qc.mapCollections()" class="tight text-smallish"
+          title="Make one or more local Couchbase collections available in Analytics.">
+            Map From Couchbase Collections
+          </button>
           <button
              title="Refresh dataverses"
              ng-click="qc.updateBuckets()"
-             class="outline"
+             class="outline text-smallish tight"
              ng-disabled="qc.qqs.loadingBuckets">
             Refresh &nbsp;
             <span ng-if="qc.qqs.loadingBuckets" class="icon fa-refresh"></span>

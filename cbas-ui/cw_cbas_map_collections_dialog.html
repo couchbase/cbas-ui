@@ -1,0 +1,48 @@
+<div class="dialog-med">
+  <div class="panel-header">
+    <h2>Map Couchbase Collections to Analytics</h2>
+  </div>
+  <form class="forms" name="datasetForm">
+    <div class="panel-content">
+      Select one or more Couchbase collections to map into Analytics collections.
+      <div>
+        <div ng-repeat="bucket in options.kv_buckets"
+             class="disclosure lower medium"
+             ng-class="{disclosed: bucket.expanded}"
+             ng-click="options.changeBucketExpanded(bucket)">
+          {{bucket.name}}
+          <div ng-if="bucket.expanded" ng-repeat="scope in options.kv_scopes[bucket.name]"
+               class="disclosure lower medium"
+               ng-class="{disclosed: scope.expanded}"
+               ng-click="options.changeScopeExpanded(scope); $event.stopPropagation()">
+            {{scope.name}}
+            <div ng-if="scope.expanded"
+                 ng-repeat="collection in options.kv_collections[bucket.name][scope.name]"
+                 ng-class="{'dataverse-box' : options.already_selected(bucket.name,scope.name,collection)}"
+                 ng-click="options.select_collection(bucket.name,scope.name,collection); $event.stopPropagation()">
+              <input type="checkbox"
+                     ng-if="!options.already_selected(bucket.name,scope.name,collection)"
+                     ng-model="options.selected_collections[options.collection_key(bucket.name,scope.name,collection)]">
+              <label>{{collection}}
+                <span ng-if="options.already_selected(bucket.name,scope.name,collection)" class="text-smallish">
+                  (already mapped)
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{options.selection_count()}} collections selected.
+    </div>
+
+    <div class="panel-footer">
+      <a ng-if="options.is_new" ng-click="$dismiss('cancel')">Cancel</a>
+      <button ng-disabled="options.selection_count() == 0" type="submit" ng-click="$close('ok')">Save</button>
+
+      <div ng-if="!options.is_new" class="row width-12">
+        <button class="outline"  ng-click="$close('close')">Close Dialog</button>
+      </div>
+    </div>
+  </form>
+</div>

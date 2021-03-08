@@ -4,7 +4,9 @@ import saveAs from "/ui/web_modules/file-saver.js";
 
 export default cbasController;
 
-  function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnServersService, $interval, qwJsonCsvService, jQuery) {
+  function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService,
+                          validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault,
+                          mnServersService, $interval, qwJsonCsvService, jQuery, qwCollectionsService) {
     var $ = jQuery;
     var qc = this;
     var statsRefreshInterval = 5000;
@@ -45,6 +47,7 @@ export default cbasController;
 
     // functions for connecting dataverses to links and datasets
     qc.getLinksInDataverse = getLinksInDataverse;
+    qc.getLocalLink = getLocalLink;
     qc.getDatasetsInLink = getDatasetsInLink;
 
     // some functions for handling query history, going backward and forward
@@ -110,6 +113,7 @@ export default cbasController;
     qc.createNewLink = createNewLink;
     qc.editLink = editLink;
 
+    qc.mapCollections = mapCollections;
     qc.createNewDataset = createNewDataset;
     qc.editDataset = editDataset;
 
@@ -196,6 +200,11 @@ export default cbasController;
     qc.copyResultAsCSV = function () {
       copyResultAsCSV();
     };
+
+    qc.showEmptyScopes = function() {return cwQueryService.showEmptyScopes;};
+    qc.toggleEmptyScopes = function() {cwQueryService.showEmptyScopes = !cwQueryService.showEmptyScopes;};
+    qc.scopeEmpty = function(dataverse)
+    {return !cwQueryService.shadows.some(shadow => shadow.bucketDataverseName == dataverse.DataverseName)};
 
     // helper functions //
     qc.forceReload = forceReload;
@@ -1353,6 +1362,12 @@ export default cbasController;
       return cwQueryService.dataverse_links[dataverseName];
     }
 
+    // convenience function to get the Local link for a given dataverse
+    function getLocalLink(dataverse) {
+      return cwQueryService.dataverse_links[dataverse.DataverseName]
+        .find(element => element.LinkName == "Local");
+    }
+
     function getDatasetsInLink(dataverse,link) {
       var result = [];
       qc.shadows.forEach(function(shadow) {
@@ -1367,8 +1382,8 @@ export default cbasController;
       });
       return result;
     }
-    function disconnectLink(link) {
-      var queryText = "disconnect link `" + link.DVName + "`.`" + link.LinkName + "`";
+    function disconnectLink(link,dataverse) {
+      var queryText = "disconnect link " + dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
       link.remaining = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
         .then(function success() {/*nothing to do*/
@@ -1376,8 +1391,8 @@ export default cbasController;
           handleConnectionFailure);
     }
 
-    function connectLink(link) {
-      var queryText = "connect link `" + link.DVName + "`.`" + link.LinkName + "`";
+    function connectLink(link,dataverse) {
+      var queryText = "connect link " + dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
       link.remaining = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
         .then(function success() {/*nothing to do*/
@@ -1392,6 +1407,8 @@ export default cbasController;
       if (resp.data)
         if (_.isString(resp.data))
           errorStr += "Error: " + resp.data;
+        else if (resp.data.errors)
+          errorStr += JSON.stringify(resp.data.errors);
         else
           errorStr += JSON.stringify(resp.data);
 
@@ -1535,7 +1552,11 @@ export default cbasController;
         null_value: "",
         include: "",
         exclude: ""
-      }
+      },
+      // KV buckets, scopes, and collections
+      kv_buckets: [],
+      kv_scopes: {},
+      kv_collections: {},
     };
 
     dataset_options.collectionMenuCallback = function(event) {
@@ -1546,6 +1567,119 @@ export default cbasController;
       }
     };
 
+    dataset_options.update_buckets = function() {
+      qwCollectionsService.getBuckets().then(function success(metadata) {
+        dataset_options.kv_buckets.length = 0;
+        for (const bucketName of metadata.buckets)
+          dataset_options.kv_buckets.push({name:bucketName,expanded:false});
+      });
+    };
+
+    dataset_options.update_scopes_for_bucket = function(bucket) {
+      qwCollectionsService.getScopesForBucket(bucket)
+        .then(function success(metadata) {
+          dataset_options.kv_scopes[bucket] = [];
+          metadata.scopes[bucket].forEach(scope_name =>
+            dataset_options.kv_scopes[bucket].push({name: scope_name, expanded:false}));
+          dataset_options.kv_collections[bucket] = metadata.collections[bucket];
+        });
+    };
+
+    dataset_options.changeBucketExpanded = function(bucket) {
+      bucket.expanded = !bucket.expanded;
+      if (bucket.expanded && !dataset_options.kv_scopes[bucket.name])
+        dataset_options.update_scopes_for_bucket(bucket.name);
+    };
+
+    dataset_options.changeScopeExpanded = function(scope) {
+      scope.expanded = !scope.expanded;
+    };
+
+    // to handle selections, we have a map indexed by bucket, scope, & coll name
+    dataset_options.collection_key = function(bucketName,scopeName,collectionName) {
+      return(bucketName + '`' + scopeName + '`' + collectionName);
+    };
+
+    dataset_options.select_collection = function(bucketName,scopeName,collectionName) {
+      var key = dataset_options.collection_key(bucketName,scopeName,collectionName);
+      dataset_options.selected_collections[key] = !dataset_options.selected_collections[key];
+    };
+
+    dataset_options.selection_count = function() {
+      var count = 0;
+      for (const key in dataset_options.selected_collections)
+        if (dataset_options.selected_collections[key])
+          count++;
+        return(count);
+    };
+
+    dataset_options.already_selected = function(bucketName,scopeName,collectionName) {
+      var key = dataset_options.collection_key(bucketName,scopeName,collectionName);
+      return(dataset_options.already_selected_collections[key]);
+    };
+
+    // need to get a map of currently mapped datasets
+    function updateCurrentlySelectedCollections() {
+      dataset_options.already_selected_collections = {};
+
+      qc.shadows.forEach(function(shadow) {
+        // internal datasets
+        if (!shadow.external &&
+        shadow.DataverseName.indexOf('.') > -1 &&
+        shadow.LinkName == 'Local') {
+          var bucket_scope = shadow.bucketDataverseName.split('.');
+          var key = dataset_options.collection_key(bucket_scope[0],bucket_scope[1],shadow.id);
+          dataset_options.already_selected_collections[key] = true;
+        }
+      });
+
+    }
+
+    // the 'enable analytics' command allows creation of a 1:1 mapping between collections and
+    // analytics collections. Bring up a dialog box and allow selection of many collections,
+    // and for each use 'enable analytics'
+    function mapCollections() {
+      dataset_options.update_buckets();
+      updateCurrentlySelectedCollections();
+      datasetDialogScope.options = dataset_options;
+      dataset_options.selected_collections = {};
+      // bring up the dialog
+      $uibModal.open({
+        templateUrl: '../_p/ui/cbas/cw_cbas_map_collections_dialog.html',
+        scope: datasetDialogScope
+      }).result
+        .then(function success(resp) {
+          var queries = [];
+          for (const selection in dataset_options.selected_collections) {
+            var details = selection.split('`');
+            queries.push("alter collection `" + details[0] + "`.`" +
+              details[1] + '`.`' + details[2] + '` enable analytics;');
+          }
+          executeQueryList(queries,0);
+        },
+        function error(resp) {
+          // they hit cancel, nothing to do
+        });
+    }
+
+    // execute a list of queries in sequence, stopping at the first error
+    function executeQueryList(queryList, index) {
+      if (index >= queryList.length) { // all done
+        setTimeout(qc.updateBuckets, 500);
+        return;
+      }
+
+      cwQueryService.executeQueryUtil(queryList[index], false, false)
+        .then(function success() {
+            executeQueryList(queryList,index+1);
+          },
+          function error(resp) {
+            var errorStr = "Error running query: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+            cwQueryService.showErrorDialog(errorStr);
+          });
+    }
+
+    // create a custom dataset on a given link
     function createNewDataset(link) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
       if (link.LinkName == "Local")
@@ -1642,10 +1776,11 @@ export default cbasController;
               link.DVName + "." + dataset.id)
               .then(function yes(resp) {
                 if (resp == "ok") {
-                  var queryText = "drop dataset `" + link.DVName + "`.`" + dataset_options.dataset_name + "`";
+                  var queryText = "drop dataset " + dataset.dataverseDisplayName + ".`" + dataset_options.dataset_name + "`";
+
                   cwQueryService.executeQueryUtil(queryText, false, false)
                     .then(function success() {
-                        qc.updateBuckets()
+                        qc.updateBuckets();
                       },
                       function error(resp) {
                         console.log("Got drop dataset error: " + JSON.stringify(resp));
