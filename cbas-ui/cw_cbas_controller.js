@@ -1395,6 +1395,8 @@
       if (resp.data)
         if (_.isString(resp.data))
           errorStr += "Error: " + resp.data;
+        else if (resp.data.errors)
+          errorStr += JSON.stringify(resp.data.errors);
         else
           errorStr += JSON.stringify(resp.data);
 
