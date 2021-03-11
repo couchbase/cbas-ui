@@ -16,6 +16,7 @@ angular
 
     mnPluggableUiRegistryProvider.registerConfig({
       name: 'Analytics',
+      includedByState: 'app.admin.cbas',
       state: 'app.admin.cbas.workbench',
       plugIn: 'workbenchTab',
       ngShow: "rbac.cluster.collection['.:.:.'].analytics.select",
