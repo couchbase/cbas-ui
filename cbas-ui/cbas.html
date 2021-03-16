@@ -47,10 +47,20 @@
             &rarr;
           </button>
         </span>
-        <div class="wb-fullscreen resp-hide-sml" ng-click="qc.toggleFullscreen()">
+        <div>
+          <h5>Default Scope:
+          <mn-select
+          class="inline fixed-width-3"
+          ng-model="qc.queryContext"
+          values="qc.scopeNames"
+          mn-horizontal-align="'right'">
+          </mn-select>
+          </h5>
+        </div>
+        <!-- div class="wb-fullscreen resp-hide-sml" ng-click="qc.toggleFullscreen()">
           <span ng-if="!qc.fullscreen" class="icon fa-expand" title="expand"></span>
           <span ng-if="qc.fullscreen" class="icon fa-compress" title="contract"></span>
-        </div>
+        </div -->
       </div>
 
 <!-- Ace editor --------------------------------------------------------------->
@@ -179,6 +189,10 @@
   <div class="insights-sidebar width-3 resp-hide-sml">
     <div class="row">
      <h5>Scopes & Collections</h5>
+      <button ng-show="qc.validated.canAccessLinks()" ng-click="qc.mapCollections()" class="tight text-smallish"
+              title="Make one or more local collections available in Analytics.">
+        Map Collections
+      </button>
       <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
         <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
         <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
@@ -225,7 +239,7 @@
                      tooltip-append-to-body="true"
                      tooltip-trigger="mouseenter">
                   </span>
-                  local
+                  Local
                 </div>
                 <a ng-click="qc.createNewDataset(qc.getLocalLink(dataverse))" class="text-fine nowrap">
                   +local collection
@@ -391,12 +405,8 @@
 
 <!-- footer buttons -------------------------------------------------------- -->
         <div class="row fix-position-br wb-refresh-btn">
-          <button ng-show="qc.validated.canAccessLinks()" ng-click="qc.mapCollections()" class="tight text-smallish"
-          title="Make one or more local Couchbase collections available in Analytics.">
-            Map From Couchbase Collections
-          </button>
           <button
-             title="Refresh dataverses"
+             title="Refresh scopes and collections"
              ng-click="qc.updateBuckets()"
              class="outline text-smallish tight"
              ng-disabled="qc.qqs.loadingBuckets">

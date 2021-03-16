@@ -162,6 +162,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.shadows = [];
   cwQueryService.indexes = [];
   cwQueryService.dataverses = [];
+  cwQueryService.scopeNames = [""];
   cwQueryService.dataverse_links = {};
   cwQueryService.links = [];
   cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
@@ -827,7 +828,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     });
   }
 
-  function buildQueryRequest(queryText, is_user_query, queryOptions, highPriority) {
+  function buildQueryRequest(queryText, is_user_query, queryOptions, highPriority, queryContext) {
 
     //console.log("Building query: " + queryText);
     //
@@ -881,6 +882,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       queryData["optimized-logical-plan"] = true;
       queryData["plan-format"] = planFormat;
       queryData["max-warnings"] = cwConstantsService.maxWarnings;
+
+      if (queryContext)
+        queryData["query_context"] = 'default:' + queryContext;
     }
 
     //
@@ -967,7 +971,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   // executeQuery
   //
 
-  function executeQuery(queryText, userQuery, queryOptions, explainOnly) {
+  function executeQuery(queryText, userQuery, queryOptions, explainOnly, queryContext) {
     var newResult;
 
     //console.log("Got query to execute: " + queryText);
@@ -1052,7 +1056,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
       newResult.explainDone = false;
 
-      var explain_request = buildQueryRequest("explain " + queryText, false, null, false);
+      var explain_request = buildQueryRequest("explain " + queryText, false, null, false, queryContext);
       if (!explain_request) {
         newResult.result = '{"status": "Query Failed."}';
         newResult.data = {status: "Query Failed."};
@@ -1185,7 +1189,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
     newResult.queryDone = false;
 
-    var request = buildQueryRequest(queryText, true, queryOptions, false);
+    var request = buildQueryRequest(queryText, true, queryOptions, false, queryContext);
 
     if (!request) {
       newResult.result = '{"status": "Query Failed."}';
@@ -1545,6 +1549,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         cwQueryService.shadows.length = 0;
         cwQueryService.clusterBuckets.length = 0;
         cwQueryService.dataverses.length = 0;
+        cwQueryService.scopeNames.length = 0;
+        cwQueryService.scopeNames.push("");
         cwQueryService.dataverse_links = {};
         cwQueryService.autoCompleteTokens = {};
         cwQueryService.bucket_errors = error;
@@ -1573,6 +1579,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.buckets.length = 0;
     cwQueryService.shadows.length = 0;
     cwQueryService.dataverses.length = 0;
+    cwQueryService.scopeNames.length = 0;
+    cwQueryService.scopeNames.push("");
     cwQueryService.clusterBuckets.length = 0;
     cwQueryService.bucket_errors = null;
     cwQueryService.bucket_names.length = 0;
@@ -1616,6 +1624,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           theLink.remaining = record.remaining;
         } else if (record.isDataverse) {
           cwQueryService.dataverses.push(record);
+          cwQueryService.scopeNames.push(record.dataverseDisplayName);
         } else if (record.isLink) {
           // have we seen the link yet associated with a dataset?
           if (!cwQueryService.dataverse_links[record.DataverseName])

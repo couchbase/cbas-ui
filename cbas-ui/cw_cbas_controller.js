@@ -44,6 +44,8 @@ export default cbasController;
     qc.isAllowedMultiStatement = cwQueryService.isAllowedMultiStatement;
 
     qc.toggleFullscreen = toggleFullscreen;
+    qc.queryContext = "";
+    qc.scopeNames = cwQueryService.scopeNames;
 
     // functions for connecting dataverses to links and datasets
     qc.getLinksInDataverse = getLinksInDataverse;
@@ -710,7 +712,7 @@ export default cbasController;
       //console.log("Running query: " + queryStr);
       // run the query and show a spinner
 
-      var promise = cwQueryService.executeQuery(queryStr, qc.lastResult.query, cwQueryService.options, explainOnly);
+      var promise = cwQueryService.executeQuery(queryStr, qc.lastResult.query, cwQueryService.options, explainOnly, qc.queryContext);
 
       if (promise) {
         // also have the input grab focus at the end
