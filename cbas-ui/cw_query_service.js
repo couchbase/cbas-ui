@@ -1766,30 +1766,77 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   }
 
   function extractShadowingStats(statsJson) {
-    var shadowsStats = {};
-    if ('scopes' in statsJson) {
-      var scopes = statsJson['scopes'];
-      for (var i = 0; i < scopes.length; i++) {
-        shadowsStats[scopes[i].name] = scopes[i];
+    let collectionsStats = {};
+    if ('links' in statsJson) {
+      let links = statsJson['links'];
+      for (let i = 0; i < links.length; i++) {
+        let linkStates = links[i];
+        if ('state' in linkStates) {
+          parseLinkStates(linkStates, collectionsStats);
+        }
       }
     }
-    return shadowsStats;
+    return collectionsStats;
+  }
+
+
+  function parseLinkStates(linkStates, collectionsStats) {
+      let states = linkStates['state'];
+      for (let i = 0; i < states.length; i++) {
+        let state = states[i];
+        parseState(state, collectionsStats);
+      }
+  }
+
+  function parseState(state, collectionsStats) {
+    if ('scopes' in state) {
+      let scopes = state['scopes'];
+      let ingestionState = { "progress": round(state.progress * 100, 1), "timeLag" : timeForHumans(state.timeLag)};
+      for (let i = 0; i < scopes.length; i++) {
+        let scopeName = scopes[i].name;
+        let collections = scopes[i].collections;
+        for(let j = 0; j < collections.length; j++) {
+          collectionsStats[scopeName + "." + collections[j].name] = ingestionState;
+        }
+      }
+    }
+  }
+
+  function timeForHumans(millis) {
+    if(!millis) {
+      return null;
+    }
+    try {
+      var seconds = millis / 1000;
+      var levels = [
+        [Math.floor(seconds / 31536000), 'years'],
+        [Math.floor((seconds % 31536000) / 86400), 'd'],
+        [Math.floor(((seconds % 31536000) % 86400) / 3600), 'h'],
+        [Math.floor((((seconds % 31536000) % 86400) % 3600) / 60), 'm'],
+        [Math.floor((((seconds % 31536000) % 86400) % 3600) % 60), 's'],
+      ];
+      var returntext = '';
+      for (var i = 0, max = levels.length; i < max; i++) {
+        if ( levels[i][0] === 0 ) continue;
+        returntext += ' ' + levels[i][0] + levels[i][1];
+      }
+      return returntext.trim();
+    } catch (e) {
+      logWorkbenchError("failed to get human readable time from " + millis + " error " + e);
+      return null;
+    }
   }
 
   function updateDatasetShadowingProgress(shadowingStats) {
     for (var i = 0; i < cwQueryService.shadows.length; i++) {
       var shadow = cwQueryService.shadows[i];
       if (!shadow.external) {
-        if (shadowingStats.hasOwnProperty(shadow.dataverseDisplayName)) {
-          var shadowingDataverseStats = shadowingStats[shadow.dataverseDisplayName];
-          var collectionStats = getCollectionStats(shadow.id, shadowingDataverseStats);
+        if (shadowingStats.hasOwnProperty(shadow.datasetFullyQualifiedName)) {
+          var collectionStats = shadowingStats[shadow.datasetFullyQualifiedName];
           if (collectionStats != null) {
-            shadow.remaining = collectionStats.seqnoLag;
-            if (collectionStats.osoSeqnoAdvances) {
-              shadow.osoSeqnoAdvances = collectionStats.osoSeqnoAdvances;
-            } else {
-              shadow.osoSeqnoAdvances = -1;
-            }
+            shadow.progress = collectionStats.progress;
+            shadow.timeLag = collectionStats.timeLag;
+            shadow.remaining = shadow.progress === 100 ? 0 : 1;
             if (shadow.link)
               shadow.link.remaining = shadow.remaining;
             continue;
@@ -1802,16 +1849,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     }
   }
 
-  function getCollectionStats(collectionId, scopeStats) {
-    if ('collections' in scopeStats) {
-      var collections = scopeStats['collections'];
-      for (var i = 0; i < collections.length; i++) {
-        if (collections[i].name === collectionId) {
-          return collections[i];
-        }
-      }
-    }
-    return null;
+  function round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
   }
 
   //

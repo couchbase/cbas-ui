@@ -40,7 +40,8 @@ function getCwConstantsService() {
   cwConstantsService.clusterBucketsURL = "../pools/default/buckets";
 
   // URL to use to get the analytics stats
-  cwConstantsService.analyticsStatsURL = "../_p/cbas/analytics/status/ingestion";
+  // TODO switch back to ../_p/cbas/analytics/status/ingestion
+  cwConstantsService.analyticsStatsURL = "../_p/cbas/analytics/status/ingestion/v2";
 
   // URL to use to get AWS supported regions
   cwConstantsService.awsRegionsURL = "../_p/cbas/analytics/link/enum/s3/region";
@@ -73,6 +74,7 @@ function getCwConstantsService() {
   cwConstantsService.keyspaceQuery =
       "SELECT " +
       "  DataverseName, " +
+      "  DataverseName || '.' || DatasetName AS datasetFullyQualifiedName, " +
       "  decode_dataverse_display_name(DataverseName) AS dataverseDisplayName, " +
       "  DatasetName AS id, " +
       "  TRUE AS isDataset, " +
