@@ -187,12 +187,8 @@
 
 <!-- manage dataverses sidebar -------------------------------------------------------->
   <div class="insights-sidebar width-3 resp-hide-sml">
-    <div class="row">
+    <div class="row margin-bottom-half">
      <h5>Scopes & Collections</h5>
-      <button ng-show="qc.validated.canAccessLinks()" ng-click="qc.mapCollections()" class="tight text-smallish"
-              title="Make one or more local collections available in Analytics.">
-        Map Collections
-      </button>
       <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
         <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
         <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
@@ -207,6 +203,14 @@
       </div>
       <div ng-if="!qc.qqs.bucket_errors">
         <div class="insights-sidebar-body">
+          <div class="padding-right-1"><button
+             ng-show="qc.validated.canAccessLinks()"
+             ng-click="qc.mapCollections()"
+             class="outline width-12 margin-bottom-1"
+             title="Make one or more local collections available in Analytics.">
+            Map Collections
+          </button></div>
+
           <section class="text-small" ng-repeat="dataverse in qc.dataverses"
                    ng-if="!qc.scopeEmpty(dataverse) || qc.showEmptyScopes()">
             <div class="dataverse-box">
