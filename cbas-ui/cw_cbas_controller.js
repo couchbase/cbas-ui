@@ -1547,6 +1547,7 @@ export default cbasController;
       selected_bucket: "", // used for local datasets
       selected_scope: "",
       selected_collection: "",
+      proxy: null, // proxy for remote cluster
       external_dataset: {
         s3_path: "",
         format: "json",
@@ -1688,10 +1689,13 @@ export default cbasController;
     // create a custom dataset on a given link
     function createNewDataset(link) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
-      if (link.LinkName == "Local")
-        dataset_options.clusterBuckets = qc.clusterBuckets;
-      else
-        dataset_options.clusterBuckets = null;
+      dataset_options.clusterBuckets = qc.clusterBuckets;
+      if (link.LinkName == "Local") {
+        dataset_options.proxy = null;
+      }
+      else {
+        dataset_options.proxy = "../_p/cbas/analytics/link/_p/" + encodeURI(link.DVName) + "/" + encodeURI(link.LinkName);
+      }
       dataset_options.is_new = true;
       dataset_options.dataset_name = "";
       dataset_options.link_name = link.LinkName;
