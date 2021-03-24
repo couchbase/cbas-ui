@@ -49,12 +49,15 @@
         </span>
         <div>
           <h5>Default Scope:
-          <mn-select
+          <!--mn-select
           class="inline fixed-width-3"
           ng-model="qc.queryContext"
           values="qc.scopeNames"
           mn-horizontal-align="'right'">
-          </mn-select>
+          </mn-select-->
+          <select ng-model="qc.queryContext">
+            <option ng-repeat="scope in qc.scopeNames">{{scope}}</option>
+          </select>
           </h5>
         </div>
         <!-- div class="wb-fullscreen resp-hide-sml" ng-click="qc.toggleFullscreen()">

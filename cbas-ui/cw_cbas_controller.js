@@ -1455,7 +1455,7 @@ export default cbasController;
     }
 
     function createNewLink(dataverse) {
-      linkDialogScope.options.dataverse = dataverse.DataverseName;
+      linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
       linkDialogScope.options.is_new = true;
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
 
