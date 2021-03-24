@@ -1,7 +1,7 @@
 <div class="dialog-med">
   <div class="panel-header">
     <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Collection to {{options.link_name}}</h2>
-    <h2 ng-show="!options.is_new">Edit Collection Details</h2>
+    <h2 ng-show="!options.is_new">Collection Details</h2>
   </div>
   <form class="forms" name="datasetForm">
     <div class="panel-content">
@@ -15,24 +15,24 @@
         <input ng-disabled="!options.is_new"ng-model="options.dataset_name" type="text" autocorrect="off"
            spellcheck="false" autocapitalize="off" required>
       </div>
-
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
       <div class="formrow" ng-if="options.clusterBuckets" ng-disabled="!options.is_new">
         <qw-collection-menu
                             label="Source"
                             [initialSelection]="options"
                             [callback]="options.collectionMenuCallback"
+                            [disabled]="!options.is_new"
                             (onSelection)="options.collectionMenuCallback($event)"
         </qw-collection-menu>
       </div>
 
       <div class="formrow" ng-if="!options.clusterBuckets" ng-disabled="!options.is_new">
         <label for="cluster_reference_name">Source</label>
-        <input ng-model="options.selected_bucket" type="text" autocorrect="off"
+        <input ng-model="options.selected_bucket" type="text" autocorrect="off" ng-disabled="!options.is_new"
                spellcheck="false" autocapitalize="off" required placeholder="Bucket on remote cluster">
-        <input ng-model="options.selected_scope" type="text" autocorrect="off"
+        <input ng-model="options.selected_scope" type="text" autocorrect="off" ng-disabled="!options.is_new"
                spellcheck="false" autocapitalize="off" placeholder="Scope (omit for pre-7.0 clusters)">
-        <input ng-model="options.selected_collection" type="text" autocorrect="off"
+        <input ng-model="options.selected_collection" type="text" autocorrect="off" ng-disabled="!options.is_new"
                spellcheck="false" autocapitalize="off" placeholder="Collection (omit for pre-7.0 clusters)">
       </div>
 
@@ -112,7 +112,7 @@
       <button ng-disabled="datasetForm.$invalid" ng-if="options.is_new" type="submit" ng-click="$close('ok')">Save</button>
 
       <div ng-if="!options.is_new" class="row width-12">
-        <button class="outline" ng-click="$close('drop')">Drop Dataset</button>
+        <button class="outline" ng-click="$close('drop')">Drop Collection</button>
         <button class="outline"  ng-click="$close('close')">Close Dialog</button>
       </div>
     </div>

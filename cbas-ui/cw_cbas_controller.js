@@ -1603,6 +1603,10 @@ export default cbasController;
     };
 
     dataset_options.select_collection = function(bucketName,scopeName,collectionName) {
+      // nothing to do if we're already selected
+      if (dataset_options.already_selected(bucketName,scopeName,collectionName))
+        return;
+
       var key = dataset_options.collection_key(bucketName,scopeName,collectionName);
       dataset_options.selected_collections[key] = !dataset_options.selected_collections[key];
     };
@@ -1700,16 +1704,17 @@ export default cbasController;
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
-
+          var dv = cwQueryService.dataverses.find(dv => dv.DataverseName == link.DVName);
+          var dvName = dv.dataverseDisplayName || link.DVName;
           var external = (dataset_options.link_details && dataset_options.link_details.type == "s3") ? " EXTERNAL " : "";
-          var queryText = "CREATE " + external + " DATASET `" + link.DVName + "`.`" + dataset_options.dataset_name +
+          var queryText = "CREATE " + external + " DATASET " + dvName + ".`" + dataset_options.dataset_name +
             "` ON `" + dataset_options.selected_bucket;
 
           // pre-7.0 remote clusters won't have scope and collection.
           if (dataset_options.selected_scope && dataset_options.selected_collection)
             queryText += "`.`" + dataset_options.selected_scope + "`.`" +  dataset_options.selected_collection;
 
-          queryText += "` at `" + link.DVName + "`.`" + link.LinkName + "`";
+          queryText += "` at " + dvName + ".`" + link.LinkName + "`";
 
           if (dataset_options.where)
             queryText += " WHERE " + dataset_options.where;
@@ -1758,10 +1763,13 @@ export default cbasController;
 
     function editDataset(link, dataset) {
       dataset_options.clusterBuckets = null;
+      dataset_options.selected_bucket = dataset.bucketName;
+      dataset_options.selected_scope = dataset.scopeName;
+      dataset_options.selected_collection = dataset.collectionName;
       dataset_options.link_name = link.LinkName;
       dataset_options.is_new = false;
       dataset_options.dataset_name = dataset.id;
-      dataset_options.where = dataset.filter;
+      dataset_options.where = dataset.filter || "   ";
       dataset_options.bucket_name = dataset.bucketName;
 
       datasetDialogScope.options = dataset_options;

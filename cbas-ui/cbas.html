@@ -280,15 +280,10 @@
                       collection details
                     </a>
                     <p ng-show="!shadow.external" class="margin-bottom-half">
-                      {{shadow.LinkName}}.{{shadow.bucketName}}
+                      {{shadow.bucketName}}.{{shadow.scopeName}}.{{shadow.collectionName}}
                       <span ng-show="shadow.filter">|</span> {{shadow.filter}}
                     </p>
-                    <p ng-show="shadow.external" class="margin-bottom-half">
-                      Container:<br>
-                      {{shadow.container}}.{{shadow.bucketName}}
-                      <span ng-show="shadow.definition">|</span> {{shadow.definition}}
-                      <span ng-show="shadow.format">({{shadow.format}})</span>
-                    </p>
+                    <span ng-if="!shadow.indexes.length">no indexes</span>
                     <p class="margin-bottom-half" ng-show="shadow.indexes.length > 0">
                       Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                       <span ng-repeat="idx in shadow.indexes">
@@ -383,6 +378,7 @@
                       <span ng-show="shadow.definition">|</span> {{shadow.definition}}
                       <span ng-show="shadow.format">({{shadow.format}})</span>
                     </p>
+                    <span ng-if="!shadow.indexes.length">no indexes</span>
                     <p class="margin-bottom-half" ng-show="shadow.indexes.length > 0">
                       Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                       <span ng-repeat="idx in shadow.indexes">
