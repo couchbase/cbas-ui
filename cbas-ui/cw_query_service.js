@@ -2411,7 +2411,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     return $http({
       url: "/_p/cbas/analytics/link",
       method: "GET",
-      data: {dataverse: dataverse, name: linkName},
+      data: {scope: dataverse, name: linkName},
     });
   }
 
@@ -2419,7 +2419,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     return $http({
       url: "/_p/cbas/analytics/link",
       method: "DELETE",
-      data: {dataverse: dataverse, name: linkName},
+      data: {scope: dataverse, name: linkName},
     });
   }
 
@@ -2453,7 +2453,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function convertDialogScopeToAPIdata(scope) {
     var formData = {
-      dataverse: scope.dataverse,
+      scope: scope.dataverse,
       name: scope.link_name,
       type: scope.link_type
     };
