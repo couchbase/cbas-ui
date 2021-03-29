@@ -1570,16 +1570,18 @@ export default cbasController;
       }
     };
 
+    // called when MapDialog first comes up, want latest list of buckets
     dataset_options.update_buckets = function() {
-      qwCollectionsService.getBuckets().then(function success(metadata) {
+      qwCollectionsService.refreshBuckets().then(function success(metadata) {
         dataset_options.kv_buckets.length = 0;
-        for (const bucketName of metadata.buckets)
-          dataset_options.kv_buckets.push({name:bucketName,expanded:false});
+        for (const bucketName of metadata.buckets) {
+          dataset_options.kv_buckets.push({name: bucketName, expanded: false});
+        }
       });
     };
 
     dataset_options.update_scopes_for_bucket = function(bucket) {
-      qwCollectionsService.getScopesForBucket(bucket)
+      qwCollectionsService.refreshScopesAndCollectionsForBucket(bucket)
         .then(function success(metadata) {
           dataset_options.kv_scopes[bucket] = [];
           metadata.scopes[bucket].forEach(scope_name =>
@@ -1590,7 +1592,7 @@ export default cbasController;
 
     dataset_options.changeBucketExpanded = function(bucket) {
       bucket.expanded = !bucket.expanded;
-      if (bucket.expanded && !dataset_options.kv_scopes[bucket.name])
+      if (bucket.expanded) // get latest scopes for bucket, since user wants
         dataset_options.update_scopes_for_bucket(bucket.name);
     };
 
