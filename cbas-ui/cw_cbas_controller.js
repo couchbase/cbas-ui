@@ -1696,7 +1696,7 @@ export default cbasController;
         dataset_options.proxy = null;
       }
       else {
-        dataset_options.proxy = "../_p/cbas/analytics/link/_p/" + encodeURI(link.DVName) + "/" + encodeURI(link.LinkName);
+        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURI(link.DVName) + "/" + encodeURI(link.LinkName);
       }
       dataset_options.is_new = true;
       dataset_options.dataset_name = "";
