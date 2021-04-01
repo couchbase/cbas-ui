@@ -2402,7 +2402,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function getCachedLinkInfo(dataverse, linkName) {
     if (_.isArray(cwQueryService.links))
-      return cwQueryService.links.find(element => element.name == linkName && element.dataverse == dataverse);
+      return cwQueryService.links.find(element => element.name == linkName && element.scope == dataverse);
 
     return (null);
   }

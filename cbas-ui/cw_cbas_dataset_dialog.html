@@ -16,7 +16,8 @@
            spellcheck="false" autocapitalize="off" required>
       </div>
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
-      <div class="formrow" ng-if="options.clusterBuckets" ng-disabled="!options.is_new">
+      <div class="formrow" ng-if="options.clusterBuckets && options.link_details.type != 's3'"
+           ng-disabled="!options.is_new">
         <qw-collection-menu
                             label="Source"
                             [initialSelection]="options"
@@ -36,16 +37,10 @@
         <input ng-model="options.selected_collection" type="text" autocorrect="off" ng-disabled="!options.is_new"
                spellcheck="false" autocapitalize="off" placeholder="Collection (omit for pre-7.0 clusters)">
       </div>
-
-      <div class="formrow" ng-if="false">
+      <div class="formrow" ng-if="options.link_details.type == 's3'">
         <label for="cluster_reference_name">Bucket Name</label>
-        <select ng-disabled="!options.is_new" ng-if="options.clusterBuckets"
-                ng-model="options.bucket_name" required>
-          <option ng-repeat="bucket in options.clusterBuckets">{{bucket}}</option>
-        </select>
         <input
            ng-disabled="!options.is_new"
-           ng-if="!options.clusterBuckets"
            ng-model="options.bucket_name"
            type="text"
            autocorrect="off"
