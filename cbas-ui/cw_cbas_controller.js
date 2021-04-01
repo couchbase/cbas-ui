@@ -1634,9 +1634,9 @@ export default cbasController;
       qc.shadows.forEach(function(shadow) {
         // internal datasets
         if (!shadow.external &&
-        shadow.DataverseName.indexOf('.') > -1 &&
+        shadow.DataverseName.indexOf('/') > -1 &&
         shadow.LinkName == 'Local') {
-          var bucket_scope = shadow.bucketDataverseName.split('.');
+          var bucket_scope = shadow.bucketDataverseName.split('/');
           var key = dataset_options.collection_key(bucket_scope[0],bucket_scope[1],shadow.id);
           dataset_options.already_selected_collections[key] = true;
         }
