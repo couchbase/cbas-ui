@@ -2363,6 +2363,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     var dialogScope = $rootScope.$new(true);
     dialogScope.error_title = "Error";
     dialogScope.error_detail = message;
+    dialogScope.hide_cancel = true;
 
     $uibModal.open({
       templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',

@@ -118,6 +118,7 @@ export default cbasController;
     qc.mapCollections = mapCollections;
     qc.createNewDataset = createNewDataset;
     qc.editDataset = editDataset;
+    qc.dropDataset = dropDataset;
 
     //
     // options for the two Ace editors, the input and the output
@@ -1767,6 +1768,26 @@ export default cbasController;
         });
     }
 
+    function dropDataset(link, dataset) {
+      cwQueryService.showConfirmationDialog("Are you sure you want to delete collection: " +
+        link.DVName + "." + dataset.id)
+        .then(function yes(resp) {
+          if (resp == "ok") {
+            var queryText = "drop dataset `" + dataset.bucketDataverseName + '`.`' + dataset.id + '`';
+
+            cwQueryService.executeQueryUtil(queryText, false, false)
+              .then(function success() {
+                  qc.updateBuckets();
+                },
+                function error(resp) {
+                  console.log("Got drop collection error: " + JSON.stringify(resp));
+                  var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                  cwQueryService.showErrorDialog(errorStr);
+                });
+          }
+        });
+    }
+
     function editDataset(link, dataset) {
       dataset_options.clusterBuckets = null;
       dataset_options.selected_bucket = dataset.bucketName;
@@ -1788,7 +1809,7 @@ export default cbasController;
         .then(function success(resp) {
           //console.log("showed dataset, got resp: " + resp);
           if (resp == "drop") {
-            cwQueryService.showConfirmationDialog("Are you sure you want to delete dataset: " +
+            cwQueryService.showConfirmationDialog("Are you sure you want to delete collection: " +
               link.DVName + "." + dataset.id)
               .then(function yes(resp) {
                 if (resp == "ok") {
@@ -1800,7 +1821,7 @@ export default cbasController;
                       },
                       function error(resp) {
                         console.log("Got drop dataset error: " + JSON.stringify(resp));
-                        var errorStr = "Error dropping dataset: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                        var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
                         cwQueryService.showErrorDialog(errorStr);
                       });
 

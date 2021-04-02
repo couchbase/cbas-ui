@@ -277,11 +277,6 @@
                   </div>
                   <!-- expando section for details on each dataset -------------------------- -->
                   <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
-                    <a
-                       ng-click="qc.editDataset(link,shadow)"
-                       class="inline margin-bottom-half margin-top-half">
-                      collection details
-                    </a>
                     <p ng-show="!shadow.external" class="margin-bottom-half">
                       {{shadow.bucketName}}.{{shadow.scopeName}}.{{shadow.collectionName}}
                       <span ng-show="shadow.filter">|</span> {{shadow.filter}}
@@ -292,6 +287,12 @@
                       <span ng-repeat="idx in shadow.indexes">
                         {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
                       </span>
+                    </p>
+                    <p>
+                      <a ng-click="qc.dropDataset(link,shadow)"
+                       class="inline margin-bottom-half margin-top-half">
+                        drop collection
+                      </a>
                     </p>
                   </div>
                   <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
@@ -366,12 +367,7 @@
                   </div>
 <!-- expando section for details on each dataset -------------------------- -->
                   <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
-                    <a
-                       ng-click="qc.editDataset(link,shadow)"
-                       class="inline margin-bottom-half margin-top-half">
-                      collection details
-                    </a>
-                    <p ng-show="!shadow.external" class="margin-bottom-half">
+                     <p ng-show="!shadow.external" class="margin-bottom-half">
                       {{shadow.LinkName}}.{{shadow.bucketName}}
                       <span ng-show="shadow.filter">|</span> {{shadow.filter}}
                     </p>
@@ -387,6 +383,12 @@
                       <span ng-repeat="idx in shadow.indexes">
                         {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
                       </span>
+                    </p>
+                    <p>
+                      <a ng-click="qc.dropDataset(link,shadow)"
+                         class="inline margin-bottom-half margin-top-half">
+                        drop collection
+                      </a>
                     </p>
                   </div>
                   <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
