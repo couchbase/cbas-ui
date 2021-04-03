@@ -2410,23 +2410,21 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function getLink(dataverse, linkName) {
     return $http({
-      url: "/_p/cbas/analytics/link",
+      url: "/_p/cbas/analytics/link/" + encodeURIComponent(dataverse) + "/" + encodeURIComponent(linkName),
       method: "GET",
-      data: {scope: dataverse, name: linkName},
     });
   }
 
-  function deleteLink(datverse, linkName) {
+  function deleteLink(dataverse, linkName) {
     return $http({
-      url: "/_p/cbas/analytics/link",
+      url: "/_p/cbas/analytics/link/" + encodeURIComponent(dataverse) + "/" + encodeURIComponent(linkName),
       method: "DELETE",
-      data: {scope: dataverse, name: linkName},
     });
   }
 
   function editLink(linkDialogScope) {
     return $http({
-      url: "/_p/cbas/analytics/link",
+      url: "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.dataverse) + "/" + encodeURIComponent(linkDialogScope.link_name),
       method: "PUT",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     });
@@ -2434,7 +2432,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function createLink(linkDialogScope) {
     var request = {
-      url: "/_p/cbas/analytics/link",
+      url: "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.dataverse) + "/" + encodeURIComponent(linkDialogScope.link_name),
       method: "POST",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };
@@ -2454,8 +2452,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function convertDialogScopeToAPIdata(scope) {
     var formData = {
-      scope: scope.dataverse,
-      name: scope.link_name,
       type: scope.link_type
     };
 

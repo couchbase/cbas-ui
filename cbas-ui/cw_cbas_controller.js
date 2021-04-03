@@ -1404,7 +1404,7 @@ export default cbasController;
     }
 
     function handleConnectionFailure(resp) {
-      var errorStr = "Error connecting/disconnecting link. "
+      var errorStr = "Error connecting/disconnecting link. ";
       if (resp.status)
         errorStr += "Got status: " + resp.status + " from server.";
       if (resp.data)
@@ -1456,7 +1456,7 @@ export default cbasController;
     }
 
     function createNewLink(dataverse) {
-      linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
+      linkDialogScope.options.dataverse = dataverse.DataverseName;
       linkDialogScope.options.is_new = true;
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
 
@@ -1500,13 +1500,12 @@ export default cbasController;
           .then(function success(resp) {
 
             if (resp == "drop") {
-              cwQueryService.showConfirmationDialog("Are you sure you want to delete link: `" +
-                link.DVName + '`.`' + link.LinkName + '`')
+              cwQueryService.showConfirmationDialog("Are you sure you want to delete link: " +
+                link.DVName + '.' + link.LinkName)
                 .then(function yes(resp) {
                   if (resp == "ok") {
-                    var queryText = "drop link `" + link.DVName + '`.`' + link.LinkName + "`";
-                    cwQueryService.executeQueryUtil(queryText, false, false)
-                      .then(function success() {
+                    cwQueryService.deleteLink(link.DVName, link.LinkName)
+                      .then(function success(resp) {
                           qc.updateBuckets()
                         },
                         function error(resp) {
@@ -1697,7 +1696,7 @@ export default cbasController;
         dataset_options.proxy = null;
       }
       else {
-        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURI(link.DVName) + "/" + encodeURI(link.LinkName);
+        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link.DVName) + "/" + encodeURIComponent(link.LinkName);
       }
       dataset_options.is_new = true;
       dataset_options.dataset_name = "";
