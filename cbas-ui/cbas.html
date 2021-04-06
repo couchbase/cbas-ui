@@ -47,19 +47,27 @@
             &rarr;
           </button>
         </span>
-        <div>
-          <h5>Default Scope:
+
+
           <!--mn-select
           class="inline fixed-width-3"
           ng-model="qc.queryContext"
           values="qc.scopeNames"
           mn-horizontal-align="'right'">
           </mn-select-->
-          <select ng-model="qc.queryContext">
+        <span class="wb-use">
+          <select ng-model="qc.queryContext"
+            uib-tooltip-html="'Set a default keyspace to use for your queries (bucket.scope), so you may write queries with only the collection name.'"
+            tooltip-placement="auto top"
+            tooltip-append-to-body="true"
+            tooltip-trigger="mouseenter"
+            class="fix-width-4">
+           <option value>default keyspace</option>
             <option ng-repeat="scope in qc.scopeNames">{{scope}}</option>
           </select>
-          </h5>
-        </div>
+        <span>
+
+
         <!-- div class="wb-fullscreen resp-hide-sml" ng-click="qc.toggleFullscreen()">
           <span ng-if="!qc.fullscreen" class="icon fa-expand" title="expand"></span>
           <span ng-if="qc.fullscreen" class="icon fa-compress" title="contract"></span>
@@ -188,7 +196,7 @@
     </div>
   </div>
 
-<!-- manage dataverses sidebar -------------------------------------------------------->
+<!-- manage scopes & collections sidebar ----------------------------------- -->
   <div class="insights-sidebar width-3 resp-hide-sml">
     <div class="row margin-bottom-half">
      <h5>Scopes & Collections</h5>
@@ -262,18 +270,18 @@
 
               <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
                 <div ng-init="shadow.expanded = false">
-                  <div class="row margin-left-1-5 margin-top-half">
-                    <span>
+                  <div class="row margin-left-half margin-top-half">
+
                       <div
-                         class="disclosure inline"
+                         class="disclosure padding-left-1 ellipsis"
                          ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
                          ng-click="shadow.expanded = !shadow.expanded">
-                        {{shadow.id}}
+                        <span
+                           class="icon fa-database text-smaller grayblue-2 sup margin-right-quarter"
+                           ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                        <span class="ellipsis">{{shadow.id}}</span>
                       </div>
-                      <span
-                         class="icon fa-database text-smaller grayblue-2 sup"
-                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
-                    </span>
+
                   </div>
                   <!-- expando section for details on each dataset -------------------------- -->
                   <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
