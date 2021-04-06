@@ -162,7 +162,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.shadows = [];
   cwQueryService.indexes = [];
   cwQueryService.dataverses = [];
-  cwQueryService.scopeNames = [""];
+  cwQueryService.scopeNames = [];
   cwQueryService.dataverse_links = {};
   cwQueryService.links = [];
   cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
@@ -1550,7 +1550,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         cwQueryService.clusterBuckets.length = 0;
         cwQueryService.dataverses.length = 0;
         cwQueryService.scopeNames.length = 0;
-        cwQueryService.scopeNames.push("");
         cwQueryService.dataverse_links = {};
         cwQueryService.autoCompleteTokens = {};
         cwQueryService.bucket_errors = error;
@@ -1580,7 +1579,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.shadows.length = 0;
     cwQueryService.dataverses.length = 0;
     cwQueryService.scopeNames.length = 0;
-    cwQueryService.scopeNames.push("");
     cwQueryService.clusterBuckets.length = 0;
     cwQueryService.bucket_errors = null;
     cwQueryService.bucket_names.length = 0;
@@ -1625,6 +1623,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         } else if (record.isDataverse) {
           cwQueryService.dataverses.push(record);
           cwQueryService.scopeNames.push(record.dataverseDisplayName);
+          record.multiPartName = (record.DataverseName.indexOf('/') >= 0); // slash indicates mapped
         } else if (record.isLink) {
           // have we seen the link yet associated with a dataset?
           if (!cwQueryService.dataverse_links[record.DataverseName])

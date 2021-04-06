@@ -57,21 +57,15 @@
           </mn-select-->
         <span class="wb-use">
           <select ng-model="qc.queryContext"
-            uib-tooltip-html="'Set a default keyspace to use for your queries (bucket.scope), so you may write queries with only the collection name.'"
+            uib-tooltip-html="'Set a default scope, so you may write queries with only the collection name.'"
             tooltip-placement="auto top"
             tooltip-append-to-body="true"
             tooltip-trigger="mouseenter"
             class="fix-width-4">
-           <option value>default keyspace</option>
+            <option value>query context</option>
             <option ng-repeat="scope in qc.scopeNames">{{scope}}</option>
           </select>
-        <span>
-
-
-        <!-- div class="wb-fullscreen resp-hide-sml" ng-click="qc.toggleFullscreen()">
-          <span ng-if="!qc.fullscreen" class="icon fa-expand" title="expand"></span>
-          <span ng-if="qc.fullscreen" class="icon fa-compress" title="contract"></span>
-        </div -->
+        </span>
       </div>
 
 <!-- Ace editor --------------------------------------------------------------->
@@ -199,7 +193,7 @@
 <!-- manage scopes & collections sidebar ----------------------------------- -->
   <div class="insights-sidebar width-3 resp-hide-sml">
     <div class="row margin-bottom-half">
-     <h5>Scopes & Collections</h5>
+     <h5>Analytics Collections</h5>
       <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
         <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
         <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
@@ -226,7 +220,8 @@
                    ng-if="!qc.scopeEmpty(dataverse) || qc.showEmptyScopes()">
             <div class="dataverse-box">
               <span class="ellipsis">
-              <span class="text-fine">scope</span>
+              <span class="text-fine" ng-if="dataverse.multiPartName">bucket.scope</span>
+              <span class="text-fine" ng-if="!dataverse.multiPartName">analytics scope</span>
               <h5 class="ellipsis">{{dataverse.dataverseDisplayName}}</h5>
               </span>
               <div ng-show="qc.validated.canAccessLinks()">
