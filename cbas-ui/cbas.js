@@ -11,6 +11,7 @@ import qwJsonDataTable from "/_p/ui/query/ui-current/data_display/qw-json-datata
 import qwJsonTableEditor from "/_p/ui/query/ui-current/data_display/qw-json-table-editor.directive.js";
 import qwLongPress from "/_p/ui/query/long_press/qw-long-press.directive.js";
 
+import mnAlertsService from '/ui/app/components/mn_alerts.js';
 import mnJquery from "/ui/app/components/mn_jquery.js";
 import mnPools from "/ui/app/components/mn_pools.js";
 import mnPoolDefault from "/ui/app/components/mn_pool_default.js";
@@ -46,6 +47,7 @@ angular.module('cwCbas', [
   qwJsonTableEditor,
   qwLongPress,
 
+  mnAlertsService,
   mnJquery,
   mnPools,
   mnPoolDefault,

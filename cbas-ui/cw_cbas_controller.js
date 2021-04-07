@@ -5,7 +5,7 @@ import saveAs from "/ui/web_modules/file-saver.js";
 export default cbasController;
 
   function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService,
-                          validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault,
+                          validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService,
                           mnServersService, $interval, qwJsonCsvService, jQuery, qwCollectionsService) {
     var $ = jQuery;
     var qc = this;
@@ -1491,6 +1491,7 @@ export default cbasController;
         linkDialogScope.options.is_new = false;
         linkDialogScope.options.couchbase_link.password = ""; // is never stored
         linkDialogScope.options.s3_link.access_key = ""; // is never stored
+        linkDialogScope.options.dataverse = link.DVName;
 
         // bring up the dialog
         $uibModal.open({
@@ -1659,12 +1660,14 @@ export default cbasController;
       }).result
         .then(function success(resp) {
           var queries = [];
+          var collections = [];
           for (const selection in dataset_options.selected_collections) {
             var details = selection.split('`');
             queries.push("alter collection `" + details[0] + "`.`" +
               details[1] + '`.`' + details[2] + '` enable analytics;');
+            collections.push('`' + details[0] + '`.`' + details[1] + '`.`' + details[2] + '`');
           }
-          executeQueryList(queries,0);
+          executeQueryList(queries,0, collections);
         },
         function error(resp) {
           // they hit cancel, nothing to do
@@ -1672,7 +1675,7 @@ export default cbasController;
     }
 
     // execute a list of queries in sequence, stopping at the first error
-    function executeQueryList(queryList, index) {
+    function executeQueryList(queryList, index, collections) {
       if (index >= queryList.length) { // all done
         setTimeout(qc.updateBuckets, 500);
         return;
@@ -1680,7 +1683,9 @@ export default cbasController;
 
       cwQueryService.executeQueryUtil(queryList[index], false, false)
         .then(function success() {
-            executeQueryList(queryList,index+1);
+            if (collections && collections[index])
+              mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
+            executeQueryList(queryList,index+1, collections);
           },
           function error(resp) {
             var errorStr = "Error running query: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
@@ -1722,7 +1727,7 @@ export default cbasController;
 
           queryText += "` at " + dvName + ".`" + link.LinkName + "`";
 
-          if (dataset_options.where)
+          if (dataset_options.where && dataset_options.link_details.type != "s3")
             queryText += " WHERE " + dataset_options.where;
 
           // external dataset?
@@ -1772,7 +1777,12 @@ export default cbasController;
         link.DVName + "." + dataset.id)
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop dataset `" + dataset.bucketDataverseName + '`.`' + dataset.id + '`';
+            var queryText = "drop dataset `" + dataset.DataverseName + '`.`' + dataset.id + '`';
+            // if it's a mapped collection, we need to use a different query to remove it.
+            if (dataset.LinkName == "Local" && dataset.collectionName == "_default" &&
+              dataset.datasetFullyQualifiedName == dataset.bucketName + '/' + dataset.scopeName + '.' + dataset.collectionName)
+              queryText = 'alter collection `' + dataset.bucketName + '`.`' + dataset.scopeName + '`.`' +
+                dataset.collectionName + '` disable analytics;';
 
             cwQueryService.executeQueryUtil(queryText, false, false)
               .then(function success() {

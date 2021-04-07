@@ -48,7 +48,7 @@
            autocapitalize="off" required>
       </div>
 
-      <div class="formrow">
+      <div class="formrow" ng-if="options.link_details.type != 's3'">
         <label>Where (optional)</label>
         <textarea
            ng-disabled="!options.is_new"
