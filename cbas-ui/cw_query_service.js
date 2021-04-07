@@ -1611,10 +1611,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             cwQueryService.dataverse_links[record.DataverseName] = [];
           // add the link if not already there
           var linkName = (record.DatasetType == "EXTERNAL") ? record.name : record.LinkName;
+          var linkDVName = record.dataverse || record.DataverseName;
           var theLink = cwQueryService.dataverse_links[record.DataverseName]
-            .find(element => element.LinkName == linkName && element.DVName == record.DataverseName);
+            .find(element => element.LinkName == linkName && element.DVName == linkDVName);
           if (theLink == null) {
-            theLink = { LinkName: linkName, DVName: record.DataverseName, LinkType: record.DatasetType };
+            theLink = { LinkName: linkName, DVName: linkDVName, LinkType: record.DatasetType };
             cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           }
           // be able to access the link from the shadow record
