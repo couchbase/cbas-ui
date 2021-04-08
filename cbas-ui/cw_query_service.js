@@ -2386,11 +2386,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     });
   }
 
-  function showConfirmationDialog(message) {
+  function showConfirmationDialog(title,message) {
     var subdirectory = '/ui-current';
 
     var dialogScope = $rootScope.$new(true);
-    dialogScope.error_title = "Are you sure?";
+    dialogScope.error_title = title;
     dialogScope.error_detail = message;
 
     return ($uibModal.open({

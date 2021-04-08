@@ -1503,7 +1503,7 @@ export default cbasController;
           .then(function success(resp) {
 
             if (resp == "drop") {
-              cwQueryService.showConfirmationDialog("Are you sure you want to delete link: " +
+              cwQueryService.showConfirmationDialog("Confirm Drop Link","Warning, this will to drop link: " +
                 link.DVName + '.' + link.LinkName)
                 .then(function yes(resp) {
                   if (resp == "ok") {
@@ -1785,7 +1785,7 @@ export default cbasController;
     }
 
     function dropDataset(link, dataset) {
-      cwQueryService.showConfirmationDialog("Are you sure you want to delete collection: " +
+      cwQueryService.showConfirmationDialog("Confirm Drop Collection", "Warning, this will drop collection: " +
         link.DVName + "." + dataset.id)
         .then(function yes(resp) {
           if (resp == "ok") {
@@ -1830,7 +1830,7 @@ export default cbasController;
         .then(function success(resp) {
           //console.log("showed dataset, got resp: " + resp);
           if (resp == "drop") {
-            cwQueryService.showConfirmationDialog("Are you sure you want to delete collection: " +
+            cwQueryService.showConfirmationDialog("Confirm Drop Collection","Warning, this will drop collection: " +
               link.DVName + "." + dataset.id)
               .then(function yes(resp) {
                 if (resp == "ok") {
@@ -1854,7 +1854,7 @@ export default cbasController;
     }
 
     function dropScope(scope) {
-      cwQueryService.showConfirmationDialog("Are you sure you want to delete scope: " + scope.dataverseDisplayName)
+      cwQueryService.showConfirmationDialog("Confirm Drop Scope","Warning, this will drop scope: " + scope.dataverseDisplayName)
         .then(function yes(resp) {
           if (resp == "ok") {
             var queryText = "drop dataverse " + scope.dataverseDisplayName;

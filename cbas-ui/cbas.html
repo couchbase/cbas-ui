@@ -252,9 +252,9 @@
                   </span>
                   Local
                   </span>
-                  <a ng-disabled="!qc.scopeEmpty(dataverse)"
-                     ng-click="qc.dropScope(dataverse)"
-                     title="drop scope (if empty)">
+                  <a ng-click="qc.dropScope(dataverse)"
+                     ng-if="dataverse.dataverseDisplayName != 'Default' && qc.scopeEmpty(dataverse)"
+                     title="drop scope">
                     <span class="icon fa-trash"></span>
                   </a>
                 </div>
@@ -413,8 +413,8 @@
           </section>
           <a ng-click="qc.toggleEmptyScopes()" class="text-smallish margin-right-half"
              title="Show/hide analytics scopes that have no collections">
-            <span ng-hide="qc.showEmptyScopes()">show unmapped scopes</span>
-            <span ng-show="qc.showEmptyScopes()">hide unmapped scopes</span>
+            <span ng-hide="qc.showEmptyScopes()">show empty scopes</span>
+            <span ng-show="qc.showEmptyScopes()">hide empty scopes</span>
           </a>
         </div>
 
