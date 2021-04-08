@@ -2386,12 +2386,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     });
   }
 
-  function showConfirmationDialog(title,message) {
+  function showConfirmationDialog(title,message,details) {
     var subdirectory = '/ui-current';
 
     var dialogScope = $rootScope.$new(true);
     dialogScope.error_title = title;
     dialogScope.error_detail = message;
+    dialogScope.error_detail_array = details;
 
     return ($uibModal.open({
       templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',
