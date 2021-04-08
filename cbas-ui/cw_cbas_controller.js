@@ -119,6 +119,7 @@ export default cbasController;
     qc.createNewDataset = createNewDataset;
     qc.editDataset = editDataset;
     qc.dropDataset = dropDataset;
+    qc.dropScope = dropScope;
 
     //
     // options for the two Ace editors, the input and the output
@@ -207,7 +208,8 @@ export default cbasController;
     qc.showEmptyScopes = function() {return cwQueryService.showEmptyScopes;};
     qc.toggleEmptyScopes = function() {cwQueryService.showEmptyScopes = !cwQueryService.showEmptyScopes;};
     qc.scopeEmpty = function(dataverse)
-    {return !cwQueryService.shadows.some(shadow => shadow.bucketDataverseName == dataverse.DataverseName)};
+    {return !cwQueryService.shadows.some(shadow => shadow.bucketDataverseName == dataverse.DataverseName) &&
+      getLinksInDataverse(dataverse.DataverseName).length == 1 };
 
     // helper functions //
     qc.forceReload = forceReload;
@@ -1553,6 +1555,7 @@ export default cbasController;
         s3_path: "",
         format: "json",
         header: true,
+        inline_type_def: "",
         null_value: "",
         include: "",
         exclude: ""
@@ -1570,6 +1573,10 @@ export default cbasController;
         dataset_options.selected_collection = event.collection;
       }
     };
+
+    dataset_options.toggle_header = function() {
+      dataset_options.external_dataset.header = !dataset_options.external_dataset.header;
+    }
 
     // called when MapDialog first comes up, want latest list of buckets
     dataset_options.update_buckets = function() {
@@ -1718,8 +1725,13 @@ export default cbasController;
           var dv = cwQueryService.dataverses.find(dv => dv.DataverseName == link.DVName);
           var dvName = dv.dataverseDisplayName || link.DVName;
           var external = (dataset_options.link_details && dataset_options.link_details.type == "s3") ? " EXTERNAL " : "";
-          var queryText = "CREATE " + external + " DATASET " + dvName + ".`" + dataset_options.dataset_name +
-            "` ON `" + dataset_options.selected_bucket;
+          var queryText = "CREATE " + external + " DATASET " + dvName + '.`' + dataset_options.dataset_name + '`';
+
+          // csv and tsv files should have an inline type def
+          if (dataset_options.external_dataset.s3_path && dataset_options.external_dataset.format != "json")
+            queryText += '(' + dataset_options.external_dataset.inline_type_def + ') ';
+
+          queryText += " ON `" + dataset_options.selected_bucket;
 
           // pre-7.0 remote clusters won't have scope and collection.
           if (dataset_options.selected_scope && dataset_options.selected_collection)
@@ -1749,7 +1761,7 @@ export default cbasController;
             queryText += " }";
           }
 
-          //console.log("Got create query: " + queryText);
+          console.log("Got create query: " + queryText);
 
           cwQueryService.executeQueryUtil(queryText, false, false)
             .then(function success() {
@@ -1841,6 +1853,24 @@ export default cbasController;
         });
     }
 
+    function dropScope(scope) {
+      cwQueryService.showConfirmationDialog("Are you sure you want to delete scope: " + scope.dataverseDisplayName)
+        .then(function yes(resp) {
+          if (resp == "ok") {
+            var queryText = "drop dataverse " + scope.dataverseDisplayName;
+
+            cwQueryService.executeQueryUtil(queryText, false, false)
+              .then(function success() {
+                  qc.updateBuckets();
+                },
+                function error(resp) {
+                  console.log("Got drop scope error: " + JSON.stringify(resp));
+                  var errorStr = "Error dropping scope: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                  cwQueryService.showErrorDialog(errorStr);
+                });
+          }
+        });
+    }
 
   } // end of CBasController function
 

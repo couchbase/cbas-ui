@@ -225,7 +225,8 @@
               <h5 class="ellipsis">{{dataverse.dataverseDisplayName}}</h5>
               </span>
               <div ng-show="qc.validated.canAccessLinks()">
-                <div class="text-fine">
+                <div class="text-fine row">
+                  <span>
                   <span
                      ng-if="qc.getLocalLink(dataverse).remaining === qc.datasetUnknownState"
                      title="fetching link state..."
@@ -250,6 +251,12 @@
                      tooltip-trigger="mouseenter">
                   </span>
                   Local
+                  </span>
+                  <a ng-disabled="!qc.scopeEmpty(dataverse)"
+                     ng-click="qc.dropScope(dataverse)"
+                     title="drop scope (if empty)">
+                    <span class="icon fa-trash"></span>
+                  </a>
                 </div>
                 <a ng-click="qc.createNewDataset(qc.getLocalLink(dataverse))" class="text-fine nowrap">
                   +local collection
