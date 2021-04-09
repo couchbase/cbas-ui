@@ -1724,26 +1724,28 @@ export default cbasController;
         .then(function success(resp) {
           var dv = cwQueryService.dataverses.find(dv => dv.DataverseName == link.DVName);
           var dvName = dv.dataverseDisplayName || link.DVName;
-          var external = (dataset_options.link_details && dataset_options.link_details.type == "s3") ? " EXTERNAL " : "";
+          var s3Link = (dataset_options.link_details && dataset_options.link_details.type == "s3");
+          var external = s3Link ? " EXTERNAL " : "";
           var queryText = "CREATE " + external + " DATASET " + dvName + '.`' + dataset_options.dataset_name + '`';
 
-          // csv and tsv files should have an inline type def
-          if (dataset_options.external_dataset.s3_path && dataset_options.external_dataset.format != "json")
+          // for S3 links, csv and tsv files should have an inline type def
+          if (s3Link && dataset_options.external_dataset && dataset_options.external_dataset.format != "json")
             queryText += '(' + dataset_options.external_dataset.inline_type_def + ') ';
 
           queryText += " ON `" + dataset_options.selected_bucket;
 
           // pre-7.0 remote clusters won't have scope and collection.
-          if (dataset_options.selected_scope && dataset_options.selected_collection)
+          if (!s3Link && dataset_options.selected_scope && dataset_options.selected_collection)
             queryText += "`.`" + dataset_options.selected_scope + "`.`" +  dataset_options.selected_collection;
 
           queryText += "` at " + dvName + ".`" + link.LinkName + "`";
 
-          if (dataset_options.where && dataset_options.link_details.type != "s3")
+          // no where for S3
+          if (dataset_options.where && !s3Link)
             queryText += " WHERE " + dataset_options.where;
 
           // external dataset?
-          if (dataset_options.link_details && dataset_options.link_details.type == "s3") {
+          if (s3Link) {
             if (dataset_options.external_dataset.s3_path)
               queryText += ' USING "' + dataset_options.external_dataset.s3_path + '"';
             queryText += ' WITH {"format": "' + dataset_options.external_dataset.format + '"';
