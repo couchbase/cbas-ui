@@ -1,6 +1,6 @@
 <div class="dialog-med">
   <div class="panel-header">
-    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Collection to {{options.link_name}}</h2>
+    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Analytics Collection</h2>
     <h2 ng-show="!options.is_new">Collection Details</h2>
   </div>
   <form class="forms" name="datasetForm">
@@ -11,20 +11,25 @@
         </div>
       </div>
       <div class="formrow">
-        <label for="cluster_reference_name">Collection Name</label>
+        <label for="cluster_reference_name">
+          Collection Name
+          <small>can be the same or different from source</small>
+        </label>
         <input ng-disabled="!options.is_new"ng-model="options.dataset_name" type="text" autocorrect="off"
            spellcheck="false" autocapitalize="off" required>
       </div>
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
-      <div class="formrow" ng-if="options.clusterBuckets && options.link_details.type != 's3'"
-           ng-disabled="!options.is_new">
+      <div
+         class="formrow"
+         ng-if="options.clusterBuckets && options.link_details.type != 's3'"
+         ng-disabled="!options.is_new">
         <qw-collection-menu
-                            label="Source"
-                            [initialSelection]="options"
-                            [callback]="options.collectionMenuCallback"
-                            [disabled]="!options.is_new"
-                            (onSelection)="options.collectionMenuCallback($event)"
-                            [proxy]="options.proxy"
+           label="Source"
+           [initialSelection]="options"
+           [callback]="options.collectionMenuCallback"
+           [disabled]="!options.is_new"
+           (onSelection)="options.collectionMenuCallback($event)"
+           [proxy]="options.proxy"
         </qw-collection-menu>
       </div>
 

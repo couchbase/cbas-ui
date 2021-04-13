@@ -1,11 +1,11 @@
 <div class="dialog-med">
   <div class="panel-header">
-    <h2>Enable Analytics for Collections</h2>
+    <h2>Map Collections From Data Service</h2>
   </div>
   <form class="forms" name="datasetForm">
     <div class="panel-content">
-      Enable analytics for the following Data Service collections:
-      <div>
+      Create analytics collections from the following data service collections:
+      <div class="margin-top-1">
         <div ng-repeat="bucket in options.kv_buckets"
              class="disclosure lower medium"
              ng-class="{disclosed: bucket.expanded}"
@@ -18,27 +18,31 @@
             {{scope.name}}
             <div ng-if="scope.expanded"
                  ng-repeat="collection in options.kv_collections[bucket.name][scope.name]"
-                 ng-class="{'dataverse-box' : options.already_selected(bucket.name,scope.name,collection)}"
+                 ng-class="{'margin-left-1-5' : options.already_selected(bucket.name,scope.name,collection)}"
                  ng-click="options.select_collection(bucket.name,scope.name,collection); $event.stopPropagation()">
               <input type="checkbox"
                      ng-if="!options.already_selected(bucket.name,scope.name,collection)"
                      ng-model="options.selected_collections[options.collection_key(bucket.name,scope.name,collection)]">
-              <label>{{collection}}
-                <span ng-if="options.already_selected(bucket.name,scope.name,collection)" class="text-smallish">
-                  (already enabled)
-                </span>
+              <label ng-class="{'text-medium' : options.already_selected(bucket.name,scope.name,collection)}">
+                 {{collection}}
+                <em ng-if="options.already_selected(bucket.name,scope.name,collection)" class="text-smaller green-0">
+                  &nbsp; already mapped
+                </em>
               </label>
             </div>
           </div>
         </div>
       </div>
 
-      {{options.selection_count()}} collections selected.
+      <div ng-hide="options.selection_count() === 0" class="green-0 margin-top-1">
+        {{options.selection_count()}} collection<span ng-if="options.selection_count() !== 1">s</span>
+        selected
+      </div>
     </div>
 
     <div class="panel-footer">
       <a ng-if="options.is_new" ng-click="$dismiss('cancel')">Cancel</a>
-      <button ng-disabled="options.selection_count() == 0" type="submit" ng-click="$close('ok')">Save</button>
+      <button ng-disabled="options.selection_count() == 0" type="submit" ng-click="$close('ok')">Save Mapping</button>
 
       <div ng-if="!options.is_new" class="row width-12">
         <button class="outline"  ng-click="$close('close')">Close Dialog</button>
