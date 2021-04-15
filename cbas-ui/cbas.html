@@ -408,8 +408,7 @@
                   </div>
                   <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
                     <em class="text-smaller">
-                      {{shadow.remaining}} messages to process<span ng-show="shadow.osoSeqnoAdvances > 0">
-                      ({{shadow.osoSeqnoAdvances}} OSO processed messages)</span>
+                      progress {{shadow.progress}}%<span ng-show="shadow.timeLag">| {{shadow.timeLag}} est. time remaining</span>
                     </em>
                   </div>
                 </div>
