@@ -1385,6 +1385,7 @@ export default cbasController;
             shadow.name == link.LinkName)
           result.push(shadow);
       });
+
       return result;
     }
     function disconnectLink(link,dataverse) {
@@ -1461,6 +1462,9 @@ export default cbasController;
       linkDialogScope.options.dataverse = dataverse.DataverseName;
       linkDialogScope.options.is_new = true;
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
+      linkDialogScope.options.couchbase_link.password = "";
+      linkDialogScope.options.couchbase_link.client_key = "";
+      linkDialogScope.options.s3_link.access_key = "";
 
       // bring up the dialog
       $uibModal.open({
@@ -1468,6 +1472,7 @@ export default cbasController;
         scope: linkDialogScope
       }).result
         .then(function success(resp) {
+          mnAlertsService.formatAndSetAlerts("Creating link " + linkDialogScope.options.link_name,'warning',10000);
           cwQueryService.createLink(linkDialogScope.options)
             .then(function success(resp) {
               qc.updateBuckets();
@@ -1482,7 +1487,7 @@ export default cbasController;
 
     }
 
-    function editLink(link) {
+    function editLink(link,dataverse) {
       //console.log("Edit Link");
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
 
@@ -1504,7 +1509,7 @@ export default cbasController;
 
             if (resp == "drop") {
               cwQueryService.showConfirmationDialog("Confirm Drop Link",
-                "Warning, this will drop the link: ",[link.DVName + '.' + link.LinkName])
+                "Warning, this will drop the link: ",[dataverse.dataverseDisplayName + '.' + link.LinkName])
                 .then(function yes(resp) {
                   if (resp == "ok") {
                     cwQueryService.deleteLink(link.DVName, link.LinkName)
@@ -1788,15 +1793,10 @@ export default cbasController;
 
     function dropDataset(link, dataset) {
       cwQueryService.showConfirmationDialog("Confirm Drop Analytics Collection",
-        "Warning, this will drop the analytics collection ",[link.DVName + "." + dataset.id])
+        "Warning, this will drop the analytics collection ",[dataset.dataverseDisplayName + "." + dataset.id])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop dataset `" + dataset.DataverseName + '`.`' + dataset.id + '`';
-            // if it's a mapped collection, we need to use a different query to remove it.
-            if (dataset.LinkName == "Local" && dataset.collectionName == "_default" &&
-              dataset.datasetFullyQualifiedName == dataset.bucketName + '/' + dataset.scopeName + '.' + dataset.collectionName)
-              queryText = 'alter collection `' + dataset.bucketName + '`.`' + dataset.scopeName + '`.`' +
-                dataset.collectionName + '` disable analytics;';
+            var queryText = "drop dataset " + dataset.dataverseDisplayName + '.`' + dataset.id + '`';
 
             cwQueryService.executeQueryUtil(queryText, false, false)
               .then(function success() {

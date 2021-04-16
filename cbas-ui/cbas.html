@@ -319,7 +319,7 @@
                 <span class="row flex-left ellipsis">
                   <h5 class="ellipsis"
                       ng-class="{'cursor-pointer' : link.LinkName != 'Local'}"
-                      ng-click="link.LinkName != 'Local' && qc.editLink(link)">
+                      ng-click="link.LinkName != 'Local' && qc.editLink(link,dataverse)">
                     <span class="ellipsis" ng-if="link.DVName != dataverse.DataverseName">
                       {{link.DVName}}.</span>{{link.LinkName}}
                   </h5>
@@ -392,12 +392,15 @@
                       <span ng-show="shadow.definition">|</span> {{shadow.definition}}
                       <span ng-show="shadow.format">({{shadow.format}})</span>
                     </p>
-                    <span ng-if="!shadow.indexes.length">no indexes</span>
-                    <p class="margin-bottom-half" ng-show="shadow.indexes.length > 0">
+                    <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
+                    <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
                       Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                       <span ng-repeat="idx in shadow.indexes">
                         {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
                       </span>
+                    </p>
+                    <p ng-if="link.LinkType != 'EXTERNAL' && shadow.format != 'json'">
+                      <!-- Put type definition here -->
                     </p>
                     <p>
                       <a ng-click="qc.dropDataset(link,shadow)"

@@ -1639,6 +1639,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     }
+    // put datasets in alphabetical order
+    cwQueryService.shadows.sort((a,b) => a.id ? a.id.localeCompare(b.id) : -1);
     // want menu of scope names in order
     cwQueryService.scopeNames.sort();
     // sort the dataverses by name, and add everything to the automcomplete index
