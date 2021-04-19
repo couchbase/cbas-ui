@@ -92,24 +92,38 @@
              autocompleterg="off"
              spellcheck="false"
              ng-model="options.external_dataset.inline_type_def"
-             placeholder="types for fields in file, e.g., 'id INTEGER NOT UNKNOWN, year INTEGER, review STRING NOT UNKNOWN'"
+             placeholder="types for fields in file, e.g., 'id BIGINT NOT UNKNOWN, year BIGINT, comment STRING, fraction DOUBLE, accepted BOOLEAN'"
              required>
           </textarea>
         </div>
 
-        <div class="formrow margin-left-1" ng-if="options.external_dataset.format != 'json'"
+        <div class="formrow margin-left-1"
+             ng-if="showInlineTypeDefinition(options.external_dataset.format)"
              title="Does file contain a header line with field names?" ng-click="options.toggle_header()">
           <input ng-model="options.external_dataset.header" type="checkbox"
                  name="header"
                  >
-          <label for="header">header</label>
+          <label for="header">Header</label>
         </div>
 
-        <div class="formrow margin-left-1" ng-if="options.external_dataset.format != 'json'">
-          <label>Null Value</label>
-          <input ng-model="options.external_dataset.null_value" type="text" autocorrect="off"
-                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new"
-          placeholder="string value representing nulls, e.g. 'null'">
+        <div class="formrow margin-left-1"
+             ng-if="showInlineTypeDefinition(options.external_dataset.format)">
+          <input ng-model="options.external_dataset.radio_null_value"
+                 id="emptyString"
+                 type="radio"
+                 value="empty_string">
+          <label for="emptyString">Empty String</label>
+          <input ng-model="options.external_dataset.radio_null_value"
+                 id="customString"
+                 type="radio"
+                 value="custom_string">
+          <label for="customString">Custom String</label>
+          <textarea ng-if="options.external_dataset.radio_null_value == 'custom_string'"
+                    ng-model="options.external_dataset.null_value"
+                    rows="3" autocorrect="off" autocomplete="off"
+                    spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new" required
+                    placeholder='Unquoted string that represents a NULL value. Quotes (") or backslashes (\) within the string need to be escaped with a backslash (\)'>
+          </textarea>
         </div>
 
         <div class="formrow">

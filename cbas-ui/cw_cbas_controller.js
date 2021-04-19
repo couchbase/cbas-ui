@@ -1546,6 +1546,9 @@ export default cbasController;
     //
 
     var datasetDialogScope = $rootScope.$new(true);
+    datasetDialogScope.showInlineTypeDefinition = function(format) {
+        return format == 'csv' || format == 'tsv';
+    }
 
     var dataset_options = {
       dataset_name: "",
@@ -1719,6 +1722,7 @@ export default cbasController;
       dataset_options.dataset_name = "";
       dataset_options.link_name = link.LinkName;
       dataset_options.link_details = cwQueryService.getCachedLinkInfo(link.DVName,link.LinkName);
+      dataset_options.external_dataset.radio_null_value = "empty_string";
       datasetDialogScope.options = dataset_options;
 
       // bring up the dialog
@@ -1756,8 +1760,11 @@ export default cbasController;
             queryText += ' WITH {"format": "' + dataset_options.external_dataset.format + '"';
             if (dataset_options.external_dataset.format != "json") {
               queryText += ', "header": ' + dataset_options.external_dataset.header;
-              if (dataset_options.external_dataset.null_value)
+              if (dataset_options.external_dataset.radio_null_value == 'empty_string') {
+                queryText += ', "null": ""';
+              } else {
                 queryText += ', "null": "' + dataset_options.external_dataset.null_value + '"';
+              }
             }
             if (dataset_options.external_dataset.include)
               queryText += ', "include": ' + dataset_options.external_dataset.include;
