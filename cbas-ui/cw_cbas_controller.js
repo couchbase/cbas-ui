@@ -1774,7 +1774,7 @@ export default cbasController;
             queryText += " }";
           }
 
-          console.log("Got create query: " + queryText);
+          //console.log("Got create query: " + queryText);
 
           cwQueryService.executeQueryUtil(queryText, false, false)
             .then(function success() {

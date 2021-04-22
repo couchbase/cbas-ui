@@ -1640,11 +1640,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             .find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
           if (theLink == null) {
             var linkType = (record.LinkType == "S3") ? "EXTERNAL" : "INTERNAL";
-            theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType, IsActive: record.IsActive};
+            theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType,
+              IsActive: record.IsActive, extLinkType: record.LinkType};
             cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           }
-          else
+          else {
             theLink.IsActive = record.IsActive;
+            theLink.extLinkType = record.LinkType;
+          }
 
           if (record.LinkType == "S3") theLink.IsActive = true; // s3 links can't be unlinked
           addToken(record.Name, "link");
@@ -1653,6 +1656,15 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     }
     // put datasets in alphabetical order
     cwQueryService.shadows.sort((a,b) => a.id ? a.id.localeCompare(b.id) : -1);
+    // we want the Local scope to always come first in each scope
+    for (var dataverseName in cwQueryService.dataverse_links) {
+      var links = cwQueryService.dataverse_links[dataverseName];
+      links.sort((a,b) => {
+        if (!a.LinkName || a.LinkName == "Local") return -1;
+        else if (!b.LinkName || b.LinkName == "Local") return 1;
+        else return a.LinkName.localeCompare(b.LinkName)
+      });
+    }
     // want menu of scope names in order
     cwQueryService.scopeNames.sort();
     // sort the dataverses by name, and add everything to the automcomplete index
