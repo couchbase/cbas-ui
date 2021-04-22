@@ -485,7 +485,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function addToken(token, type) {
     // see if the token needs to be quoted
-    if (token.indexOf(' ') >= 0 || token.indexOf('-') >= 0)
+    if (token.indexOf('`') == -1 &&
+      (token.indexOf(' ') >= 0 || token.indexOf('-') >= 0))
       token = '`' + token + '`';
 
     // if the token isn't already there, add it
@@ -1598,7 +1599,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             parseExternalDetails(record);
           }
           cwQueryService.shadows.push(record);
-          addToken(record.id, "shadow");
+          addToken(record.id, "collection");
 
           // every dataset is part of a dataverse, but it can use a link from another
           // dataverse. Thus we must keep track of all the links used by any dataset in
@@ -1622,9 +1623,15 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           record.link = theLink;
           theLink.remaining = record.remaining;
         } else if (record.isDataverse) {
+          // special cases for multipart names
+          if (record.DataverseName.indexOf('/') >= 0) {
+            record.multipPartName = true;
+            var names = record.DataverseName.split('/');
+            record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
+          }
           cwQueryService.dataverses.push(record);
           cwQueryService.scopeNames.push(record.dataverseDisplayName);
-          record.multiPartName = (record.DataverseName.indexOf('/') >= 0); // slash indicates mapped
+          addToken(record.dataverseDisplayName, "scope");
         } else if (record.isLink) {
           // have we seen the link yet associated with a dataset?
           if (!cwQueryService.dataverse_links[record.DataverseName])
@@ -1633,9 +1640,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             .find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
           if (theLink == null) {
             var linkType = (record.LinkType == "S3") ? "EXTERNAL" : "INTERNAL";
-            theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType};
+            theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType, IsActive: record.IsActive};
             cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           }
+          else
+            theLink.IsActive = record.IsActive;
+
+          if (record.LinkType == "S3") theLink.IsActive = true; // s3 links can't be unlinked
+          addToken(record.Name, "link");
         }
       }
     }

@@ -72,56 +72,64 @@ function getCwConstantsService() {
   // 'has_sec' indicating secondary indexes. For a different system, just make sure
   // the returned schema has 'id' and 'has_prim'.
   cwConstantsService.keyspaceQuery =
-      "SELECT " +
-      "  DataverseName, " +
-      "  DataverseName || '.' || DatasetName AS datasetFullyQualifiedName, " +
-      "  decode_dataverse_display_name(DataverseName) AS dataverseDisplayName, " +
-      "  DatasetName AS id, " +
-      "  TRUE AS isDataset, " +
-      "  BucketName AS bucketName, " +
-      "  ScopeName AS scopeName, " +
-      "  CollectionName AS collectionName, " +
-      "  BucketDataverseName as bucketDataverseName, " +
-      "  `Filter` AS `filter`, " +
-      "  LinkName,  " +
-      "  DatasetType,  " +
-      "  ( SELECT " +
-      "      idx.IndexName, " +
-      "      idx.SearchKey, " +
-      "      idx.SearchKeyType " +
-      "    FROM " +
-      "      Metadata.`Index` AS idx " +
-      "    WHERE idx.IsPrimary = false " +
-      "      AND idx.DatasetName = ds.DatasetName" +
-      "      AND idx.DataverseName = ds.DataverseName) AS indexes, " +
-      "      ExternalDetails.Properties AS externalDetails " +
-      "FROM " +
-      "  Metadata.`Dataset` AS ds " +
-      "WHERE " +
-      "  (BucketName IS NOT missing OR  DatasetType = 'EXTERNAL')" +
-      "UNION ALL " +
-      "SELECT " +
-      "  dv.DataverseName, " +
-      "  decode_dataverse_display_name(dv.DataverseName) AS dataverseDisplayName, " +
-      "  TRUE AS isDataverse, " +
-      "  ( SELECT " +
-      "      l.Name " +
-      "    FROM " +
-      "      Metadata.`Link` AS l " +
-      "    WHERE " +
-      "      l.DataverseName = dv.DataverseName) AS links " +
-      "FROM " +
-      "  Metadata.`Dataverse` AS dv " +
-      "WHERE " +
-      "  dv.DataverseName != 'Metadata' " +
-      "UNION ALL " +
-      "SELECT " +
-      "  DataverseName, " +
-      "  Name, " +
-      "  `Type` as LinkType, " +
-      "  TRUE as isLink " +
-      "FROM " +
-      "  Metadata.`Link`;";
+    "SELECT " +
+    "  ds.DataverseName, " +
+    "  ds.DataverseName || '.' || ds.DatasetName AS datasetFullyQualifiedName, " +
+    "  decode_dataverse_display_name(ds.DataverseName) AS dataverseDisplayName, " +
+    "  ds.DatasetName AS id, " +
+    "  TRUE AS isDataset, " +
+    "  ds.BucketName AS bucketName, " +
+    "  ds.ScopeName AS scopeName, " +
+    "  ds.CollectionName AS collectionName, " +
+    "  ds.BucketDataverseName as bucketDataverseName, " +
+    "  ds.`Filter` AS `filter`, " +
+    "  ds.LinkName,  " +
+    "  ds.DatasetType,  " +
+    "  concat2(', ', (select value FieldName || ' ' || (" +
+    "          CASE WHEN lower(FieldType) = 'int64' THEN 'BIGINT'" +
+    "               ELSE upper(FieldType) END) || (" +
+    "          CASE WHEN NOT IsNullable AND NOT IsMissable THEN ' IS NOT UNKNOWN'" +
+    "               ELSE '' END)" +
+    "        from t.Derived.Record.Fields)) AS TypeString," +
+    "  ( SELECT " +
+    "      idx.IndexName, " +
+    "      idx.SearchKey, " +
+    "      idx.SearchKeyType " +
+    "    FROM " +
+    "      Metadata.`Index` AS idx " +
+    "    WHERE idx.IsPrimary = false " +
+    "      AND idx.DatasetName = ds.DatasetName" +
+    "      AND idx.DataverseName = ds.DataverseName) AS indexes, " +
+    "   ds.ExternalDetails.Properties AS externalDetails " +
+    "FROM " +
+    "  Metadata.`Dataset` AS ds left join Metadata.Datatype t on" +
+    "  ds.DataverseName = t.DataverseName and t.DatatypeName = ds.DatatypeName " +
+    "WHERE " +
+    "  (ds.BucketName IS NOT missing OR  ds.DatasetType = 'EXTERNAL')" +
+    "UNION ALL " +
+    "SELECT " +
+    "  dv.DataverseName, " +
+    "  decode_dataverse_display_name(dv.DataverseName) AS dataverseDisplayName, " +
+    "  TRUE AS isDataverse, " +
+    "  ( SELECT " +
+    "      l.Name " +
+    "    FROM " +
+    "      Metadata.`Link` AS l " +
+    "    WHERE " +
+    "      l.DataverseName = dv.DataverseName) AS links " +
+    "FROM " +
+    "  Metadata.`Dataverse` AS dv " +
+    "WHERE " +
+    "  dv.DataverseName != 'Metadata' " +
+    "UNION ALL " +
+    "SELECT " +
+    "  DataverseName, " +
+    "  Name, " +
+    "  IsActive, " +
+    "  `Type` as LinkType, " +
+    "  TRUE as isLink " +
+    "FROM " +
+    "  Metadata.`Link`;";
 
   // should we permit schema inquiries in the bucket analysis pane?
   cwConstantsService.showSchemas = false;

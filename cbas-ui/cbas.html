@@ -225,12 +225,12 @@
                 <div class="text-fine row">
                   <span>
                   <span
-                     ng-if="qc.getLocalLink(dataverse).remaining === qc.datasetUnknownState"
+                     ng-if="qc.getLocalLink(dataverse).IsActive == qc.datasetUnknownState"
                      title="fetching link state..."
                      class="icon fa-spinner fa-pulse grayblack-3">
                   </span>
                   <span
-                     ng-if="qc.getLocalLink(dataverse).remaining === qc.datasetDisconnectedState"
+                     ng-if="!qc.getLocalLink(dataverse).IsActive"
                      class="icon fa-unlink orange-1 cursor-pointer"
                      ng-click="qc.connectLink(qc.getLocalLink(dataverse),dataverse)"
                      uib-tooltip-html="'<b class=\'orange-1\'>local link disconnected</b><br>click icon to re-connect'"
@@ -239,7 +239,7 @@
                      tooltip-trigger="mouseenter">
                     </span>
                   <span
-                     ng-if="qc.getLocalLink(dataverse).remaining > 0 || qc.getLocalLink(dataverse).remaining == 0  || qc.getLocalLink(dataverse).remaining === qc.externalDatasetState"
+                     ng-if="qc.getLocalLink(dataverse).IsActive === true"
                      class="icon fa-link cursor-pointer grayblue-1"
                      ng-click="qc.disconnectLink(qc.getLocalLink(dataverse),dataverse)"
                      uib-tooltip-html="'<b class=\'green-1\'>local link connected</b><br>click icon to disconnect'"
@@ -273,11 +273,11 @@
 
                       <div
                          class="disclosure padding-left-1 ellipsis"
-                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                         ng-class="{warning : shadow.link.IsActive !== true, disclosed : shadow.expanded}"
                          ng-click="shadow.expanded = !shadow.expanded">
                         <span
                            class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                           ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                           ng-class="{warning : shadow.link.IsActive !== true}"></span>
                         <span class="ellipsis">{{shadow.id}}</span>
                       </div>
 
@@ -331,13 +331,13 @@
                   </span>
 
                   <span
-                     ng-if="link.remaining === qc.datasetUnknownState"
+                     ng-if="link.IsActive === qc.datasetUnknownState"
                      title="fetching link state..."
                      class="icon fa-spinner fa-pulse grayblack-3">
                   </span>
                   <span ng-if="link.LinkType == 'INTERNAL'">
                     <span
-                       ng-if="link.remaining === qc.datasetDisconnectedState"
+                       ng-if="!link.IsActive"
                        class="icon fa-unlink orange-1 cursor-pointer"
                        ng-click="qc.connectLink(link,dataverse)"
                        uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'"
@@ -346,7 +346,7 @@
                        tooltip-trigger="mouseenter">
                     </span>
                     <span
-                       ng-if="link.remaining > 0 || link.remaining == 0  || link.remaining === qc.externalDatasetState"
+                       ng-if="link.IsActive === true"
                        class="icon fa-link cursor-pointer grayblue-1"
                        ng-click="qc.disconnectLink(link,dataverse)"
                        uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'"
@@ -370,11 +370,11 @@
 
                     <div
                        class="disclosure padding-left-1 ellipsis"
-                       ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                       ng-class="{warning : shadow.link.IsActive !== true, disclosed : shadow.expanded}"
                        ng-click="shadow.expanded = !shadow.expanded">
                       <span
                          class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                         ng-class="{warning : shadow.link.IsActive !== true}"></span>
                       {{shadow.id}}
                     </div>
 
@@ -398,8 +398,8 @@
                         {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
                       </span>
                     </p>
-                    <p ng-if="link.LinkType != 'EXTERNAL' && shadow.format != 'json'">
-                      <!-- Put type definition here -->
+                    <p ng-if="link.LinkType == 'EXTERNAL' && shadow.format != 'json'">
+                      {{shadow.TypeString}}
                     </p>
                     <p>
                       <a ng-click="qc.dropDataset(link,shadow)"

@@ -1390,19 +1390,17 @@ export default cbasController;
     }
     function disconnectLink(link,dataverse) {
       var queryText = "disconnect link " + dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
-      link.remaining = qc.datasetUnknownState;
+      link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
-        .then(function success() {/*nothing to do*/
-          },
+        .then(function success() {qc.updateBuckets();},
           handleConnectionFailure);
     }
 
     function connectLink(link,dataverse) {
       var queryText = "connect link " + dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
-      link.remaining = qc.datasetUnknownState;
+      link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
-        .then(function success() {/*nothing to do*/
-          },
+        .then(function success() {qc.updateBuckets();},
           handleConnectionFailure);
     }
 
@@ -1419,6 +1417,7 @@ export default cbasController;
           errorStr += JSON.stringify(resp.data);
 
       cwQueryService.showErrorDialog(errorStr);
+      qc.updateBuckets();
       console.log("Error connecting/disconnecting link: " + JSON.stringify(resp));
     }
 
