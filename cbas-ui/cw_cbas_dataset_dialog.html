@@ -84,7 +84,12 @@
 
         <div class="formrow margin-left-1"
              ng-if="options.link_details.type == 's3' && options.external_dataset.format != 'json'">
-          <label>Type definition</label>
+          <label style="display: inline-block">Type definition</label>
+          <span class="fa-stack icon-info"
+                uib-tooltip="types for fields in file, e.g., 'id BIGINT NOT UNKNOWN, year BIGINT, comment STRING, fraction DOUBLE, accepted BOOLEAN'">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
           <textarea
              ng-disabled="!options.is_new"
              rows="3"
@@ -92,7 +97,6 @@
              autocompleterg="off"
              spellcheck="false"
              ng-model="options.external_dataset.inline_type_def"
-             placeholder="types for fields in file, e.g., 'id BIGINT NOT UNKNOWN, year BIGINT, comment STRING, fraction DOUBLE, accepted BOOLEAN'"
              required>
           </textarea>
         </div>
@@ -108,6 +112,7 @@
 
         <div class="formrow margin-left-1"
              ng-if="showInlineTypeDefinition(options.external_dataset.format)">
+          <label>Null Value</label>
           <input ng-model="options.external_dataset.radio_null_value"
                  id="emptyString"
                  type="radio"
@@ -117,23 +122,36 @@
                  id="customString"
                  type="radio"
                  value="custom_string">
-          <label for="customString">Custom String</label>
-          <textarea ng-if="options.external_dataset.radio_null_value == 'custom_string'"
-                    ng-model="options.external_dataset.null_value"
-                    rows="3" autocorrect="off" autocomplete="off"
-                    spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new" required
-                    placeholder='Unquoted string that represents a NULL value. Quotes (") or backslashes (\) within the string need to be escaped with a backslash (\)'>
-          </textarea>
+          <label for="customString" style="display: inline-block">Custom String</label>
+          <span class="fa-stack icon-info"
+                uib-tooltip='Unquoted string that represents a NULL value. Quotes (") or backslashes (\) within the string need to be escaped with a backslash (\)'>
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <input ng-if="options.external_dataset.radio_null_value == 'custom_string'" type="text"
+                 ng-model="options.external_dataset.null_value"
+                 autocorrect="off" autocomplete="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new" required>
         </div>
 
         <div class="formrow">
-          <label>Include</label>
+          <label style="display: inline-block">Include</label>
+          <span class="fa-stack icon-info"
+                uib-tooltip='Example, "*.csv" or ["*.csv", "*.tsv"]. Double quotes (") and brackets ([ ]) need to be included.'>
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
           <input ng-model="options.external_dataset.include" type="text" autocorrect="off"
                  spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new || options.external_dataset.exclude">
         </div>
 
         <div class="formrow">
-          <label>Exclude</label>
+          <label style="display: inline-block">Exclude</label>
+          <span class="fa-stack icon-info"
+                uib-tooltip='Example, "*.csv" or ["*.csv", "*.tsv"]. Double quotes (") and brackets ([ ]) need to be included.'>
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
           <input ng-model="options.external_dataset.exclude" type="text" autocorrect="off"
                  spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new || options.external_dataset.include">
         </div>
