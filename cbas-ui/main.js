@@ -1,6 +1,7 @@
 import angular from "/ui/web_modules/angular.js";
 import app from "/ui/app/app.js";
 import ace from '/ui/libs/ace/ace-wrapper.js';
+import { mnLazyload } from "/ui/app/mn.app.imports.js";
 
 import { NgModule } from '/ui/web_modules/@angular/core.js';
 import { UIRouterUpgradeModule } from '/ui/web_modules/@uirouter/angular-hybrid.js';
@@ -39,11 +40,8 @@ class CbasUI {
           states: [{
             name: "app.admin.cbas.**",
             url: "/cbas",
-            lazyLoad: ($transition$) => {
-              return import('/_p/ui/cbas/cbas.js').then(m => {
-                $transition$.injector().get('$ocLazyLoad').load({name: 'cwCbas'});
-              });
-            }
+            lazyLoad: ($transition$) =>
+              mnLazyload('/_p/ui/cbas/cbas.js', 'cwCbas', $transition$)
           }]
         })
       ],
