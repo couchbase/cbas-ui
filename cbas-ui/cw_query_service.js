@@ -1598,6 +1598,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             record.remaining = cwQueryService.externalDatasetState;
             parseExternalDetails(record);
           }
+          // compute the dataverseDisplayName if it's multipart
+          if (record.DataverseName.indexOf('/') >= 0) {
+            record.multiPartName = true;
+            var names = record.DataverseName.split('/');
+            record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
+          }
           cwQueryService.shadows.push(record);
           addToken(record.id, "collection");
 
@@ -1625,7 +1631,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         } else if (record.isDataverse) {
           // special cases for multipart names
           if (record.DataverseName.indexOf('/') >= 0) {
-            record.multipPartName = true;
+            record.multiPartName = true;
             var names = record.DataverseName.split('/');
             record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
           }
@@ -1639,7 +1645,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           var theLink = cwQueryService.dataverse_links[record.DataverseName]
             .find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
           if (theLink == null) {
-            var linkType = (record.LinkType == "S3") ? "EXTERNAL" : "INTERNAL";
+            var linkType = (!record.LinkType || record.LinkType == "COUCHBASE") ? "INTERNAL" : "EXTERNAL";
             theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType,
               IsActive: record.IsActive, extLinkType: record.LinkType};
             cwQueryService.dataverse_links[record.DataverseName].push(theLink);
@@ -1649,13 +1655,15 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             theLink.extLinkType = record.LinkType;
           }
 
-          if (record.LinkType == "S3") theLink.IsActive = true; // s3 links can't be unlinked
+          if (theLink.LinkType == "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
           addToken(record.Name, "link");
         }
       }
     }
     // put datasets in alphabetical order
     cwQueryService.shadows.sort((a,b) => a.id ? a.id.localeCompare(b.id) : -1);
+    // put the fully qualified datasets in as auto-completion
+    cwQueryService.shadows.forEach(shadow => addToken(shadow.dataverseDisplayName + '.`' + shadow.id + '`',"path"));
     // we want the Local scope to always come first in each scope
     for (var dataverseName in cwQueryService.dataverse_links) {
       var links = cwQueryService.dataverse_links[dataverseName];
@@ -1669,7 +1677,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.scopeNames.sort();
     // sort the dataverses by name, and add everything to the automcomplete index
     cwQueryService.dataverses.sort((a,b) =>
-      a.dataverseDisplayName ? a.dataverseDisplayName.localeCompare(b.dataverseDisplayName) : -1);
+      a.DataverseName ? a.DataverseName.localeCompare(b.DataverseName) : -1);
     refreshAutoCompleteArray();
   }
 
