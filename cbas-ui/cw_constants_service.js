@@ -72,7 +72,7 @@ function getCwConstantsService() {
   // 'has_sec' indicating secondary indexes. For a different system, just make sure
   // the returned schema has 'id' and 'has_prim'.
   cwConstantsService.keyspaceQuery =
-    "SELECT " +
+    "select meta.* from (SELECT " +
     "  ds.DataverseName, " +
     "  ds.DataverseName || '.' || ds.DatasetName AS datasetFullyQualifiedName, " +
     "  decode_dataverse_display_name(ds.DataverseName) AS dataverseDisplayName, " +
@@ -81,7 +81,7 @@ function getCwConstantsService() {
     "  ds.BucketName AS bucketName, " +
     "  ds.ScopeName AS scopeName, " +
     "  ds.CollectionName AS collectionName, " +
-    "  ds.BucketDataverseName as bucketDataverseName, " +
+    "  ds.BucketDataverseName as linkDataverseName, " +
     "  ds.`Filter` AS `filter`, " +
     "  ds.LinkName,  " +
     "  ds.DatasetType,  " +
@@ -129,7 +129,7 @@ function getCwConstantsService() {
     "  `Type` as LinkType, " +
     "  TRUE as isLink " +
     "FROM " +
-    "  Metadata.`Link`;";
+    "  Metadata.`Link`) meta order by meta.isDataverse desc, meta.isLink desc;"; // make sure dataverses first, then links, then datasets
 
   // should we permit schema inquiries in the bucket analysis pane?
   cwConstantsService.showSchemas = false;

@@ -1584,10 +1584,40 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.bucket_errors = null;
     cwQueryService.bucket_names.length = 0;
     cwQueryService.dataverse_links = {};
+    // thanks to an 'order by' clause, we can count on the dataverses to show up first, then links, then datasets
     if (data && data.results) {
       for (var i = 0; i < data.results.length; i++) {
         var record = data.results[i];
-        if (record.isDataset) {
+
+        // dataverses
+        if (record.isDataverse) {
+          // special cases for multipart names
+          if (record.DataverseName.indexOf('/') >= 0) {
+            record.multiPartName = true;
+            var names = record.DataverseName.split('/');
+            record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
+          }
+          else
+            record.dataverseDisplayName = '`' + record.DataverseName + '`';
+          cwQueryService.dataverses.push(record);
+          cwQueryService.scopeNames.push(record.dataverseDisplayName);
+          cwQueryService.dataverse_links[record.DataverseName] = []; // list of links
+          addToken(record.dataverseDisplayName, "scope");
+        }
+
+        // links
+        else if (record.isLink) {
+          var linkType = (!record.LinkType || record.LinkType == "COUCHBASE") ? "INTERNAL" : "EXTERNAL";
+          var dataverse = cwQueryService.dataverses.find(dv => dv.DataverseName == record.DataverseName);
+          theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType,
+            IsActive: record.IsActive, extLinkType: record.LinkType, dataverse: dataverse};
+          if (theLink.LinkType == "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
+          cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+          addToken(record.Name, "link");
+        }
+
+        // datasets
+        else if (record.isDataset) {
           record.expanded = true;
           if (record.DatasetType === "INTERNAL") {
             record.external = false;
@@ -1598,6 +1628,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             record.remaining = cwQueryService.externalDatasetState;
             parseExternalDetails(record);
           }
+
           // compute the dataverseDisplayName if it's multipart
           if (record.DataverseName.indexOf('/') >= 0) {
             record.multiPartName = true;
@@ -1609,54 +1640,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
           // every dataset is part of a dataverse, but it can use a link from another
           // dataverse. Thus we must keep track of all the links used by any dataset in
-          // the dataverse, even if the link is in another dataverse. Our data structure
-          // will be an object with keys for each dataverse name, whose value is an array
-          // of link/dataverse name pairs.
-
-          // ensure an entry for the dataverse
-          if (!cwQueryService.dataverse_links[record.DataverseName])
-            cwQueryService.dataverse_links[record.DataverseName] = [];
-          // add the link if not already there
-          var linkName = (record.DatasetType == "EXTERNAL") ? record.name : record.LinkName;
-          var linkDVName = record.dataverse || record.DataverseName;
+          // the dataverse, even if the link is in another dataverse.
           var theLink = cwQueryService.dataverse_links[record.DataverseName]
-            .find(element => element.LinkName == linkName && element.DVName == linkDVName);
-          if (theLink == null) {
-            theLink = { LinkName: linkName, DVName: linkDVName, LinkType: record.DatasetType };
-            cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+            .find(link => link.LinkName == record.LinkName && link.DVName == record.linkDataverseName);
+          if (theLink == null) { // link isn't recorded in this dataverse yet, look for it in link's dataverse
+            theLink = cwQueryService.dataverse_links[record.linkDataverseName].find(link => link.LinkName == record.LinkName);
+            if (theLink)
+              cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           }
           // be able to access the link from the shadow record
           record.link = theLink;
           theLink.remaining = record.remaining;
-        } else if (record.isDataverse) {
-          // special cases for multipart names
-          if (record.DataverseName.indexOf('/') >= 0) {
-            record.multiPartName = true;
-            var names = record.DataverseName.split('/');
-            record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
-          }
-          cwQueryService.dataverses.push(record);
-          cwQueryService.scopeNames.push(record.dataverseDisplayName);
-          addToken(record.dataverseDisplayName, "scope");
-        } else if (record.isLink) {
-          // have we seen the link yet associated with a dataset?
-          if (!cwQueryService.dataverse_links[record.DataverseName])
-            cwQueryService.dataverse_links[record.DataverseName] = [];
-          var theLink = cwQueryService.dataverse_links[record.DataverseName]
-            .find(element => element.LinkName == record.Name && element.DVName == record.DataverseName);
-          if (theLink == null) {
-            var linkType = (!record.LinkType || record.LinkType == "COUCHBASE") ? "INTERNAL" : "EXTERNAL";
-            theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType,
-              IsActive: record.IsActive, extLinkType: record.LinkType};
-            cwQueryService.dataverse_links[record.DataverseName].push(theLink);
-          }
-          else {
-            theLink.IsActive = record.IsActive;
-            theLink.extLinkType = record.LinkType;
-          }
-
-          if (theLink.LinkType == "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
-          addToken(record.Name, "link");
         }
       }
     }
@@ -1708,6 +1702,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     if (dataset.externalDetails && dataset.externalDetails.length > 0) {
       for (let i = 0; i < dataset.externalDetails.length; i++) {
         const property = dataset.externalDetails[i];
+        // the external property 'name' should be renamed 'LinkName'
+        // and likewise 'dataverse' should be 'linkDataverseName'
+        switch (property.Name) {
+          case 'name': property.Name = 'LinkName'; break;
+          case 'dataverse': property.Name = 'linkDataverseName'; break;
+        }
+
         dataset[property.Name] = property.Value;
       }
     }

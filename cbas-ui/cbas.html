@@ -184,7 +184,7 @@
   </div>
 
 <!-- manage analytics scopes sidebar ----------------------------------- -->
-  <div class="insights-sidebar width-3 resp-hide-sml">
+   <div class="insights-sidebar width-3 resp-hide-sml">
     <div class="row margin-bottom-half">
      <h5>Analytics Scopes, Links, & Collections</h5>
       <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
@@ -234,9 +234,12 @@
             <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)" ng-if="qc.getDatasetsInLink(dataverse,link).length > 0 || qc.showEmptyScopes()">
               <div class="row margin-left-half margin-right-half margin-top-half">
                 <span class="row flex-left ellipsis">
-                  <h6 class="ellipsis margin-right-quarter">
+                  <h6 class="ellipsis margin-right-quarter"
+                      ng-class="{'cursor-pointer' : link.LinkName != 'Local'}"
+                      ng-click="link.LinkName != 'Local' && qc.editLink(link,dataverse)">
                     <span class="ellipsis" ng-if="link.DVName != dataverse.DataverseName">
-                      {{link.DVName}}.</span>{{link.LinkName}}
+                      {{link.DVName}}.
+                    </span>{{link.LinkName}}
                   </h6>
 
                   <span ng-if="link.LinkName == 'Local'" class="label neutral margin-right-quarter">

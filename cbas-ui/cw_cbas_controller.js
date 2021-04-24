@@ -208,7 +208,7 @@ export default cbasController;
     qc.showEmptyScopes = function() {return cwQueryService.showEmptyScopes;};
     qc.toggleEmptyScopes = function() {cwQueryService.showEmptyScopes = !cwQueryService.showEmptyScopes;};
     qc.scopeEmpty = function(dataverse)
-    {return !cwQueryService.shadows.some(shadow => shadow.bucketDataverseName == dataverse.DataverseName) &&
+    {return !cwQueryService.shadows.some(shadow => shadow.linkDataverseName == dataverse.DataverseName) &&
       getLinksInDataverse(dataverse.DataverseName).length == 1 };
 
     // helper functions //
@@ -1377,7 +1377,7 @@ export default cbasController;
       var result = [];
       qc.shadows.forEach(function(shadow) {
         // internal datasets
-        if (shadow.DataverseName === dataverse.DataverseName && shadow.bucketDataverseName == link.DVName &&
+        if (shadow.DataverseName === dataverse.DataverseName && shadow.linkDataverseName == link.DVName &&
             shadow.LinkName == link.LinkName)
           result.push(shadow);
         // external datasets
@@ -1389,7 +1389,7 @@ export default cbasController;
       return result;
     }
     function disconnectLink(link,dataverse) {
-      var queryText = "disconnect link " + dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
+      var queryText = "disconnect link " + link.dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
         .then(function success() {qc.updateBuckets();},
@@ -1397,7 +1397,7 @@ export default cbasController;
     }
 
     function connectLink(link,dataverse) {
-      var queryText = "connect link " + dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
+      var queryText = "connect link " + link.dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
         .then(function success() {qc.updateBuckets();},
@@ -1651,7 +1651,7 @@ export default cbasController;
         if (!shadow.external &&
         shadow.DataverseName.indexOf('/') > -1 &&
         shadow.LinkName == 'Local') {
-          var bucket_scope = shadow.bucketDataverseName.split('/');
+          var bucket_scope = shadow.linkDataverseName.split('/');
           var key = dataset_options.collection_key(bucket_scope[0],bucket_scope[1],shadow.id);
           dataset_options.already_selected_collections[key] = true;
         }
