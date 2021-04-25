@@ -202,7 +202,7 @@
       <div ng-if="!qc.qqs.bucket_errors">
         <div class="insights-sidebar-body">
           <div class="padding-right-1"><button
-             ng-show="qc.validated.canAccessLinks()"
+             ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
              ng-click="qc.mapCollections()"
              class="outline width-12 margin-bottom-1"
              title="Map analytics collections from existing data service collections">
@@ -257,9 +257,9 @@
                      title="fetching link state..."
                      class="icon fa-spinner fa-pulse grayblack-3">
                   </span>
-                  <span ng-if="link.LinkType == 'INTERNAL'">
+                  <span ng-if="link.LinkType == 'INTERNAL' && qc.atLeast70">
                     <span
-                       ng-if="!link.IsActive"
+                       ng-if="!link.IsActive && qc.atLeast70"
                        class="icon fa-unlink orange-1 cursor-pointer"
                        ng-click="qc.connectLink(link,dataverse)"
                        uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'"
@@ -292,11 +292,11 @@
 
                     <div
                        class="disclosure padding-left-1 ellipsis"
-                       ng-class="{warning : shadow.link.IsActive !== true, disclosed : shadow.expanded}"
+                       ng-class="{warning : shadow.link.IsActive !== true && qc.atLeast70, disclosed : shadow.expanded}"
                        ng-click="shadow.expanded = !shadow.expanded">
                       <span
                          class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                         ng-class="{warning : shadow.link.IsActive !== true}"></span>
+                         ng-class="{warning : shadow.link.IsActive !== true && qc.atLeast70}"></span>
                       {{shadow.id}}
                     </div>
 
@@ -340,7 +340,8 @@
             </div>
           </section>
           <a ng-click="qc.toggleEmptyScopes()" class="text-smallish block width-12 text-center margin-right-half"
-             title="Show/hide analytics scopes & links that have no collections">
+             title="Show/hide analytics scopes & links that have no collections"
+          ng-if="qc.atLeast70">
             <span ng-hide="qc.showEmptyScopes()">Show empty analytics scopes</span>
             <span ng-show="qc.showEmptyScopes()">Hide empty analytics scopes</span>
           </a>

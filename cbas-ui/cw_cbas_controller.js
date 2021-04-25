@@ -47,6 +47,8 @@ export default cbasController;
     qc.queryContext = "";
     qc.scopeNames = cwQueryService.scopeNames;
 
+    qc.atLeast70 = cwQueryService.atLeast70;
+
     // functions for connecting dataverses to links and datasets
     qc.getLinksInDataverse = getLinksInDataverse;
     qc.getLocalLink = getLocalLink;
@@ -1487,6 +1489,9 @@ export default cbasController;
     }
 
     function editLink(link,dataverse) {
+      // can't edit links on mixed clusters
+      if (!qc.atLeast70)
+        return;
       //console.log("Edit Link");
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
 

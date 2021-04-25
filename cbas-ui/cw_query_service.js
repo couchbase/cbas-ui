@@ -14,11 +14,13 @@ import validateCbasService from "./validate_cbas_service.js";
 export default 'cwQueryService';
 
 angular
-  .module('cwQueryService', [uiBootstrap, validateCbasService, mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools])
+  .module('cwQueryService', [uiBootstrap, validateCbasService, mnPendingQueryKeeper, cwConstantsService,
+    qwQueryPlanService, mnPoolDefault, mnPools, mnPoolDefault])
   .factory('cwQueryService', cwQueryServiceFactory);
 
 
-function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService, mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools) {
+function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService,
+                               mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools) {
 
   var cwQueryService = {};
 
@@ -38,6 +40,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   };
   cwQueryService.validated = validateCbasService;
 
+  cwQueryService.atLeast70 = mnPoolDefault.export.compat.atLeast70;
   // analytics monitoring
 
   var monitoringOptions = {
@@ -1530,6 +1533,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   function updateBucketsCallback() {
     cwQueryService.loadingBuckets = true;
     var queryText = cwConstantsService.keyspaceQuery;
+    if (!mnPoolDefault.export.compat.atLeast70)
+      queryText = cwConstantsService.keyspaceQuery6_6;
     // run a query to get the dataverse, link, and dataset info from Metadata
     executeQueryUtil(queryText, false, true)
       .then(function (resp) {
@@ -1561,16 +1566,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       });
 
     // we need more details about links, however, so use the REST API to get that also
-    $http({
-      url: "/_p/cbas/analytics/link",
-      method: "GET",
-    }).then(function success(resp) {
-      if (resp && resp.data && _.isArray(resp.data)) {
-        cwQueryService.links = resp.data;
-        //console.log(resp.data);
-      } else
-        cwQueryService.links = [];
-    });
+    if (mnPoolDefault.export.compat.atLeast70)
+     $http({
+       url: "/_p/cbas/analytics/link",
+       method: "GET",
+     }).then(function success(resp) {
+       if (resp && resp.data && _.isArray(resp.data)) {
+         cwQueryService.links = resp.data;
+         //console.log(resp.data);
+       } else
+         cwQueryService.links = [];
+     });
 
   }
 
@@ -1635,6 +1641,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             var names = record.DataverseName.split('/');
             record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
           }
+          else
+            record.dataverseDisplayName = '`' + record.DataverseName + '`';
+
           cwQueryService.shadows.push(record);
           addToken(record.id, "collection");
 
@@ -1783,7 +1792,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     }
     cwQueryService.fetchingStats = true;
     var stats = getAnalyticsStats();
-    stats.then(function (resp) {
+    if (stats) stats.then(function (resp) {
       var shadowsStats = extractShadowingStats(resp.data);
       updateDatasetShadowingProgress(shadowsStats);
     }, function (resp) {
@@ -1794,6 +1803,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   }
 
   function getAnalyticsStats() {
+    if (!mnPoolDefault.export.compat.atLeast70)
+      return(null);
     var statsRequest = {
       url: cwConstantsService.analyticsStatsURL,
       method: "GET",
