@@ -1597,14 +1597,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
         // dataverses
         if (record.isDataverse) {
-          // special cases for multipart names
-          if (record.DataverseName.indexOf('/') >= 0) {
-            record.multiPartName = true;
-            var names = record.DataverseName.split('/');
-            record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
-          }
-          else
-            record.dataverseDisplayName = '`' + record.DataverseName + '`';
+          record.multiPartName = record.DataverseName.indexOf('/') >= 0;
+          record.dataverseDisplayName = '`' + record.DataverseName.split('/').join('`.`') + '`';
           cwQueryService.dataverses.push(record);
           cwQueryService.scopeNames.push(record.dataverseDisplayName);
           cwQueryService.dataverse_links[record.DataverseName] = []; // list of links
@@ -1634,16 +1628,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             record.remaining = cwQueryService.externalDatasetState;
             parseExternalDetails(record);
           }
-
-          // compute the dataverseDisplayName if it's multipart
-          if (record.DataverseName.indexOf('/') >= 0) {
-            record.multiPartName = true;
-            var names = record.DataverseName.split('/');
-            record.dataverseDisplayName = '`' + names[0] + '`.`' + names[1] + '`';
-          }
-          else
-            record.dataverseDisplayName = '`' + record.DataverseName + '`';
-
+          record.multiPartName = record.DataverseName.indexOf('/') >= 0;
+          record.dataverseDisplayName = '`' + record.DataverseName.split('/').join('`.`') + '`';
           cwQueryService.shadows.push(record);
           addToken(record.id, "collection");
 
