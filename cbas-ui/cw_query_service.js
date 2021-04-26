@@ -1566,9 +1566,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       });
 
     // we need more details about links, however, so use the REST API to get that also
-    if (mnPoolDefault.export.compat.atLeast70)
      $http({
        url: "/_p/cbas/analytics/link",
+       headers: {'Content-Type': 'application/json', 'ignore-401': 'true'},
        method: "GET",
      }).then(function success(resp) {
        if (resp && resp.data && _.isArray(resp.data)) {
