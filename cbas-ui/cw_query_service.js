@@ -1568,7 +1568,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     // we need more details about links, however, so use the REST API to get that also
      $http({
        url: "/_p/cbas/analytics/link",
-       headers: {'Content-Type': 'application/json', 'ignore-401': 'true'},
+       headers: {'Content-Type': 'application/json', 'ignore-401': 'true', 'Analytics-Priority': '-1'},
        method: "GET",
      }).then(function success(resp) {
        if (resp && resp.data && _.isArray(resp.data)) {
@@ -2479,6 +2479,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   function getAwsSupportedRegions() {
     $http({
       url: cwConstantsService.awsRegionsURL,
+      headers: {'Content-Type': 'application/json', 'ignore-401': 'true', 'Analytics-Priority': '-1'},
       method: "GET"
     }).then(function success(resp) {
       cwQueryService.awsRegions = resp.data;
