@@ -1391,7 +1391,7 @@ export default cbasController;
       return result;
     }
     function disconnectLink(link,dataverse) {
-      var queryText = "disconnect link " + link.dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
+      var queryText = "disconnect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
         .then(function success() {qc.updateBuckets();},
@@ -1399,7 +1399,7 @@ export default cbasController;
     }
 
     function connectLink(link,dataverse) {
-      var queryText = "connect link " + link.dataverse.dataverseDisplayName + ".`" + link.LinkName + "`";
+      var queryText = "connect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, false, false)
         .then(function success() {qc.updateBuckets();},
@@ -1736,7 +1736,7 @@ export default cbasController;
       }).result
         .then(function success(resp) {
           var dv = cwQueryService.dataverses.find(dv => dv.DataverseName == link.DVName);
-          var dvName = dv.dataverseDisplayName || link.DVName;
+          var dvName = dv.dataverseQueryName || link.DVName;
           var s3Link = (dataset_options.link_details && dataset_options.link_details.type == "s3");
           var external = s3Link ? " EXTERNAL " : "";
           var queryText = "CREATE " + external + " DATASET " + dvName + '.`' + dataset_options.dataset_name + '`';
@@ -1807,7 +1807,7 @@ export default cbasController;
         "Warning, this will drop the analytics collection ",[dataset.dataverseDisplayName + "." + dataset.id])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop dataset " + dataset.dataverseDisplayName + '.`' + dataset.id + '`';
+            var queryText = "drop dataset " + dataset.dataverseQueryName + '.`' + dataset.id + '`';
 
             cwQueryService.executeQueryUtil(queryText, false, false)
               .then(function success() {
@@ -1847,7 +1847,7 @@ export default cbasController;
               "Warning, this will drop the analytics collection ", [link.DVName + "." + dataset.id])
               .then(function yes(resp) {
                 if (resp == "ok") {
-                  var queryText = "drop dataset " + dataset.dataverseDisplayName + ".`" + dataset_options.dataset_name + "`";
+                  var queryText = "drop dataset " + dataset.dataverseQueryName + ".`" + dataset_options.dataset_name + "`";
 
                   cwQueryService.executeQueryUtil(queryText, false, false)
                     .then(function success() {
@@ -1871,7 +1871,7 @@ export default cbasController;
         "Warning, this will drop the analytics scope ",[scope.dataverseDisplayName])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop dataverse " + scope.dataverseDisplayName;
+            var queryText = "drop dataverse " + scope.dataverseQueryName;
 
             cwQueryService.executeQueryUtil(queryText, false, false)
               .then(function success() {

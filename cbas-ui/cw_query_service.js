@@ -1598,11 +1598,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         // dataverses
         if (record.isDataverse) {
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;
-          record.dataverseDisplayName = '`' + record.DataverseName.split('/').join('`.`') + '`';
+          record.dataverseDisplayName = record.DataverseName.split('/').join('.');
+          record.dataverseQueryName = '`' + record.DataverseName.split('/').join('`.`') + '`';
           cwQueryService.dataverses.push(record);
           cwQueryService.scopeNames.push(record.dataverseDisplayName);
           cwQueryService.dataverse_links[record.DataverseName] = []; // list of links
-          addToken(record.dataverseDisplayName, "scope");
+          addToken(record.dataverseQueryName, "scope");
         }
 
         // links
@@ -1629,7 +1630,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             parseExternalDetails(record);
           }
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;
-          record.dataverseDisplayName = '`' + record.DataverseName.split('/').join('`.`') + '`';
+          record.dataverseDisplayName = record.DataverseName.split('/').join('.');
+          record.dataverseQueryName = '`' + record.DataverseName.split('/').join('`.`') + '`';
           cwQueryService.shadows.push(record);
           addToken(record.id, "collection");
 
@@ -1652,7 +1654,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     // put datasets in alphabetical order
     cwQueryService.shadows.sort((a,b) => a.id ? a.id.localeCompare(b.id) : -1);
     // put the fully qualified datasets in as auto-completion
-    cwQueryService.shadows.forEach(shadow => addToken(shadow.dataverseDisplayName + '.`' + shadow.id + '`',"path"));
+    cwQueryService.shadows.forEach(shadow => addToken(shadow.dataverseQueryName + '.`' + shadow.id + '`',"path"));
     // we want the Local scope to always come first in each scope
     for (var dataverseName in cwQueryService.dataverse_links) {
       var links = cwQueryService.dataverse_links[dataverseName];
