@@ -887,8 +887,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       queryData["plan-format"] = planFormat;
       queryData["max-warnings"] = cwConstantsService.maxWarnings;
 
-      if (queryContext)
-        queryData["query_context"] = 'default:' + queryContext;
+      if (queryContext) { // query context has display name
+        var dv = cwQueryService.dataverses.find(dv => dv.dataverseDisplayName == queryContext)
+        if (dv)
+          queryData["query_context"] = 'default:' + dv.dataverseQueryName;
+      }
     }
 
     //
