@@ -292,11 +292,11 @@
 
                     <div
                        class="disclosure padding-left-1 ellipsis"
-                       ng-class="{warning : shadow.link.IsActive !== true && qc.atLeast70, disclosed : shadow.expanded}"
+                       ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
                        ng-click="shadow.expanded = !shadow.expanded">
                       <span
                          class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                         ng-class="{warning : shadow.link.IsActive !== true && qc.atLeast70}"></span>
+                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
                       {{shadow.id}}
                     </div>
 
