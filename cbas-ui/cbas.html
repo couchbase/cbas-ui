@@ -303,8 +303,8 @@
                   </div>
 <!-- expando section for details on each dataset -------------------------- -->
                   <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
-                     <p ng-show="!shadow.external" class="margin-bottom-half">
-                      {{shadow.LinkName}}.{{shadow.bucketName}}
+                     <p ng-show="!shadow.external" class="margin-bottom-half" title="source collection and filter">
+                      {{shadow.bucketName}}<span ng-if="shadow.scopeName && shadow.collectionName">.{{shadow.scopeName}}.{{shadow.collectionName}}</span>
                       <span ng-show="shadow.filter">|</span> {{shadow.filter}}
                     </p>
                     <p ng-show="shadow.external" class="margin-bottom-half">
