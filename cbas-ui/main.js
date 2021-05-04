@@ -40,8 +40,7 @@ class CbasUI {
           states: [{
             name: "app.admin.cbas.**",
             url: "/cbas",
-            lazyLoad: ($transition$) =>
-              mnLazyload('/_p/ui/cbas/cbas.js', 'cwCbas', $transition$)
+            lazyLoad: mnLazyload('/_p/ui/cbas/cbas.js', 'cwCbas')
           }]
         })
       ],
