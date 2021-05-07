@@ -1616,7 +1616,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType,
             IsActive: record.IsActive, extLinkType: record.LinkType, dataverse: dataverse};
           if (theLink.LinkType == "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
-          cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+          // make sure the link has a known dataverse, to avoid problem from MB-46165
+          if (cwQueryService.dataverse_links[record.DataverseName])
+            cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           addToken(record.Name, "link");
         }
 
