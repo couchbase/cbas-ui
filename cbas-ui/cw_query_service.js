@@ -2474,7 +2474,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function createLink(linkDialogScope) {
     var request = {
-      url: "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.dataverse) + "/" + encodeURIComponent(linkDialogScope.link_name),
+      url: "/_p/cbas/analytics/link" + (mnPoolDefault.export.compat.atLeast70 ?
+        '/' + encodeURIComponent(linkDialogScope.dataverse) + "/" + encodeURIComponent(linkDialogScope.link_name) : ""),
       method: "POST",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };
@@ -2489,7 +2490,31 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     }).then(function success(resp) {
       cwQueryService.awsRegions = resp.data;
     }, function error(resp) {
-      cwQueryService.awsRegions = [];
+      cwQueryService.awsRegions = [
+        "af-south-1",
+        "ap-east-1",
+        "ap-northeast-1",
+        "ap-northeast-2",
+        "ap-northeast-3",
+        "ap-south-1",
+        "ap-southeast-1",
+        "ap-southeast-2",
+        "ca-central-1",
+        "cn-north-1",
+        "cn-northwest-1",
+        "eu-central-1",
+        "eu-north-1",
+        "eu-south-1",
+        "eu-west-1",
+        "eu-west-2",
+        "eu-west-3",
+        "me-south-1",
+        "sa-east-1",
+        "us-east-1",
+        "us-east-2",
+        "us-west-1",
+        "us-west-2",
+      ];
     });;
   }
 
@@ -2498,7 +2523,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       type: scope.link_type
     };
 
-    if (scope.link_type == "couchbase") {
+    // 6.6 and before this is in form data, after that it's in the URL
+    if (!mnPoolDefault.export.compat.atLeast70) {
+      formData.dataverse = scope.dataverse;
+      formData.name = scope.link_name;
+    }
+
+      if (scope.link_type == "couchbase") {
       formData.hostname = scope.couchbase_link.hostname;
       if (scope.couchbase_link.username)
         formData.username = scope.couchbase_link.username;

@@ -629,7 +629,7 @@ export default cbasController;
       if (qc.inputEditor) {
         // give the query editor at least 3 lines, but it might want more if the query has > 3 lines
         var lines = qc.inputEditor.getSession().getLength();       // how long in the query?
-        var desiredQueryHeight = Math.max(23, (lines - 1) * 22 - 21);         // make sure height no less than 23
+        var desiredQueryHeight = Math.max(23, (lines - 1) * 22 - 11);         // make sure height no less than 23
 
         // when focused on the query editor, give it up to 3/4 of the total height, but make sure the results
         // never gets smaller than 270
@@ -1423,7 +1423,6 @@ export default cbasController;
       console.log("Error connecting/disconnecting link: " + JSON.stringify(resp));
     }
 
-
     //
     // callbacks for creating new links and new datasets
     //
@@ -1478,14 +1477,41 @@ export default cbasController;
             .then(function success(resp) {
               qc.updateBuckets();
             }, function error(resp) {
-              console.log("Got create link error: " + JSON.stringify(resp));
-              var errorStr = "Error creating link: " + (resp.data ? resp.data : JSON.stringify(resp));
-              cwQueryService.showErrorDialog(errorStr);
+              //console.log("Got create link error: " + JSON.stringify(resp));
+              cwQueryService.showErrorDialog(errorRespToString(resp,"Error creating link: "));
             });
 
         }, function error(resp) {
         });
+    }
 
+    // make a user-visible error message based on the many possible ways that errors can exist in an HTTP response
+    function errorRespToString(resp, initialMessage) {
+      var errorStr = initialMessage || '';
+
+      // handle 404
+      if (resp.status == 404) {
+        errorStr += '404 error accessing API ';
+        if (resp.config && resp.config.url)
+          errorStr += resp.config.url;
+      }
+      // 500 means some kind of server error
+      else if (resp.status == 500)
+        errorStr += resp.statusText + " 500";
+      // resp.data might be message string
+      else if (resp.data && _.isString(resp.data))
+        errorStr += resp.data;
+      // resp.data might contain an array of error messages
+      else if (resp.data && _.isArray(resp.data.errors)) {
+        errorStr += JSON.stringify(resp.data.errors);
+      }
+      // resp.message might be a string
+      else if (_.isString(resp.message))
+        errorStr += resp.message;
+      else
+        errorStr += "unexpected error response " + resp.statusText + ' ' + resp.status;
+
+      return(errorStr);
     }
 
     function editLink(link,dataverse) {
@@ -1521,9 +1547,9 @@ export default cbasController;
                           qc.updateBuckets()
                         },
                         function error(resp) {
-                          console.log("Got drop link error: " + JSON.stringify(resp));
-                          var errorStr = "Error dropping link: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                          cwQueryService.showErrorDialog(errorStr);
+                          //console.log("Got drop link error: " + JSON.stringify(resp));
+                          //var errorStr = "Error dropping link: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                          cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping link: "));
                         });
                   }
                 });
@@ -1534,9 +1560,9 @@ export default cbasController;
               .then(function success(resp) {
                 qc.updateBuckets();
               }, function error(resp) {
-                console.log("Got create link error: " + JSON.stringify(resp));
-                var errorStr = "Error creating link: " + (resp.data ? resp.data : JSON.stringify(resp));
-                cwQueryService.showErrorDialog(errorStr);
+                //console.log("Got create link error: " + JSON.stringify(resp));
+                //var errorStr = "Error creating link: " + (resp.data ? resp.data : JSON.stringify(resp));
+                cwQueryService.showErrorDialog(errorRespToString(resp,"Error editing link: "));
               });
 
           }, function error(resp) {
@@ -1707,15 +1733,15 @@ export default cbasController;
             executeQueryList(queryList,index+1, collections);
           },
           function error(resp) {
-            var errorStr = "Error running query: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-            cwQueryService.showErrorDialog(errorStr);
+            //var errorStr = "Error running query: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+            cwQueryService.showErrorDialog(errorRespToString(resp,"Error running query: "));
           });
     }
 
     // create a custom dataset on a given link
     function createNewDataset(link) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
-      dataset_options.clusterBuckets = qc.clusterBuckets;
+      dataset_options.clusterBuckets = (qc.atLeast70 ? qc.clusterBuckets : null);
       if (link.LinkName == "Local") {
         dataset_options.proxy = null;
       }
@@ -1786,7 +1812,7 @@ export default cbasController;
                 qc.updateBuckets()
               },
               function error(resp) {
-                console.log("Got create dataset error: " + JSON.stringify(resp));
+                //console.log("Got create dataset error: " + JSON.stringify(resp));
                 var errorMsg;
                 if (resp && resp.data && _.isArray(resp.data.errors) && resp.data.errors[0] && resp.data.errors[0].msg)
                   errorMsg = resp.data.errors[0].msg;
@@ -1815,8 +1841,8 @@ export default cbasController;
                 },
                 function error(resp) {
                   console.log("Got drop collection error: " + JSON.stringify(resp));
-                  var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                  cwQueryService.showErrorDialog(errorStr);
+                  //var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping collection: "));
                 });
           }
         });
@@ -1854,7 +1880,7 @@ export default cbasController;
                         qc.updateBuckets();
                       },
                       function error(resp) {
-                        console.log("Got drop dataset error: " + JSON.stringify(resp));
+                        //console.log("Got drop dataset error: " + JSON.stringify(resp));
                         var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
                         cwQueryService.showErrorDialog(errorStr);
                       });
@@ -1878,7 +1904,7 @@ export default cbasController;
                   qc.updateBuckets();
                 },
                 function error(resp) {
-                  console.log("Got drop scope error: " + JSON.stringify(resp));
+                  //console.log("Got drop scope error: " + JSON.stringify(resp));
                   var errorStr = "Error dropping scope: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
                   cwQueryService.showErrorDialog(errorStr);
                 });
