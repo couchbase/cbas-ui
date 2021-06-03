@@ -20,7 +20,7 @@ angular
       includedByState: 'app.admin.cbas',
       state: 'app.admin.cbas.workbench',
       plugIn: 'workbenchTab',
-      ngShow: "rbac.cluster.collection['.:.:.'].analytics.select",
+      ngShow: "rbac.cluster.collection['.:.:.'].analytics.select || rbac.cluster.analytics!manage",
       index: 3
     });
 
