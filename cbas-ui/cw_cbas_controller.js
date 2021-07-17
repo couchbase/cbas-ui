@@ -1538,7 +1538,7 @@
       }
     };
 
-    function createNewDataset(link) {
+    function createNewDataset(link, datasetDataverse) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
       if (link.LinkName == "Local")
         dataset_options.clusterBuckets = qc.clusterBuckets;
@@ -1558,7 +1558,7 @@
         .then(function success(resp) {
 
           var external = (dataset_options.link_details && dataset_options.link_details.type == "s3") ? " EXTERNAL " : "";
-          var queryText = "CREATE " + external + " DATASET `" + link.DVName + "`.`" + dataset_options.dataset_name +
+          var queryText = "CREATE " + external + " DATASET `" + datasetDataverse + "`.`" + dataset_options.dataset_name +
             "` ON `" + dataset_options.bucket_name +
             "` at `" + link.DVName + "`.`" + link.LinkName + "`";
           if (dataset_options.where)
@@ -1626,10 +1626,10 @@
           if (resp == "drop") {
             $uibModalStack.dismissAll();
             cwQueryService.showConfirmationDialog("Are you sure you want to delete dataset: " +
-              link.DVName + "." + dataset.id)
+              dataset.DataverseName + "." + dataset.id)
               .then(function yes(resp) {
                 if (resp == "ok") {
-                  var queryText = "drop dataset `" + link.DVName + "`.`" + dataset_options.dataset_name + "`";
+                  var queryText = "drop dataset `" + dataset.DataverseName + "`.`" + dataset_options.dataset_name + "`";
                   cwQueryService.executeQueryUtil(queryText, false, false)
                     .then(function success() {
                         qc.updateBuckets()
