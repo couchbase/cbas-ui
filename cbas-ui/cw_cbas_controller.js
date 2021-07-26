@@ -2,6 +2,8 @@ import _ from "/ui/web_modules/lodash.js";
 import ace from '/ui/libs/ace/ace-wrapper.js';
 import saveAs from "/ui/web_modules/file-saver.js";
 
+import { BehaviorSubject }              from '/ui/web_modules/rxjs.js';
+
 export default cbasController;
 
   function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService,
@@ -68,6 +70,8 @@ export default cbasController;
     qc.clearHistory = cwQueryService.clearHistory;
 
     qc.historyMenu = edit_history;
+
+    qc.result_subject = new BehaviorSubject();
 
     // variable and code for managing the choice of output format in different tabs
 
@@ -812,6 +816,8 @@ export default cbasController;
           }
         }
       }
+
+      qc.result_subject.next(qc.lastResult.data);
     }
 
     //
