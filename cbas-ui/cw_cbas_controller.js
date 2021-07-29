@@ -804,7 +804,7 @@ export default cbasController;
 
       // check if updating bucket insights is needed
       if (qc.lastResult.status == "success") {
-        var queryStr = qc.lastResult.query.toUpperCase();
+        var queryStr = qc.lastResult.query.toUpperCase().replace(/ +(?= )/g,''); // remove multiple spaces
         for (var i = 0; i < qc.bucketInsightsUpdateTriggers.length; i++) {
           if (queryStr.includes(qc.bucketInsightsUpdateTriggers[i])) {
             qc.updateBuckets();
