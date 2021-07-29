@@ -1459,7 +1459,7 @@ export default cbasController;
     }
 
     function createNewLink(dataverse) {
-      linkDialogScope.options.dataverse = dataverse.DataverseName;
+      linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
       linkDialogScope.options.is_new = true;
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
       linkDialogScope.options.couchbase_link.password = "";
@@ -1473,7 +1473,7 @@ export default cbasController;
       }).result
         .then(function success(resp) {
           mnAlertsService.formatAndSetAlerts("Creating link " + linkDialogScope.options.link_name,'warning',10000);
-          cwQueryService.createLink(linkDialogScope.options)
+          cwQueryService.createLink(linkDialogScope.options,dataverse)
             .then(function success(resp) {
               qc.updateBuckets();
             }, function error(resp) {
