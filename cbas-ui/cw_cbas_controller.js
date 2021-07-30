@@ -2,6 +2,8 @@ import _ from "/ui/web_modules/lodash.js";
 import ace from '/ui/libs/ace/ace-wrapper.js';
 import saveAs from "/ui/web_modules/file-saver.js";
 
+import { BehaviorSubject }              from '/ui/web_modules/rxjs.js';
+
 export default cbasController;
 
   function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService,
@@ -68,6 +70,8 @@ export default cbasController;
     qc.clearHistory = cwQueryService.clearHistory;
 
     qc.historyMenu = edit_history;
+
+    qc.result_subject = new BehaviorSubject();
 
     // variable and code for managing the choice of output format in different tabs
 
@@ -804,7 +808,7 @@ export default cbasController;
 
       // check if updating bucket insights is needed
       if (qc.lastResult.status == "success") {
-        var queryStr = qc.lastResult.query.toUpperCase();
+        var queryStr = qc.lastResult.query.toUpperCase().replace(/ +(?= )/g,''); // remove multiple spaces
         for (var i = 0; i < qc.bucketInsightsUpdateTriggers.length; i++) {
           if (queryStr.includes(qc.bucketInsightsUpdateTriggers[i])) {
             qc.updateBuckets();
@@ -812,6 +816,8 @@ export default cbasController;
           }
         }
       }
+
+      qc.result_subject.next(qc.lastResult.data);
     }
 
     //
@@ -1459,7 +1465,7 @@ export default cbasController;
     }
 
     function createNewLink(dataverse) {
-      linkDialogScope.options.dataverse = dataverse.DataverseName;
+      linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
       linkDialogScope.options.is_new = true;
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
       linkDialogScope.options.couchbase_link.password = "";
@@ -1473,7 +1479,7 @@ export default cbasController;
       }).result
         .then(function success(resp) {
           mnAlertsService.formatAndSetAlerts("Creating link " + linkDialogScope.options.link_name,'warning',10000);
-          cwQueryService.createLink(linkDialogScope.options)
+          cwQueryService.createLink(linkDialogScope.options,dataverse)
             .then(function success(resp) {
               qc.updateBuckets();
             }, function error(resp) {

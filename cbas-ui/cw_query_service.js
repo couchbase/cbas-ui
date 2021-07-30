@@ -2472,10 +2472,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     });
   }
 
-  function createLink(linkDialogScope) {
+  function createLink(linkDialogScope, dataverse) {
     var request = {
       url: "/_p/cbas/analytics/link" + (mnPoolDefault.export.compat.atLeast70 ?
-        '/' + encodeURIComponent(linkDialogScope.dataverse) + "/" + encodeURIComponent(linkDialogScope.link_name) : ""),
+        '/' + encodeURIComponent(dataverse.DataverseName) + "/" + encodeURIComponent(linkDialogScope.link_name) : ""),
       method: "POST",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };
