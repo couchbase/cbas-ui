@@ -1,3 +1,13 @@
+/*
+Copyright 2017-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+*/
+
 import _ from "/ui/web_modules/lodash.js";
 import ace from '/ui/libs/ace/ace-wrapper.js';
 import saveAs from "/ui/web_modules/file-saver.js";
@@ -1319,6 +1329,12 @@ export default cbasController;
       // load the AWS supported regions
       cwQueryService.getAwsSupportedRegions();
 
+      //
+      // let the chart window know about the current results (if any)
+      //
+
+      qc.result_subject.next(qc.lastResult.data);
+    
       //
       // now let's make sure the window is the right size
       //
