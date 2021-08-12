@@ -56,7 +56,6 @@ export default cbasController;
     qc.isAllowedMultiStatement = cwQueryService.isAllowedMultiStatement;
 
     qc.toggleFullscreen = toggleFullscreen;
-    qc.queryContext = "";
     qc.scopeNames = cwQueryService.scopeNames;
 
     qc.atLeast70 = cwQueryService.atLeast70;
@@ -731,7 +730,7 @@ export default cbasController;
       //console.log("Running query: " + queryStr);
       // run the query and show a spinner
 
-      var promise = cwQueryService.executeQuery(queryStr, qc.lastResult.query, cwQueryService.options, explainOnly, qc.queryContext);
+      var promise = cwQueryService.executeQuery(queryStr, qc.lastResult.query, cwQueryService.options, explainOnly, qc.lastResult.queryContext);
 
       if (promise) {
         // also have the input grab focus at the end
