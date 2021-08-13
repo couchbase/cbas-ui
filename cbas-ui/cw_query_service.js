@@ -258,7 +258,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //
 
   function QueryResult(status, elapsedTime, executionTime, resultCount, resultSize, result,
-                       data, query, requestID, explainResult, mutationCount, processedObjects, warningCount, warnings, limitedWarningsCount) {
+                       data, query, requestID, explainResult, mutationCount, processedObjects,
+                       warningCount, warnings, limitedWarningsCount, queryContext) {
     this.status = status;
     this.resultCount = resultCount;
     this.resultCount = mutationCount;
@@ -267,6 +268,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.result = result;
     this.data = data;
     this.query = query;
+    this.queryContext = queryContext;
     this.requestID = requestID;
     this.explainResult = explainResult;
     if (explainResult)
@@ -318,7 +320,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   QueryResult.prototype.clone = function () {
     return new QueryResult(this.status, this.elapsedTime, this.executionTime, this.resultCount,
       this.resultSize, this.result, this.data, this.query, this.requestID, this.explainResult, this.mutationCount,
-      this.processedObjects, this.warningCount, this.warnings, this.limitedWarningsCount);
+      this.processedObjects, this.warningCount, this.warnings, this.limitedWarningsCount, this.queryContext);
   };
   QueryResult.prototype.copyIn = function (other) {
     this.status = other.status;
@@ -337,6 +339,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.warningCount = other.warningCount;
     this.warnings = other.warnings;
     this.limitedWarningsCount = other.limitedWarningsCount;
+    this.queryContext = other.queryContext;
   };
 
 
@@ -458,6 +461,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     savedState.currentQueryIndex = currentQueryIndex;
     savedState.lastResult = savedResultTemplate.clone();
     savedState.lastResult.query = lastResult.query;
+    savedState.lastResult.queryContext = lastResult.queryContext;
     savedState.options = cwQueryService.options;
 
     savedState.doc_editor_options = {
@@ -474,6 +478,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     _.forEach(pastQueries, function (queryRes, index) {
       var qcopy = savedResultTemplate.clone();
       qcopy.query = queryRes.query;
+      qcopy.queryContext = queryRes.queryContext;
       savedState.pastQueries.push(qcopy);
     });
 
@@ -697,6 +702,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         newResult.query = query;
       else
         newResult.query = "";
+      newResult.queryContext = lastResult.queryContext; // use the current context for the blank query
       pastQueries.push(newResult);
     }
 
@@ -1003,6 +1009,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       (lastResult.status == newQueryTemplate.status)) {
       newResult = executingQueryTemplate.clone();
       newResult.query = lastResult.query.trim();
+      newResult.queryContext = lastResult.queryContext;
       pastQueries[currentQueryIndex] = newResult; // forget previous results
     }
 
@@ -1012,6 +1019,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     else {
       newResult = executingQueryTemplate.clone();
       newResult.query = lastResult.query.trim();
+      newResult.queryContext = lastResult.queryContext;
       pastQueries.push(newResult);
       currentQueryIndex = pastQueries.length - 1; // after run, set current result to end
     }
