@@ -314,12 +314,14 @@ export default cbasController;
     function nextResult() {
       qc.showBigDatasets = false;
       cwQueryService.nextResult();
+      qc.result_subject.next(cwQueryService.getPastQueries()[cwQueryService.getCurrentIndexNumber()]);
       $timeout(swapEditorFocus, 10);
     }
 
     function prevResult() {
       qc.showBigDatasets = false;
       cwQueryService.prevResult();
+      qc.result_subject.next(cwQueryService.getPastQueries()[cwQueryService.getCurrentIndexNumber()]);
       $timeout(swapEditorFocus, 10);
     }
 
@@ -826,7 +828,7 @@ export default cbasController;
         }
       }
 
-      qc.result_subject.next(qc.lastResult.data);
+      qc.result_subject.next(cwQueryService.getPastQueries()[cwQueryService.getCurrentIndexNumber()]);
     }
 
     //
@@ -1332,7 +1334,7 @@ export default cbasController;
       // let the chart window know about the current results (if any)
       //
 
-      qc.result_subject.next(qc.lastResult.data);
+      qc.result_subject.next(qc.lastResult);
     
       //
       // now let's make sure the window is the right size
