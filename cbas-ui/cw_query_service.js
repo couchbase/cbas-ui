@@ -259,7 +259,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function QueryResult(status, elapsedTime, executionTime, resultCount, resultSize, result,
                        data, query, requestID, explainResult, mutationCount, processedObjects,
-                       warningCount, warnings, limitedWarningsCount, queryContext) {
+                       warningCount, warnings, limitedWarningsCount, queryContext, chart_options) {
     this.status = status;
     this.resultCount = resultCount;
     this.resultCount = mutationCount;
@@ -281,6 +281,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.warningCount = warningCount;
     this.warnings = warnings;
     this.limitedWarningsCount = limitedWarningsCount;
+    this.chart_options = chart_options;
   };
 
   function getBucketState() {
@@ -319,8 +320,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   QueryResult.prototype.clone = function () {
     return new QueryResult(this.status, this.elapsedTime, this.executionTime, this.resultCount,
-      this.resultSize, this.result, this.data, this.query, this.requestID, this.explainResult, this.mutationCount,
-      this.processedObjects, this.warningCount, this.warnings, this.limitedWarningsCount, this.queryContext);
+                           this.resultSize, this.result, this.data, this.query, this.requestID, this.explainResult,
+                           this.mutationCount, this.processedObjects, this.warningCount, this.warnings,
+                           this.limitedWarningsCount, this.queryContext, this.chart_options
+                          );
   };
   QueryResult.prototype.copyIn = function (other) {
     this.status = other.status;
@@ -340,8 +343,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.warnings = other.warnings;
     this.limitedWarningsCount = other.limitedWarningsCount;
     this.queryContext = other.queryContext;
+    this.chart_options = other.chart_options;
   };
 
+  QueryResult.prototype.set_chart_options = function(new_options) {
+    this.chart_options = new_options;
+  }
 
   //
   // structures for remembering queries and results
@@ -479,6 +486,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       var qcopy = savedResultTemplate.clone();
       qcopy.query = queryRes.query;
       qcopy.queryContext = queryRes.queryContext;
+      qcopy.chart_options = queryRes.chart_options;
       savedState.pastQueries.push(qcopy);
     });
 
@@ -658,7 +666,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       lastResult.data = tempData;
       currentQueryIndex--;
 
-      $timeout(function () {
+      return $timeout(function () {
         lastResult.copyIn(pastQueries[currentQueryIndex]);
       }, 50);
     }
@@ -676,7 +684,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       lastResult.data = tempData;
       currentQueryIndex++;
 
-      $timeout(function () {
+      return $timeout(function () {
         lastResult.copyIn(pastQueries[currentQueryIndex]);
       }, 50);
     }
@@ -1010,6 +1018,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       newResult = executingQueryTemplate.clone();
       newResult.query = lastResult.query.trim();
       newResult.queryContext = lastResult.queryContext;
+      newResult.chart_options = lastResult.chart_options;
       pastQueries[currentQueryIndex] = newResult; // forget previous results
     }
 
@@ -1020,6 +1029,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       newResult = executingQueryTemplate.clone();
       newResult.query = lastResult.query.trim();
       newResult.queryContext = lastResult.queryContext;
+      newResult.chart_options = lastResult.chart_options;
       pastQueries.push(newResult);
       currentQueryIndex = pastQueries.length - 1; // after run, set current result to end
     }
