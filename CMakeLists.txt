@@ -3,8 +3,8 @@
 #
 # We need to copy the pluggable-ui-cbas.json to install/etc/couchbase,
 # and copy everything else to install/lib/cbas-ui
-# 
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8.10)
+#
+CMAKE_MINIMUM_REQUIRED (VERSION 3.13)
 
 PROJECT (cbas-ui)
 
@@ -17,12 +17,12 @@ configure_file (pluggable-ui-cbas.json.in pluggable-ui-cbas.json)
 
 # copy rewritten config file and code to install directory
 install(FILES "${_instdir}/pluggable-ui-cbas.json"
-		DESTINATION etc/couchbase)
+        DESTINATION etc/couchbase)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cbas-ui
-		DESTINATION lib
-		REGEX libs-standalone EXCLUDE
-		PATTERN "*standalone.*" EXCLUDE)
+        DESTINATION lib
+        REGEX libs-standalone EXCLUDE
+        PATTERN "*standalone.*" EXCLUDE)
 
 # rewrite the config file for running locally (using cluster-run)
 SET (BIN_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/")
