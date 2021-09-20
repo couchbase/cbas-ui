@@ -8,8 +8,8 @@ be governed by the Apache License, Version 2.0, included in the file
 licenses/APL2.txt.
 */
 
-import mnPermissions from "/ui/app/components/mn_permissions.js";
-import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
+import mnPermissions from "components/mn_permissions";
+import cwConstantsService from "./cw_constants_service.js";
 // we can only work if we have an analytics node. This service checks for
 // an analytics node a reports back whether it is present.
 export default 'validateCbasService';

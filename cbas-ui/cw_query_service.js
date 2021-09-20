@@ -8,17 +8,17 @@ be governed by the Apache License, Version 2.0, included in the file
 licenses/APL2.txt.
 */
 
-import angular from "/ui/web_modules/angular.js";
-import _ from "/ui/web_modules/lodash.js";
-import js_beautify from "/ui/web_modules/js-beautify.js";
-import uiBootstrap from "/ui/web_modules/angular-ui-bootstrap.js";
+import angular from "angular";
+import _ from "lodash";
+import js_beautify from "js-beautify";
+import uiBootstrap from "angular-ui-bootstrap";
 
-import mnPendingQueryKeeper from "/ui/app/components/mn_pending_query_keeper.js";
-import mnPoolDefault from "/ui/app/components/mn_pool_default.js";
-import mnPools from "/ui/app/components/mn_pools.js";
+import mnPendingQueryKeeper from "components/mn_pending_query_keeper";
+import mnPoolDefault from "components/mn_pool_default";
+import mnPools from "components/mn_pools";
 
-import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
-import qwQueryPlanService from "/_p/ui/query/qw_query_plan_service.js";
+import cwConstantsService from "../cbas/cw_constants_service.js";
+import qwQueryPlanService from "../query/qw_query_plan_service.js";
 import validateCbasService from "./validate_cbas_service.js";
 
 export default 'cwQueryService';

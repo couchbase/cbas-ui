@@ -8,16 +8,16 @@ be governed by the Apache License, Version 2.0, included in the file
 licenses/APL2.txt.
 */
 
-import angular from "/ui/web_modules/angular.js";
-import app from "/ui/app/app.js";
-import ace from '/ui/libs/ace/ace-wrapper.js';
-import { mnLazyload } from "/ui/app/mn.app.imports.js";
+import angular from "angular";
+import app from "app";
+import ace from 'ace/ace-wrapper';
+import { mnLazyload } from "mn.app.imports";
 
-import { NgModule } from '/ui/web_modules/@angular/core.js';
-import { UIRouterUpgradeModule } from '/ui/web_modules/@uirouter/angular-hybrid.js';
+import { NgModule } from '@angular/core';
+import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 
-import { QwCollectionMenu }       from "/_p/ui/query/angular-directives/qw.collection.menu.component.js";
-import { QwCollectionsService }   from "/_p/ui/query/angular-services/qw.collections.service.js";
+import { QwCollectionMenu }       from "../query/angular-directives/qw.collection.menu.component.js";
+import { QwCollectionsService }   from "../query/angular-services/qw.collections.service.js";
 
 angular
   .module(app)
@@ -50,7 +50,7 @@ class CbasUI {
           states: [{
             name: "app.admin.cbas.**",
             url: "/cbas",
-            lazyLoad: mnLazyload('/_p/ui/cbas/cbas.js', 'cwCbas')
+            lazyLoad: mnLazyload(() => import('./cbas.js'), 'cwCbas')
           }]
         })
       ],

@@ -8,11 +8,11 @@ be governed by the Apache License, Version 2.0, included in the file
 licenses/APL2.txt.
 */
 
-import _ from "/ui/web_modules/lodash.js";
-import ace from '/ui/libs/ace/ace-wrapper.js';
-import saveAs from "/ui/web_modules/file-saver.js";
+import _ from "lodash";
+import ace from 'ace/ace-wrapper';
+import saveAs from "file-saver";
 
-import { BehaviorSubject }              from '/ui/web_modules/rxjs.js';
+import { BehaviorSubject }              from 'rxjs';
 
 export default cbasController;
 
@@ -1335,7 +1335,7 @@ export default cbasController;
       //
 
       qc.result_subject.next(qc.lastResult);
-    
+
       //
       // now let's make sure the window is the right size
       //

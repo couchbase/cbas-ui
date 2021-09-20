@@ -8,8 +8,8 @@ be governed by the Apache License, Version 2.0, included in the file
 licenses/APL2.txt.
 */
 
-import {is} from '/ui/web_modules/ramda.js';
-import mnStatsDesc from "/ui/app/mn_admin/mn_statistics_description.js";
+import {is} from 'ramda';
+import mnStatsDesc from "mn_admin/mn_statistics_description";
 
 export default cwCbasMonitorController;
 

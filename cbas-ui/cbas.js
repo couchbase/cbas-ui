@@ -8,42 +8,42 @@ be governed by the Apache License, Version 2.0, included in the file
 licenses/APL2.txt.
 */
 
-import angular from "/ui/web_modules/angular.js";
-import _ from "/ui/web_modules/lodash.js";
-import saveAs from "/ui/web_modules/file-saver.js";
+import angular from "angular";
+import _ from "lodash";
+import saveAs from "file-saver";
 
-import uiRouter from "/ui/web_modules/@uirouter/angularjs.js";
-import uiBootstrap from "/ui/web_modules/angular-ui-bootstrap.js";
-import uiAce from "/ui/libs/ui-ace.js";
+import uiRouter from "@uirouter/angularjs";
+import uiBootstrap from "angular-ui-bootstrap";
+import uiAce from "ui-ace";
 
-import qwJsonTree from "/_p/ui/query/ui-current/data_display/qw-json-tree.directive.js";
-import qwJsonDataTable from "/_p/ui/query/ui-current/data_display/qw-json-datatable.directive.js";
-import qwJsonTableEditor from "/_p/ui/query/ui-current/data_display/qw-json-table-editor.directive.js";
-import qwLongPress from "/_p/ui/query/long_press/qw-long-press.directive.js";
+import qwJsonTree from "../query/ui-current/data_display/qw-json-tree.directive.js";
+import qwJsonDataTable from "../query/ui-current/data_display/qw-json-datatable.directive.js";
+import qwJsonTableEditor from "../query/ui-current/data_display/qw-json-table-editor.directive.js";
+import qwLongPress from "../query/long_press/qw-long-press.directive.js";
 
-import mnAlertsService from '/ui/app/components/mn_alerts.js';
-import mnJquery from "/ui/app/components/mn_jquery.js";
-import mnPools from "/ui/app/components/mn_pools.js";
-import mnPoolDefault from "/ui/app/components/mn_pool_default.js";
-import mnPermissions from "/ui/app/components/mn_permissions.js";
-import mnServersService from "/ui/app/mn_admin/mn_servers_service.js";
-import mnStatisticsNewService from "/ui/app/mn_admin/mn_statistics_service.js";
+import mnAlertsService from 'components/mn_alerts';
+import mnJquery from "components/mn_jquery";
+import mnPools from "components/mn_pools";
+import mnPoolDefault from "components/mn_pool_default";
+import mnPermissions from "components/mn_permissions";
+import mnServersService from "mn_admin/mn_servers_service";
+import mnStatisticsNewService from "mn_admin/mn_statistics_service";
 
-import cwCbasMonitorController from "/_p/ui/cbas/cw_cbas_monitor_controller.js";
-import cbasController from "/_p/ui/cbas/cw_cbas_controller.js";
+import cwCbasMonitorController from "./cw_cbas_monitor_controller.js";
+import cbasController from "./cw_cbas_controller.js";
 
-import cwQueryService from "/_p/ui/cbas/cw_query_service.js";
-import cwConstantsService from "/_p/ui/cbas/cw_constants_service.js";
+import cwQueryService from "./cw_query_service.js";
+import cwConstantsService from "./cw_constants_service.js";
 import validateCbasService from "./validate_cbas_service.js"
 
-import qwJsonCsvService      from "/_p/ui/query/qw_json_csv_service.js";
-import qwExplainVizD3        from "/_p/ui/query/ui-current/query_plan_viz/qw-explain-viz-d3.directive.js";
-import { QwCollectionMenu }  from "/_p/ui/query/angular-directives/qw.collection.menu.component.js";
-import { QwCollectionsService } from "/_p/ui/query/angular-services/qw.collections.service.js";
-import { QwJsonChart }          from "/_p/ui/query/angular-directives/qw.json.chart.component.js";
-import { QwQueryService }    from "/_p/ui/query/angular-services/qw.query.service.js";
-import {downgradeComponent}  from "/ui/web_modules/@angular/upgrade/static.js";
-import {downgradeInjectable} from '/ui/web_modules/@angular/upgrade/static.js';
+import qwJsonCsvService      from "../query/qw_json_csv_service.js";
+import qwExplainVizD3        from "../query/ui-current/query_plan_viz/qw-explain-viz-d3.directive.js";
+import { QwCollectionMenu }  from "../query/angular-directives/qw.collection.menu.component.js";
+import { QwCollectionsService } from "../query/angular-services/qw.collections.service.js";
+import { QwJsonChart }          from "../query/angular-directives/qw.json.chart.component.js";
+import { QwQueryService }    from "../query/angular-services/qw.query.service.js";
+import {downgradeComponent}  from "@angular/upgrade/static";
+import {downgradeInjectable} from '@angular/upgrade/static';
 
 
 export default "cwCbas";
