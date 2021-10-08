@@ -1292,7 +1292,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
                 executionTime: 0.0,
                 resultCount: 0,
                 resultSize: "0",
-                elapsedTime: 0.0,
                 processedObjects: 0,
                 warningCount: 0
               }
