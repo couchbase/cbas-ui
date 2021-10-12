@@ -56,6 +56,8 @@ export default cbasController;
     qc.isAllowedMultiStatement = cwQueryService.isAllowedMultiStatement;
 
     qc.toggleFullscreen = toggleFullscreen;
+    qc.fullscreen = false;
+    qc.toggleFullscreen = toggleFullscreen;
     qc.scopeNames = cwQueryService.scopeNames;
 
     qc.atLeast70 = cwQueryService.atLeast70;
@@ -1177,6 +1179,27 @@ export default cbasController;
       qc.analysisExpanded = !qc.analysisExpanded;
     }
 
+  //
+  // hide & show the bucket insights pane for a full-screen view of the wb
+  //
+
+  function toggleFullscreen() {
+    if (!qc.fullscreen) {
+      $(".insights-sidebar").removeClass("width-3");
+      $(".insights-sidebar").addClass("fix-width-0");
+      $(".wb-main-wrapper").removeClass("width-9");
+      $(".wb-main-wrapper").addClass("width-12");
+      mnPoolDefault.setHideNavSidebar(true);
+    }
+    else {
+      $(".insights-sidebar").removeClass("fix-width-0");
+      $(".insights-sidebar").addClass("width-3");
+      $(".wb-main-wrapper").removeClass("width-12");
+      $(".wb-main-wrapper").addClass("width-9");
+      mnPoolDefault.setHideNavSidebar(false);
+    }
+    qc.fullscreen = !qc.fullscreen;
+  }
 
     //
     // show an error dialog

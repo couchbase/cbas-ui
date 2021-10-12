@@ -126,13 +126,22 @@ licenses/APL2.txt.
           </span>
         </div>
 
-<!-- run-time preferences ----------------------------------------------------->
-        <a ng-disabled="qc.executingQuery.busy"
+<!-- format & full-screen controls ----------------------------------------------------->
+        <div class="nowrap" style="padding: 0 0 .25rem 0;">
+         <a ng-disabled="qc.executingQuery.busy"
            ng-click="qc.format()"
            class="text-smallish nowrap resp-hide-xsml">
           <span class="icon fa-align-right"></span>
           format
         </a>
+        <span
+           class="wb-fullscreen resp-hide-sml"
+           ng-click="qc.toggleFullscreen()">
+          <span ng-if="!qc.fullscreen" class="icon fa-expand" title="expand"></span>
+          <span ng-if="qc.fullscreen" class="icon fa-compress" title="contract"></span>
+          </span>
+        </div>
+
       </div>
     </div>
 
