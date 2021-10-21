@@ -17,7 +17,12 @@ import { NgModule } from '@angular/core';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 
 import { QwCollectionMenu }       from "../query/angular-directives/qw.collection.menu.component.js";
+import { QwJsonDataTable,
+         QwJsonDataTableComp }    from "../query/angular-directives/qw.json.datatable.directive.js";
+import { QwExplainViz }           from "../query/angular-directives/qw.explain.viz.component.js";
+
 import { QwCollectionsService }   from "../query/angular-services/qw.collections.service.js";
+import { QwQueryPlanService }     from "../query/angular-services/qw.query.plan.service.js";
 
 angular
   .module(app)
@@ -59,10 +64,13 @@ class CbasUI {
       // we need to list them as providers here to ensure that they are loaded.
       // otherwise we get "missing provider" errors when reloading the UI
       providers: [
-        QwCollectionsService
+        QwCollectionsService,
+        QwQueryPlanService,
       ],
       entryComponents: [
-        QwCollectionMenu
+        QwCollectionMenu,
+        QwExplainViz,
+        QwJsonDataTableComp,
       ]
     })
   ]}

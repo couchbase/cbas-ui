@@ -18,19 +18,19 @@ import mnPoolDefault from "components/mn_pool_default";
 import mnPools from "components/mn_pools";
 
 import cwConstantsService from "../cbas/cw_constants_service.js";
-import qwQueryPlanService from "../query/qw_query_plan_service.js";
 import validateCbasService from "./validate_cbas_service.js";
 
 export default 'cwQueryService';
 
 angular
   .module('cwQueryService', [uiBootstrap, validateCbasService, mnPendingQueryKeeper, cwConstantsService,
-    qwQueryPlanService, mnPoolDefault, mnPools, mnPoolDefault])
+                             mnPoolDefault, mnPools, mnPoolDefault])
   .factory('cwQueryService', cwQueryServiceFactory);
 
 
 function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService,
-                               mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools) {
+                               mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault,
+                               mnPools) {
 
   var cwQueryService = {};
 

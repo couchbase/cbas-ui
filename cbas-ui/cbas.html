@@ -187,15 +187,17 @@ licenses/APL2.txt.
            ng-model="qc.lastResult.result"></div>
 
       <div class="wb-results-table"
-           ng-if="qc.isSelected(2)"
-           qw-json-data-table="qc.lastResult.data"></div>
+           ng-if="qc.isSelected(2)">
+           <qw-json-data-table-comp [subject]="qc.result_subject"></qw-json-table-comp>
+      </div>
 
       <div class="wb-results-chart" ng-if="qc.isSelected(3)">
         <qw-json-chart [subject]="qc.result_subject"></qw-json-chart>
       </div>
 
-      <div class="wb-results-explain" ng-if="qc.isSelected(4)"
-           qw-explain-viz-d3="qc.lastResult.explainResult"></div>
+      <div class="wb-results-explain" ng-if="qc.isSelected(4)">
+        <qw-explain-viz [subject]="qc.result_subject"></qw-explain-viz>
+      </div>
 
       <div class="wb-results-explain-text"
            ng-if="qc.isSelected(5)"

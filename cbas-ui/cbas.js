@@ -16,11 +16,6 @@ import uiRouter from "@uirouter/angularjs";
 import uiBootstrap from "angular-ui-bootstrap";
 import uiAce from "ui-ace";
 
-import qwJsonTree from "../query/ui-current/data_display/qw-json-tree.directive.js";
-import qwJsonDataTable from "../query/ui-current/data_display/qw-json-datatable.directive.js";
-import qwJsonTableEditor from "../query/ui-current/data_display/qw-json-table-editor.directive.js";
-import qwLongPress from "../query/long_press/qw-long-press.directive.js";
-
 import mnAlertsService from 'components/mn_alerts';
 import mnJquery from "components/mn_jquery";
 import mnPools from "components/mn_pools";
@@ -36,14 +31,19 @@ import cwQueryService from "./cw_query_service.js";
 import cwConstantsService from "./cw_constants_service.js";
 import validateCbasService from "./validate_cbas_service.js"
 
-import qwJsonCsvService      from "../query/qw_json_csv_service.js";
-import qwExplainVizD3        from "../query/ui-current/query_plan_viz/qw-explain-viz-d3.directive.js";
-import { QwCollectionMenu }  from "../query/angular-directives/qw.collection.menu.component.js";
-import { QwCollectionsService } from "../query/angular-services/qw.collections.service.js";
+import { QwCollectionMenu }     from "../query/angular-directives/qw.collection.menu.component.js";
+import { QwExplainViz }         from "../query/angular-directives/qw.explain.viz.component.js";
 import { QwJsonChart }          from "../query/angular-directives/qw.json.chart.component.js";
-import { QwQueryService }    from "../query/angular-services/qw.query.service.js";
-import {downgradeComponent}  from "@angular/upgrade/static";
-import {downgradeInjectable} from '@angular/upgrade/static';
+import { QwJsonDataTable,
+         QwJsonDataTableComp }  from "../query/angular-directives/qw.json.datatable.directive.js";
+
+import { QwCollectionsService } from "../query/angular-services/qw.collections.service.js";
+import { QwJsonCsvService }     from "../query/angular-services/qw.json.csv.service.js";
+import { QwQueryPlanService }   from "../query/angular-services/qw.query.plan.service.js";
+import { QwQueryService }       from "../query/angular-services/qw.query.service.js";
+
+import {downgradeComponent}     from "@angular/upgrade/static";
+import {downgradeInjectable}    from '@angular/upgrade/static';
 
 
 export default "cwCbas";
@@ -52,11 +52,6 @@ angular.module('cwCbas', [
   uiRouter,
   uiBootstrap,
   uiAce,
-
-  qwJsonTree,
-  qwJsonDataTable,
-  qwJsonTableEditor,
-  qwLongPress,
 
   mnAlertsService,
   mnJquery,
@@ -69,12 +64,16 @@ angular.module('cwCbas', [
   cwQueryService,
   cwConstantsService,
   validateCbasService,
-  qwExplainVizD3,
-  qwJsonCsvService
 ])
   .directive('qwCollectionMenu', downgradeComponent({component: QwCollectionMenu}))
+  .directive('qwExplainViz', downgradeComponent({component: QwExplainViz}))
   .directive('qwJsonChart', downgradeComponent({component: QwJsonChart}))
+  .directive('qwJsonDataTableComp', downgradeComponent({component: QwJsonDataTableComp}))
+  .directive('qwJsonDataTable', downgradeComponent({directive: QwJsonDataTable}))
+
+  .factory('qwJsonCsvService', downgradeInjectable(QwJsonCsvService))
   .factory('qwQueryService', downgradeInjectable(QwQueryService))
+  .factory('qwQueryPlanService', downgradeInjectable(QwQueryPlanService))
   .factory('qwCollectionsService', downgradeInjectable(QwCollectionsService))
   .config(function($stateProvider, $transitionsProvider) {
 
