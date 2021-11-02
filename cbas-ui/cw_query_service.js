@@ -30,7 +30,7 @@ angular
 
 function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService,
                                mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault,
-                               mnPools) {
+                               mnPools, qwDialogService) {
 
   var cwQueryService = {};
 
@@ -2426,44 +2426,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //
 
   function showErrorDialog(message) {
-    var subdirectory = '/ui-current';
-
-    var dialogScope = $rootScope.$new(true);
-    dialogScope.error_title = "Error";
-    dialogScope.error_detail = message;
-    dialogScope.hide_cancel = true;
-
-    $uibModal.open({
-      templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',
-      scope: dialogScope
-    });
+    qwDialogService.showErrorDialog("Error",message,null,true)
+      .then(() => Promise.resolve("done"),() => Promise.resolve("done"));
   }
 
   function showWarningDialog(message) {
-    var subdirectory = '/ui-current';
-
-    var dialogScope = $rootScope.$new(true);
-    dialogScope.error_title = "Warning";
-    dialogScope.error_detail = message;
-
-    $uibModal.open({
-      templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',
-      scope: dialogScope
-    });
+    qwDialogService.showErrorDialog("Warning",message,null,true)
+      .then(() => Promise.resolve("done"),() => Promise.resolve("done"));
   }
 
   function showConfirmationDialog(title,message,details) {
-    var subdirectory = '/ui-current';
-
-    var dialogScope = $rootScope.$new(true);
-    dialogScope.error_title = title;
-    dialogScope.error_detail = message;
-    dialogScope.error_detail_array = details;
-
-    return ($uibModal.open({
-      templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',
-      scope: dialogScope
-    })).result;
+    return(qwDialogService.showNoticeDialog("Warning",message,details));
   }
 
   //

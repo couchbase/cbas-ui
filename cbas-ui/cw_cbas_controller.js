@@ -18,7 +18,7 @@ export default cbasController;
 
   function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService,
                           validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService,
-                          mnServersService, $interval, qwJsonCsvService, jQuery, qwCollectionsService) {
+                          mnServersService, $interval, qwJsonCsvService, jQuery, qwCollectionsService, qwDialogService) {
     var $ = jQuery;
     var qc = this;
     var statsRefreshInterval = 5000;
@@ -846,7 +846,6 @@ export default cbasController;
     dialogScope.file = {name: "output"};
 
     function options() {
-      var subdirectory = '/ui-current';
       dialogScope.options = cwQueryService.clone_options();
       dialogScope.mode = "analytics";
       dialogScope.options.positional_parameters = [];
@@ -868,8 +867,7 @@ export default cbasController;
 
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/query' + subdirectory +
-          '/prefs_dialog/qw_prefs_dialog.html',
+        templateUrl: '../_p/ui/cbas/cw_prefs_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -909,11 +907,9 @@ export default cbasController;
       // but for those that do, get a name for the file
       dialogScope.file_type = 'json';
       dialogScope.file = dialogScope.data_file;
-      var subdirectory = '/ui-current';
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/query' + subdirectory +
-          '/file_dialog/qw_query_file_dialog.html',
+        templateUrl: '../_p/ui/cbas/cw_file_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -948,11 +944,9 @@ export default cbasController;
       // but for those that do, get a name for the file
       dialogScope.file_type = 'query';
       dialogScope.file = dialogScope.query_file;
-      var subdirectory = '/ui-current';
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/query' + subdirectory +
-          '/file_dialog/qw_query_file_dialog.html',
+        templateUrl: '../_p/ui/cbas/cw_file_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -981,7 +975,7 @@ export default cbasController;
       dialogScope.selected = {item: 0};
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/query/ui-current/file_dialog/qw_query_unified_file_dialog.html',
+        templateUrl: '../_p/ui/cbas/cw_unified_file_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -1041,21 +1035,13 @@ export default cbasController;
         return searchInfo.searchText.length > 0 && !dialogScope.isRowMatched(cwQueryService.getCurrentIndexNumber());
       };
       dialogScope.delAll = function (close) {
-        var innerScope = $rootScope.$new(true);
-        innerScope.error_title = "Delete All History";
-        innerScope.error_detail = "Warning, this will delete the entire query history.";
-        innerScope.showCancel = true;
-
-        var promise = $uibModal.open({
-          templateUrl: '../_p/ui/query/ui-current/password_dialog/qw_query_error_dialog.html',
-          scope: innerScope
-        }).result;
-
-        promise.then(
-          function success() {
+        qwDialogService.showNoticeDialog("Delete All History",
+          "Warning, this will delete the entire query history.")
+          .then(
+          function ok() {
             cwQueryService.clearHistory();
             close('ok');
-          });
+          }, () => Promise.resolve("cancel"));
 
       };
       dialogScope.searchInfo = searchInfo;
@@ -1063,11 +1049,8 @@ export default cbasController;
       dialogScope.selectNextMatch = selectNextMatch;
       dialogScope.selectPrevMatch = selectPrevMatch;
 
-      var subdirectory = '/ui-current';
-
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/query' + subdirectory +
-          '/history_dialog/qw_history_dialog.html',
+        templateUrl: '../_p/ui/cbas/cw_history_dialog.html',
         scope: dialogScope
       }).result;
 
@@ -1206,14 +1189,9 @@ export default cbasController;
     //
 
     function showErrorMessage(message) {
-      var subdirectory = '/ui-current';
-      dialogScope.error_title = "Error";
-      dialogScope.error_detail = message;
-
-      $uibModal.open({
-        templateUrl: '../_p/ui/query' + subdirectory + '/password_dialog/qw_query_error_dialog.html',
-        scope: dialogScope
-      });
+      qwDialogService.showErrorDialog("Error",message,null,true)
+        .then(() => Promise.resolve("success"),
+          () => Promise.resolve("cancel"));
     }
 
     //
@@ -1598,7 +1576,7 @@ export default cbasController;
                           cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping link: "));
                         });
                   }
-                });
+                }, function no() {return Promise.resolve("no")});
             }
 
             else if (resp == 'ok')
@@ -1876,7 +1854,7 @@ export default cbasController;
 
     function dropDataset(link, dataset) {
       cwQueryService.showConfirmationDialog("Confirm Drop Analytics Collection",
-        "Warning, this will drop the analytics collection ",[dataset.dataverseDisplayName + "." + dataset.id])
+        "Warning, this will drop the analytics collection: ",[dataset.dataverseDisplayName + "." + dataset.id])
         .then(function yes(resp) {
           if (resp == "ok") {
             var queryText = "drop dataset " + dataset.dataverseQueryName + '.`' + dataset.id + '`';
@@ -1891,7 +1869,7 @@ export default cbasController;
                   cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping collection: "));
                 });
           }
-        });
+        }, function no() {return Promise.resolve("no")});
     }
 
     function editDataset(link, dataset) {

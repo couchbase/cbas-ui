@@ -36,6 +36,8 @@ import { QwExplainViz }         from "../query/angular-directives/qw.explain.viz
 import { QwJsonChart }          from "../query/angular-directives/qw.json.chart.component.js";
 import { QwJsonDataTable,
          QwJsonDataTableComp }  from "../query/angular-directives/qw.json.datatable.directive.js";
+import { QwDialogService }      from "../query/angular-directives/qw.dialog.service.js";
+
 
 import { QwCollectionsService } from "../query/angular-services/qw.collections.service.js";
 import { QwJsonCsvService }     from "../query/angular-services/qw.json.csv.service.js";
@@ -72,6 +74,7 @@ angular.module('cwCbas', [
   .directive('qwJsonDataTable', downgradeComponent({directive: QwJsonDataTable}))
 
   .factory('qwJsonCsvService', downgradeInjectable(QwJsonCsvService))
+  .factory('qwDialogService', downgradeInjectable(QwDialogService))
   .factory('qwQueryService', downgradeInjectable(QwQueryService))
   .factory('qwQueryPlanService', downgradeInjectable(QwQueryPlanService))
   .factory('qwCollectionsService', downgradeInjectable(QwCollectionsService))

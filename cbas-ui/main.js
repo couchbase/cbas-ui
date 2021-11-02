@@ -20,6 +20,7 @@ import { QwCollectionMenu }       from "../query/angular-directives/qw.collectio
 import { QwJsonDataTable,
          QwJsonDataTableComp }    from "../query/angular-directives/qw.json.datatable.directive.js";
 import { QwExplainViz }           from "../query/angular-directives/qw.explain.viz.component.js";
+import { QwDialogService }        from "../query/angular-directives/qw.dialog.service.js";
 
 import { QwCollectionsService }   from "../query/angular-services/qw.collections.service.js";
 import { QwQueryPlanService }     from "../query/angular-services/qw.query.plan.service.js";
@@ -65,6 +66,7 @@ class CbasUI {
       // otherwise we get "missing provider" errors when reloading the UI
       providers: [
         QwCollectionsService,
+        QwDialogService,
         QwQueryPlanService,
       ],
       entryComponents: [
