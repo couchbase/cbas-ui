@@ -33,6 +33,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
                                mnPools, qwDialogService) {
 
   var cwQueryService = {};
+  mnPools.get().then(function (pools) {cwQueryService.pools = pools;});
 
   //
   // remember which tab is selected for output style: JSON, table, or tree
@@ -2529,7 +2530,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       formData.name = scope.link_name;
     }
 
-      if (scope.link_type == "couchbase") {
+    if (scope.link_type == "couchbase") {
       formData.hostname = scope.couchbase_link.hostname;
       if (scope.couchbase_link.username)
         formData.username = scope.couchbase_link.username;
@@ -2554,6 +2555,37 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       formData.region = scope.s3_link.region;
       if (scope.s3_link.endpoint)
         formData.serviceEndpoint = scope.s3_link.endpoint;
+    } else if (scope.link_type == "azureblob" || scope.link_type == "azuredatalake") {
+        formData.endpoint = scope.azure_link.endpoint;
+
+        if (scope.azure_link.auth_type == "sharedkey") {
+            formData.accountName = scope.azure_link.account_name;
+            formData.accountKey = scope.azure_link.account_key;
+        }
+
+        if (scope.azure_link.auth_type == "sharedaccesssignature") {
+            formData.sharedAccessSignature = scope.azure_link.shared_access_signature;
+        }
+
+        if (scope.azure_link.auth_type == "managedidentityid") {
+            formData.managedIdentityId = scope.azure_link.managed_identity_id;
+        }
+
+        if (scope.azure_link.auth_type == "clientsecret") {
+            formData.clientId = scope.azure_link.client_id;
+            formData.tenantId = scope.azure_link.tenant_id;
+            formData.clientSecret = scope.azure_link.client_secret;
+        }
+
+        if (scope.azure_link.auth_type == "clientcertificate") {
+            formData.clientId = scope.azure_link.client_id;
+            formData.tenantId = scope.azure_link.tenant_id;
+            formData.clientCertificate = scope.azure_link.client_certificate;
+
+            if (scope.azure_link.is_client_certificate_password == true) {
+                formData.clientCertificatePassword = scope.azure_link.client_certificate_password;
+            }
+        }
     }
 
     return formData;
@@ -2580,6 +2612,35 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       scope.s3_link.access_key = apiData.secretAccessKey;
       scope.s3_link.region = apiData.region;
       scope.s3_link.endpoint = apiData.serviceEndpoint;
+    } else if (apiData.type == "azureblob" || apiData.type == "azuredatalake") {
+      // Based on the retrieved data, set the correct auth_type
+      if (apiData.accountName) {
+        scope.azure_link.auth_type = "sharedkey";
+      } else if (apiData.sharedAccessSignature) {
+        scope.azure_link.auth_type = "sharedaccesssignature";
+      } else if (apiData.managedIdentityId) {
+        scope.azure_link.auth_type = "managedidentityid";
+      } else if (apiData.clientSecret) {
+        scope.azure_link.auth_type = "clientsecret";
+      } else if (apiData.clientCertificate) {
+        scope.azure_link.auth_type = "clientcertificate";
+        if (apiData.clientCertificatePassword) {
+          scope.azure_link.is_client_certificate_password = true;
+        }
+      } else {
+        scope.azure_link_auth_type = "anonymous";
+      }
+
+      scope.azure_link.endpoint = apiData.endpoint;
+      scope.azure_link.account_name = apiData.accountName;
+      scope.azure_link.account_key = "";
+      scope.azure_link.shared_access_signature = "";
+      scope.azure_link.managed_identity_id = apiData.managedIdentityId;
+      scope.azure_link.client_id = apiData.clientId;
+      scope.azure_link.tenant_id = apiData.tenantId;
+      scope.azure_link.client_secret = "";
+      scope.azure_link.client_certificate = "";
+      scope.azure_link.client_certificate_password = "";
     }
   }
 

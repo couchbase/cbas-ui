@@ -63,6 +63,34 @@ licenses/APL2.txt.
               S3
             </label>
           </div>
+          <div>
+            <input
+               ng-disabled="!options.is_new"
+               type="radio"
+               value="azureblob"
+               id="azureblob_link"
+               ng-model="options.link_type">
+            <label
+               ng-disabled="!options.is_new"
+               for="azureblob_link"
+               class="checkbox">
+               Azure Blob
+            </label>
+          </div>
+          <div ng-if="isDeveloperPreview()">
+            <input
+              ng-disabled="!options.is_new"
+              type="radio"
+              value="azuredatalake"
+              id="azuredatalake_link"
+              ng-model="options.link_type">
+            <label
+              ng-disabled="!options.is_new"
+              for="azuredatalake_link"
+              class="checkbox">
+              Azure Data Lake
+            </label>
+          </div>
         </div>
       </div>
 
@@ -231,6 +259,207 @@ licenses/APL2.txt.
 
       </div>
 
+      <!-- Options for Azure Blob Link -->
+      <div ng-if="options.link_type == 'azureblob' || options.link_type == 'azuredatalake'">
+
+        <div class="formrow">
+          <label>Endpoint</label>
+          <input
+            ng-model="options.azure_link.endpoint"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="checkbox-list formrow">
+          <div>
+            <input
+              type="radio"
+              value="anonymous"
+              id="for_auth_type_anonymous"
+              ng-model="options.azure_link.auth_type">
+            <label
+              for="for_auth_type_anonymous"
+              class="checkbox">
+              Anonymous
+            </label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              value="sharedkey"
+              id="for_auth_type_sharedkey"
+              ng-model="options.azure_link.auth_type">
+            <label
+              for="for_auth_type_sharedkey"
+              class="checkbox">
+              Shared Key
+            </label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              value="sharedaccesssignature"
+              id="for_auth_type_sharedaccesssignature"
+              ng-model="options.azure_link.auth_type">
+            <label
+              for="for_auth_type_sharedaccesssignature"
+              class="checkbox">
+              Shared Access Signature
+            </label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              value="managedidentityid"
+              id="for_auth_type_managedidentityid"
+              ng-model="options.azure_link.auth_type">
+            <label
+              for="for_auth_type_managedidentityid"
+              class="checkbox">
+              Managed Identity ID
+            </label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              value="clientsecret"
+              id="for_auth_type_clientsecret"
+              ng-model="options.azure_link.auth_type">
+            <label
+              for="for_auth_type_clientsecret"
+              class="checkbox">
+              Client Secret
+            </label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              value="clientcertificate"
+              id="for_auth_type_clientcertificate"
+              ng-model="options.azure_link.auth_type">
+            <label
+              for="for_auth_type_clientcertificate"
+              class="checkbox">
+              Client Certificate
+            </label>
+          </div>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedkey'">
+          <label>Account Name</label>
+          <input
+            ng-model="options.azure_link.account_name"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            mn-autocomplete-off
+            autocomplete="one-time-code"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedkey'">
+          <label>Account Key</label>
+          <input
+            ng-model="options.azure_link.account_key"
+            type="password"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            mn-autocomplete-off
+            autocomplete="one-time-code"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedaccesssignature'">
+          <label>Shared Access Signature</label>
+          <input
+            ng-model="options.azure_link.shared_access_signature"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            mn-autocomplete-off
+            autocomplete="one-time-code"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'managedidentityid'">
+          <label>Managed Identity ID</label>
+          <input
+            ng-model="options.azure_link.managed_identity_id"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientsecret' ||
+                                    options.azure_link.auth_type == 'clientcertificate'">
+          <label>Client ID</label>
+          <input
+            ng-model="options.azure_link.client_id"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientsecret'">
+          <label>Client Secret</label>
+          <input
+            ng-model="options.azure_link.client_secret"
+            type="password"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            mn-autocomplete-off
+            autocomplete="one-time-code"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientcertificate'">
+          <label>Client Certificate</label>
+          <input
+            ng-model="options.azure_link.client_certificate"
+            type="password"
+            rows="4"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            mn-autocomplete-off
+            autocomplete="one-time-code"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientsecret' ||
+                                    options.azure_link.auth_type == 'clientcertificate'">
+          <label>Tenant ID</label>
+          <input
+            ng-model="options.azure_link.tenant_id"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientcertificate'">
+          <input
+            id="is_client_certificate_password"
+            ng-model="options.azure_link.is_client_certificate_password"
+            type="checkbox">
+          <label for="is_client_certificate_password">Certificate Password</label>
+        </div>
+        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientcertificate'
+                                    && options.azure_link.is_client_certificate_password == true">
+          <label>Client Certificate Password</label>
+          <input
+            ng-model="options.azure_link.client_certificate_password"
+            type="password"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            mn-autocomplete-off
+            autocomplete="one-time-code"
+            required>
+        </div>
+      </div>
     </div>
 
     <div class="panel-footer" ng-class="{spaced: !options.is_new}">

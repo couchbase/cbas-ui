@@ -24,6 +24,8 @@ export default cbasController;
     var statsRefreshInterval = 5000;
     var updateEditorSizes = _.throttle(updateEditorSizesInner, 100);
 
+    qc.isDeveloperPreview = function() {return cwQueryService.pools.isDeveloperPreview;};
+
     //console.log("Start controller at: " + new Date().toTimeString());
 
     //
@@ -1471,9 +1473,24 @@ export default cbasController;
         access_key: "",
         region: "",
         endpoint: ""
+      },
+      azure_link: {
+        account_name: "",
+        account_key: "",
+        shared_access_signature: "",
+        managed_identity_id: "",
+        client_id: "",
+        tenant_id: "",
+        client_secret: "",
+        client_certificate: "",
+        is_client_certificate_password: false,
+        client_certificate_password: "",
+        auth_type: "anonymous",
+        endpoint: ""
       }
     };
     var linkDialogScope = $rootScope.$new(true);
+    linkDialogScope.isDeveloperPreview = qc.isDeveloperPreview;
     linkDialogScope.options = linkOptions;
     linkDialogScope.change_encryption = function() {
       if (!linkDialogScope.options.couchbase_link.demand_encryption)
@@ -1489,6 +1506,12 @@ export default cbasController;
       linkDialogScope.options.couchbase_link.password = "";
       linkDialogScope.options.couchbase_link.client_key = "";
       linkDialogScope.options.s3_link.access_key = "";
+      linkDialogScope.options.azure_link.auth_type = "anonymous";
+      linkDialogScope.options.azure_link.account_key = "";
+      linkDialogScope.options.azure_link.shared_access_signature = "";
+      linkDialogScope.options.azure_link.client_secret = "";
+      linkDialogScope.options.azure_link.client_certificate = "";
+      linkDialogScope.options.azure_link.client_certificate_password = "";
 
       // bring up the dialog
       $uibModal.open({
