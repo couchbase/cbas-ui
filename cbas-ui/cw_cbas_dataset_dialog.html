@@ -31,7 +31,7 @@ licenses/APL2.txt.
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
       <div
          class="formrow"
-         ng-if="options.clusterBuckets && options.link_details.type != 's3'"
+         ng-if="options.clusterBuckets && !isExternalCollection(options.link_details.type)"
          ng-disabled="!options.is_new">
         <qw-collection-menu
            label="Source"
@@ -52,7 +52,7 @@ licenses/APL2.txt.
         <input ng-model="options.selected_collection" type="text" autocorrect="off" ng-disabled="!options.is_new"
                spellcheck="false" autocapitalize="off" placeholder="Collection (omit for pre-7.0 clusters)">
       </div>
-      <div class="formrow" ng-if="options.link_details.type == 's3'">
+      <div class="formrow" ng-if="isExternalCollection(options.link_details.type)">
         <label for="cluster_reference_name">Bucket Name</label>
         <input
            ng-disabled="!options.is_new"
@@ -63,7 +63,7 @@ licenses/APL2.txt.
            autocapitalize="off" required>
       </div>
 
-      <div class="formrow" ng-if="options.link_details.type != 's3'">
+      <div class="formrow" ng-if="!isExternalCollection(options.link_details.type)">
         <label>Where (optional)</label>
         <textarea
            ng-disabled="!options.is_new"
@@ -76,10 +76,10 @@ licenses/APL2.txt.
         </textarea>
       </div>
 
-      <div ng-if="options.link_details.type == 's3'">
+      <div ng-if="isExternalCollection(options.link_details.type)">
         <div class="formrow">
-          <label>S3 Path</label>
-          <input ng-model="options.external_dataset.s3_path" type="text" autocorrect="off"
+          <label>Path</label>
+          <input ng-model="options.external_dataset.path" type="text" autocorrect="off"
                  spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new">
         </div>
 
@@ -93,7 +93,7 @@ licenses/APL2.txt.
         </div>
 
         <div class="formrow margin-left-1"
-             ng-if="options.link_details.type == 's3' && options.external_dataset.format != 'json'">
+             ng-if="isExternalCollection(options.link_details.type) && requireTypeDefinition(options.external_dataset.format)">
           <label style="display: inline-block">Type definition</label>
           <span class="fa-stack icon-info"
                 uib-tooltip="types for fields in file, e.g., 'id BIGINT NOT UNKNOWN, year BIGINT, comment STRING, fraction DOUBLE, accepted BOOLEAN'">
@@ -112,7 +112,7 @@ licenses/APL2.txt.
         </div>
 
         <div class="formrow margin-left-1"
-             ng-if="showInlineTypeDefinition(options.external_dataset.format)"
+             ng-if="requireTypeDefinition(options.external_dataset.format)"
              title="Does file contain a header line with field names?" ng-click="options.toggle_header()">
           <input ng-model="options.external_dataset.header" type="checkbox"
                  name="header"
@@ -121,7 +121,7 @@ licenses/APL2.txt.
         </div>
 
         <div class="formrow margin-left-1"
-             ng-if="showInlineTypeDefinition(options.external_dataset.format)">
+             ng-if="requireTypeDefinition(options.external_dataset.format)">
           <label>Null Value</label>
           <input ng-model="options.external_dataset.radio_null_value"
                  id="emptyString"

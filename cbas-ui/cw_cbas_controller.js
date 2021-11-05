@@ -1600,9 +1600,6 @@ export default cbasController;
     //
 
     var datasetDialogScope = $rootScope.$new(true);
-    datasetDialogScope.showInlineTypeDefinition = function(format) {
-        return format == 'csv' || format == 'tsv';
-    }
 
     var dataset_options = {
       dataset_name: "",
@@ -1614,7 +1611,7 @@ export default cbasController;
       selected_collection: "",
       proxy: null, // proxy for remote cluster
       external_dataset: {
-        s3_path: "",
+        path: "",
         format: "json",
         header: true,
         inline_type_def: "",
@@ -1778,6 +1775,8 @@ export default cbasController;
       dataset_options.link_details = cwQueryService.getCachedLinkInfo(link.DVName,link.LinkName);
       dataset_options.external_dataset.radio_null_value = "empty_string";
       datasetDialogScope.options = dataset_options;
+      datasetDialogScope.isExternalCollection = cwConstantsService.isExternalCollection;
+      datasetDialogScope.requireTypeDefinition = cwConstantsService.requireTypeDefinition;
 
       // bring up the dialog
       $uibModal.open({
@@ -1787,32 +1786,32 @@ export default cbasController;
         .then(function success(resp) {
           var dv = cwQueryService.dataverses.find(dv => dv.DataverseName == link.DVName);
           var dvName = dv.dataverseQueryName || link.DVName;
-          var s3Link = (dataset_options.link_details && dataset_options.link_details.type == "s3");
-          var external = s3Link ? " EXTERNAL " : "";
+          var isExternalLink = dataset_options.link_details && cwConstantsService.isExternalCollection(dataset_options.link_details.type);
+          var external = isExternalLink ? " EXTERNAL " : "";
           var queryText = "CREATE " + external + " DATASET " + dvName + '.`' + dataset_options.dataset_name + '`';
 
-          // for S3 links, csv and tsv files should have an inline type def
-          if (s3Link && dataset_options.external_dataset && dataset_options.external_dataset.format != "json")
+          // for external links, csv and tsv files should have an inline type def
+          if (isExternalLink && dataset_options.external_dataset && cwConstantsService.requireTypeDefinition(dataset_options.external_dataset.format))
             queryText += '(' + dataset_options.external_dataset.inline_type_def + ') ';
 
           queryText += " ON `" + dataset_options.selected_bucket;
 
           // pre-7.0 remote clusters won't have scope and collection.
-          if (!s3Link && dataset_options.selected_scope && dataset_options.selected_collection)
+          if (!isExternalLink && dataset_options.selected_scope && dataset_options.selected_collection)
             queryText += "`.`" + dataset_options.selected_scope + "`.`" +  dataset_options.selected_collection;
 
           queryText += "` at " + dvName + ".`" + link.LinkName + "`";
 
-          // no where for S3
-          if (dataset_options.where && !s3Link)
+          // no where for external datasets
+          if (dataset_options.where && !isExternalLink)
             queryText += " WHERE " + dataset_options.where;
 
           // external dataset?
-          if (s3Link) {
-            if (dataset_options.external_dataset.s3_path)
-              queryText += ' USING "' + dataset_options.external_dataset.s3_path + '"';
+          if (isExternalLink) {
+            if (dataset_options.external_dataset.path)
+              queryText += ' USING "' + dataset_options.external_dataset.path + '"';
             queryText += ' WITH {"format": "' + dataset_options.external_dataset.format + '"';
-            if (dataset_options.external_dataset.format != "json") {
+            if (cwConstantsService.requireTypeDefinition(dataset_options.external_dataset.format)) {
               queryText += ', "header": ' + dataset_options.external_dataset.header;
               if (dataset_options.external_dataset.radio_null_value == 'empty_string') {
                 queryText += ', "null": ""';
