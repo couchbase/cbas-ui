@@ -1798,6 +1798,7 @@ export default cbasController;
       dataset_options.link_name = link.LinkName;
       dataset_options.link_details = cwQueryService.getCachedLinkInfo(link.DVName,link.LinkName);
       dataset_options.external_dataset.radio_null_value = "empty_string";
+      datasetDialogScope.isDeveloperPreview = qc.isDeveloperPreview;
       datasetDialogScope.options = dataset_options;
       datasetDialogScope.isExternalCollection = cwConstantsService.isExternalCollection;
       datasetDialogScope.requireTypeDefinition = cwConstantsService.requireTypeDefinition;
