@@ -1754,7 +1754,7 @@ export default cbasController;
             var details = selection.split('`');
             queries.push("alter collection `" + details[0] + "`.`" +
               details[1] + '`.`' + details[2] + '` enable analytics;');
-            collections.push('`' + details[0] + '`.`' + details[1] + '`.`' + details[2] + '`');
+            collections.push(details[0] + '.' + details[1] + '.' + details[2]);
           }
           executeQueryList(queries,0, collections);
         },
