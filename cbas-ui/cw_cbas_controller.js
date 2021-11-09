@@ -18,8 +18,8 @@ export default cbasController;
 
   function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService,
                           validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService,
-                          mnServersService, $interval, qwJsonCsvService, jQuery, qwCollectionsService, qwDialogService) {
-    var $ = jQuery;
+                          mnServersService, $interval, qwJsonCsvService, mnjQuery, qwCollectionsService, qwDialogService) {
+    var $ = mnjQuery;
     var qc = this;
     var statsRefreshInterval = 5000;
     var updateEditorSizes = _.throttle(updateEditorSizesInner, 100);
