@@ -138,6 +138,7 @@ export default cbasController;
     qc.createNewDataset = createNewDataset;
     qc.editDataset = editDataset;
     qc.dropDataset = dropDataset;
+    qc.dropView = dropView;
     qc.dropScope = dropScope;
 
     //
@@ -1880,6 +1881,26 @@ export default cbasController;
         .then(function yes(resp) {
           if (resp == "ok") {
             var queryText = "drop dataset " + dataset.dataverseQueryName + '.`' + dataset.id + '`';
+
+            cwQueryService.executeQueryUtil(queryText, false, false)
+              .then(function success() {
+                  qc.updateBuckets();
+                },
+                function error(resp) {
+                  console.log("Got drop collection error: " + JSON.stringify(resp));
+                  //var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping collection: "));
+                });
+          }
+        }, function no() {return Promise.resolve("no")});
+    }
+
+    function dropView(dataverse, view) {
+      cwQueryService.showConfirmationDialog("Confirm Drop Analytics View",
+          "Warning, this will drop the analytics view: ",[view.id])
+        .then(function yes(resp) {
+          if (resp == "ok") {
+            var queryText = "drop analytics view " + dataverse.dataverseQueryName + '.`' + view.id + '`';
 
             cwQueryService.executeQueryUtil(queryText, false, false)
               .then(function success() {

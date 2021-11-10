@@ -94,6 +94,7 @@ function getCwConstantsService() {
     "  ds.`Filter` AS `filter`, " +
     "  ds.LinkName,  " +
     "  ds.DatasetType,  " +
+    "  ds.ViewDetails,  " +
     "  concat2(', ', (select value FieldName || ' ' || (" +
     "          CASE WHEN lower(FieldType) = 'int64' THEN 'BIGINT'" +
     "               ELSE upper(FieldType) END) || (" +
@@ -114,7 +115,7 @@ function getCwConstantsService() {
     "  Metadata.`Dataset` AS ds left join Metadata.Datatype t on" +
     "  ds.DataverseName = t.DataverseName and t.DatatypeName = ds.DatatypeName " +
     "WHERE " +
-    "  (ds.BucketName IS NOT missing OR  ds.DatasetType = 'EXTERNAL')" +
+    "  (ds.BucketName IS NOT missing OR  ds.DatasetType = 'EXTERNAL' OR ds.DatasetType = 'VIEW')" +
     "UNION ALL " +
     "SELECT " +
     "  dv.DataverseName, " +
@@ -164,7 +165,7 @@ function getCwConstantsService() {
     "FROM " +
     "  Metadata.`Dataset` AS ds " +
     "WHERE " +
-    "  (BucketName IS NOT missing OR  DatasetType = 'EXTERNAL')" +
+    "  (BucketName IS NOT missing OR DatasetType = 'EXTERNAL')" +
     "UNION ALL " +
     "SELECT " +
     "  dv.DataverseName, " +

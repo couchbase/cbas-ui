@@ -1657,30 +1657,42 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             record.external = false;
             record.remaining = cwQueryService.datasetUnknownState;
             constructIndexesKeys(record);
+            addToken(record.id, "collection");
           } else if (record.DatasetType === "EXTERNAL") {
             record.external = true;
             record.remaining = cwQueryService.externalDatasetState;
             parseExternalDetails(record);
+            addToken(record.id, "collection");
+          } else if (record.DatasetType === "VIEW") {
+            // views are part of a dataverse but not a link
+            var dataverse = cwQueryService.dataverses.find(dv => dv.DataverseName == record.DataverseName);
+            dataverse.views = dataverse.views || [];
+            dataverse.views.push(record);
+            record.external = false;
+            record.view = true;
+            addToken(record.id, "view");
           }
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;
           record.dataverseDisplayName = record.DataverseName.split('/').join('.');
           record.dataverseQueryName = '`' + record.DataverseName.split('/').join('`.`') + '`';
           cwQueryService.shadows.push(record);
-          addToken(record.id, "collection");
 
-          // every dataset is part of a dataverse, but it can use a link from another
+          // every non-view dataset is part of a dataverse, but it can use a link from another
           // dataverse. Thus we must keep track of all the links used by any dataset in
           // the dataverse, even if the link is in another dataverse.
-          var theLink = cwQueryService.dataverse_links[record.DataverseName]
-            .find(link => link.LinkName == record.LinkName && link.DVName == record.linkDataverseName);
-          if (theLink == null) { // link isn't recorded in this dataverse yet, look for it in link's dataverse
-            theLink = cwQueryService.dataverse_links[record.linkDataverseName].find(link => link.LinkName == record.LinkName);
-            if (theLink)
-              cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+          if (record.DatasetType != "VIEW") {
+            var theLink = cwQueryService.dataverse_links[record.DataverseName]
+                .find(link => link.LinkName == record.LinkName && link.DVName == record.linkDataverseName);
+            if (theLink == null) { // link isn't recorded in this dataverse yet, look for it in link's dataverse
+              theLink = cwQueryService.dataverse_links[record.linkDataverseName].find(link => link.LinkName == record.LinkName);
+              if (theLink)
+                cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+            }
+            
+            // be able to access the link from the shadow record
+            record.link = theLink;
+            theLink.remaining = record.remaining;
           }
-          // be able to access the link from the shadow record
-          record.link = theLink;
-          theLink.remaining = record.remaining;
         }
       }
     }

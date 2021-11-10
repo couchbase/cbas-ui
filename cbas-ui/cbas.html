@@ -361,6 +361,52 @@ licenses/APL2.txt.
                 </div>
               </div>
             </div>
+            <!-- Do we have any views? -->
+            <div ng-if="dataverse.views && dataverse.views.length">
+              <div class="row margin-left-half margin-right-half margin-top-half">
+                <span class="row flex-left ellipsis">
+                  <h6 class="ellipsis margin-right-quarter"
+                      ng-class="{'cursor-pointer' : link.LinkName != 'Local'}"
+                      ng-click="link.LinkName != 'Local' && qc.editLink(link,dataverse)">
+                    <span class="ellipsis" ng-if="link.DVName != dataverse.DataverseName">
+                      Views
+                    </span>
+                  </h6>
+                </span>
+              </div>
+
+              <div ng-repeat="view in dataverse.views">
+                <div ng-init="view.expanded = false">
+                  <div class="row margin-left-half margin-top-half">
+
+                    <div class="disclosure padding-left-1 ellipsis" ng-click="shadow.expanded = !shadow.expanded">
+                      <span
+                         class="icon fa-database text-smaller grayblue-2 margin-right-quarter"></span>
+                      {{view.id}}
+                    </div>
+
+                  </div>
+                  <!-- expando section for view details -------------------------- -->
+                  <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
+                    <p ng-show="view.TypeString" class="margin-bottom-half" title="view type string">
+                      {{view.TypeString}}
+                    </p>
+                    <p ng-show="view.ViewDetails && view.ViewDetails.Definition" class="margin-bottom-half" title="view definition">
+                      {{view.ViewDetails.Definition}}
+                    </p>
+                    <p>
+                      <a ng-click="qc.dropView(dataverse,view)"
+                         class="inline margin-bottom-half margin-top-half">
+                        drop analytics view
+                      </a>
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
           </section>
           <a ng-click="qc.toggleEmptyScopes()" class="text-smallish block width-12 text-center margin-right-half"
              title="Show/hide analytics scopes & links that have no collections"
