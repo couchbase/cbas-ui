@@ -1488,6 +1488,9 @@ export default cbasController;
         client_certificate_password: "",
         auth_type: "anonymous",
         endpoint: ""
+      },
+      gcs_link: {
+        json_credentials: ""
       }
     };
     var linkDialogScope = $rootScope.$new(true);
@@ -1513,6 +1516,8 @@ export default cbasController;
       linkDialogScope.options.azure_link.client_secret = "";
       linkDialogScope.options.azure_link.client_certificate = "";
       linkDialogScope.options.azure_link.client_certificate_password = "";
+      linkDialogScope.options.gcs_link.auth_type = "anonymous";
+      linkDialogScope.options.gcs_link.json_credentials = "";
 
       // bring up the dialog
       $uibModal.open({

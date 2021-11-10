@@ -91,6 +91,20 @@ licenses/APL2.txt.
               Azure Data Lake
             </label>
           </div>
+          <div ng-if="isDeveloperPreview()">
+            <input
+              ng-disabled="!options.is_new"
+              type="radio"
+              value="gcs"
+              id="gcs_link"
+              ng-model="options.link_type">
+            <label
+              ng-disabled="!options.is_new"
+              for="gcs_link"
+              class="checkbox">
+              Google Cloud Storage
+            </label>
+          </div>
         </div>
       </div>
 
@@ -272,6 +286,7 @@ licenses/APL2.txt.
             autocapitalize="off"
             required>
         </div>
+        <label>Authentication Method</label>
         <div class="checkbox-list formrow">
           <div>
             <input
@@ -282,7 +297,7 @@ licenses/APL2.txt.
             <label
               for="for_auth_type_anonymous"
               class="checkbox">
-              Anonymous
+              Anonymous (No credentials/authentication)
             </label>
           </div>
           <div>
@@ -458,6 +473,48 @@ licenses/APL2.txt.
             mn-autocomplete-off
             autocomplete="one-time-code"
             required>
+        </div>
+      </div>
+
+      <!-- Options for Google Cloud Storage -->
+      <div ng-if="options.link_type == 'gcs'">
+        <label>Authentication Method</label>
+        <div class="checkbox-list formrow">
+          <div>
+            <input
+              type="radio"
+              value="anonymous"
+              id="for_gcs_auth_type_anonymous"
+              ng-model="options.gcs_link.auth_type">
+            <label
+              for="for_gcs_auth_type_anonymous"
+              class="checkbox">
+              Anonymous (No credentials/authentication)
+            </label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              value="jsoncredentials"
+              id="for_auth_type_jsoncredentials"
+              ng-model="options.gcs_link.auth_type">
+            <label
+              for="for_auth_type_jsoncredentials"
+              class="checkbox">
+              JSON Credentials
+            </label>
+          </div>
+        </div>
+        <div class="formrow" ng-if="options.gcs_link.auth_type == 'jsoncredentials'">
+          <label>JSON Credentials</label>
+          <textarea
+              rows="4"
+              autocorrect="off"
+              autocompleterg="off"
+              spellcheck="false"
+              ng-model="options.gcs_link.json_credentials"
+              placeholder="Copy/paste the json credentials information into this field.">
+          </textarea>
         </div>
       </div>
     </div>

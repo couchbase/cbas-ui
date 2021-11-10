@@ -211,7 +211,7 @@ function getCwConstantsService() {
   cwConstantsService.maxWarnings = 10;
 
   // external collection constants start
-  cwConstantsService.externalCollectionTypes = ['s3', 'azureblob', 'azuredatalake'];
+  cwConstantsService.externalCollectionTypes = ['s3', 'azureblob', 'azuredatalake', 'gcs'];
   cwConstantsService.supportedExternalCollectionFormats = ['json', 'csv', 'tsv'];
 
   cwConstantsService.isExternalCollection = function (type) {
