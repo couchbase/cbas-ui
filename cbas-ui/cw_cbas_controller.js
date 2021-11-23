@@ -1807,6 +1807,7 @@ export default cbasController;
       datasetDialogScope.options = dataset_options;
       datasetDialogScope.isExternalCollection = cwConstantsService.isExternalCollection;
       datasetDialogScope.requireTypeDefinition = cwConstantsService.requireTypeDefinition;
+      datasetDialogScope.isParquetSupported = cwConstantsService.isParquetSupported;
 
       // bring up the dialog
       $uibModal.open({

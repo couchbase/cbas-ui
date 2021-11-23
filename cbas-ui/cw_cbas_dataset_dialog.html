@@ -89,7 +89,7 @@ licenses/APL2.txt.
             <option>json</option>
             <option>csv</option>
             <option>tsv</option>
-            <option ng-if="isDeveloperPreview()">parquet</option>
+            <option ng-if="isDeveloperPreview() && isParquetSupported(options.link_details.type)">parquet</option>
           </select>
         </div>
 

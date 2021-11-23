@@ -213,6 +213,7 @@ function getCwConstantsService() {
   // external collection constants start
   cwConstantsService.externalCollectionTypes = ['s3', 'azureblob', 'azuredatalake', 'gcs'];
   cwConstantsService.supportedExternalCollectionFormats = ['json', 'csv', 'tsv'];
+  cwConstantsService.linkTypesSupportingParquet = ['s3', 'azureblob'];
 
   cwConstantsService.isExternalCollection = function (type) {
     return cwConstantsService.externalCollectionTypes.includes(type)
@@ -220,7 +221,11 @@ function getCwConstantsService() {
 
   cwConstantsService.requireTypeDefinition = function (format) {
     return ['csv', 'tsv'].includes(format);
-  }
+  };
+
+  cwConstantsService.isParquetSupported = function (linkType) {
+    return cwConstantsService.linkTypesSupportingParquet.includes(linkType);
+  };
   // external collection constants end
 
   //
