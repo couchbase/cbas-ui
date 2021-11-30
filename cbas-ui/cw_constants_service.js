@@ -201,7 +201,8 @@ function getCwConstantsService() {
                                                      "CREATE DATASET", "CREATE EXTERNAL DATASET", "DROP DATASET", "CREATE INDEX",
                                                      "DROP INDEX", "CREATE ANALYTICS COLLECTION", "DROP ANALYTICS COLLECTION",
                                                      "CREATE ANALYTICS SCOPE", "DROP ANALYTICS SCOPE", "ALTER COLLECTION",
-                                                     "CREATE ANALYTICS VIEW", "DROP ANALYTICS VIEW"];
+                                                     "CREATE ANALYTICS VIEW", "DROP ANALYTICS VIEW",
+                                                     "CREATE OR REPLACE ANALYTICS VIEW"];
 
   cwConstantsService.healthCheckURL = "../_p/cbas/admin/ping";
 
