@@ -215,7 +215,7 @@ function getCwConstantsService() {
   // external collection constants start
   cwConstantsService.externalCollectionTypes = ['s3', 'azureblob', 'azuredatalake', 'gcs'];
   cwConstantsService.supportedExternalCollectionFormats = ['json', 'csv', 'tsv'];
-  cwConstantsService.linkTypesSupportingParquet = ['s3', 'azureblob'];
+  cwConstantsService.linkTypesSupportingParquet = ['s3', 'azureblob', 'azuredatalake'];
 
   cwConstantsService.isExternalCollection = function (type) {
     return cwConstantsService.externalCollectionTypes.includes(type)
