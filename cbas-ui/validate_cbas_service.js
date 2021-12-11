@@ -16,7 +16,7 @@ export default 'validateCbasService';
 
 angular
   .module('validateCbasService', [mnPermissions, cwConstantsService])
-  .factory('validateCbasService', function ($http, mnPermissions, cwConstantsService) {
+  .factory('validateCbasService', ["$http", "mnPermissions", "cwConstantsService", function ($http, mnPermissions, cwConstantsService) {
         var _checked = false;              // have we checked validity yet?
         var _valid = false;                // do we have a valid query node?
         var _InProgress = false;    // are we retrieving the list of buckets?
@@ -112,4 +112,4 @@ angular
 
     // now return the service
         return service;
-      });
+      }]);

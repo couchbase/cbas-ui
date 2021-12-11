@@ -27,7 +27,7 @@ import { QwQueryPlanService }     from "../query/angular-services/qw.query.plan.
 
 angular
   .module(app)
-  .config(function (mnPluggableUiRegistryProvider, mnPermissionsProvider) {
+  .config(["mnPluggableUiRegistryProvider", "mnPermissionsProvider", function (mnPluggableUiRegistryProvider, mnPermissionsProvider) {
 
     ace.config.set('basePath','/ui/libs/ace');
 
@@ -46,7 +46,7 @@ angular
       ]
     })
 
-  });
+  }]);
 
 class CbasUI {
   static get annotations() { return [

@@ -12,7 +12,7 @@ import {is} from 'ramda';
 import mnStatsDesc from "mn_admin/mn_statistics_description";
 
 export default cwCbasMonitorController;
-
+cwCbasMonitorController.$inject = ["$scope", "$timeout", "cwQueryService", "validateCbasService", "mnStatisticsNewService", "mnPermissions", "mnPoolDefault"];
 function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions, mnPoolDefault) {
   var qmc = this;
 

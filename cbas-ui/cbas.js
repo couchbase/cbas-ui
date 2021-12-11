@@ -78,7 +78,7 @@ angular.module('cwCbas', [
   .factory('qwQueryService', downgradeInjectable(QwQueryService))
   .factory('qwQueryPlanService', downgradeInjectable(QwQueryPlanService))
   .factory('qwCollectionsService', downgradeInjectable(QwCollectionsService))
-  .config(function($stateProvider, $transitionsProvider) {
+  .config(["$stateProvider", "$transitionsProvider", function($stateProvider, $transitionsProvider) {
 
     $stateProvider
       .state('app.admin.cbas', {
@@ -128,6 +128,6 @@ angular.module('cwCbas', [
     //        ]
     //      })
 
-  })
+  }])
   .controller('cwCbasController', cbasController)
   .controller('cwCbasMonitorController', cwCbasMonitorController);

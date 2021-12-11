@@ -15,10 +15,8 @@ import saveAs from "file-saver";
 import { BehaviorSubject }              from 'rxjs';
 
 export default cbasController;
-
-  function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService,
-                          validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService,
-                          mnServersService, $interval, qwJsonCsvService, mnjQuery, qwCollectionsService, qwDialogService) {
+cbasController.$inject = ["$rootScope", "$stateParams", "$uibModal", "$timeout", "cwQueryService", "validateCbasService", "mnPools", "$scope", "cwConstantsService", "mnPoolDefault", "mnAlertsService", "mnServersService", "$interval", "qwJsonCsvService", "mnjQuery", "qwCollectionsService", "qwDialogService"];
+function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService, mnServersService, $interval, qwJsonCsvService, mnjQuery, qwCollectionsService, qwDialogService) {
     var $ = mnjQuery;
     var qc = this;
     var statsRefreshInterval = 5000;

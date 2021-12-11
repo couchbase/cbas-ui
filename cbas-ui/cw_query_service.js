@@ -28,9 +28,8 @@ angular
   .factory('cwQueryService', cwQueryServiceFactory);
 
 
-function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService,
-                               mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault,
-                               mnPools, qwDialogService) {
+cwQueryServiceFactory.$inject = ["$rootScope", "$q", "$uibModal", "$timeout", "$http", "validateCbasService", "mnPendingQueryKeeper", "cwConstantsService", "qwQueryPlanService", "mnPoolDefault", "mnPools", "qwDialogService"];
+function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService, mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools, qwDialogService) {
 
   var cwQueryService = {};
   mnPools.get().then(function (pools) {cwQueryService.pools = pools;});
@@ -1688,7 +1687,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               if (theLink)
                 cwQueryService.dataverse_links[record.DataverseName].push(theLink);
             }
-            
+
             // be able to access the link from the shadow record
             record.link = theLink;
             theLink.remaining = record.remaining;
