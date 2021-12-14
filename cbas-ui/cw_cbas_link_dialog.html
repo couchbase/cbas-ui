@@ -111,122 +111,215 @@ licenses/APL2.txt.
 
       <!-- Options for Couchbase Links -->
       <div ng-if="options.link_type == 'couchbase'">
-      <div class="formrow">
-        <label for="cluster_reference_hostname" class="inline">Remote IP/Hostname</label>
-        <span
-           class="fa-stack icon-info"
-           uib-tooltip="This is the hostname or IP address of a node in the remote cluster you want to link. IPv6 addresses need to be enclosed in square brackets."
-           tooltip-placement="auto right">
-          <span class="icon fa-circle-thin fa-stack-2x"></span>
-          <span class="icon fa-info fa-stack-1x"></span>
-        </span>
-        <input
-           ng-model="options.couchbase_link.hostname"
-           id="cluster_reference_hostname"
-           type="text"
-           autocorrect="off"
-           spellcheck="false"
-           autocapitalize="off"
-           required>
-      </div>
-      <div class="formrow">
-        <label>Username for Remote Cluster</label>
-        <input
-           ng-model="options.couchbase_link.username"
-           type="text"
-           autocorrect="off"
-           spellcheck="false"
-           autocapitalize="off">
-      </div>
-      <div class="formrow">
-        <label>Password</label>
-        <input
-           ng-model="options.couchbase_link.password"
-           type="password"
-           autocorrect="off"
-           spellcheck="false"
-           autocomplete="one-time-code"
-           mn-autocomplete-off>
-      </div>
+        <div class="formrow">
+          <label for="cluster_reference_hostname" class="inline">Remote IP/Hostname</label>
+          <span
+             class="fa-stack icon-info"
+             uib-tooltip="This is the hostname or IP address of a node in the remote cluster you want to link. IPv6 addresses need to be enclosed in square brackets."
+             tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <input
+             ng-model="options.couchbase_link.hostname"
+             id="cluster_reference_hostname"
+             type="text"
+             autocorrect="off"
+             spellcheck="false"
+             autocapitalize="off"
+             required>
+        </div>
 
-      <!-- encryption options -->
-      <div
-         class="formrow checkbox-list">
-        <input
-           ng-model="options.couchbase_link.demand_encryption"
-           ng-click="change_encryption()"
-           id="for_encryption_enable"
-           type="checkbox">
-        <label for="for_encryption_enable" class="margin-right-zero">
-          Enable Secure Connection
-        </label>
-        <span
-           class="fa-stack icon-info"
-           uib-tooltip="SCRAM-SHA will be employed to secure only the password
-          (if Half is selected), or will encrypt both data and password using
-          TLS (if Full is selected)."
-           tooltip-placement="auto top">
-          <span class="icon fa-circle-thin fa-stack-2x"></span>
-          <span class="icon fa-info fa-stack-1x"></span>
-        </span>
-      </div>
-      <div class="formrow" ng-show="options.couchbase_link.demand_encryption">
-        <div class="checkbox-list formrow">
-          <div>
-            <input
-               type="radio"
-               value="half"
-               id="for_encription_type_half"
-               ng-model="options.couchbase_link.encryption_type">
-            <label
-               for="for_encription_type_half"
-               class="checkbox">
-              Half (secure password with SCRAM-SHA)
-            </label>
-          </div>
-          <div>
-            <input
-               type="radio"
-               value="full"
-               id="for_encription_type_full"
-               ng-model="options.couchbase_link.encryption_type">
-            <label
-               for="for_encription_type_full"
-               class="checkbox">
-              Full (TLS encrypt password and data)
-            </label>
+        <div class="formrow">
+          <label>Encryption Type</label>
+          <div class="checkbox-list formrow">
+            <div>
+              <input
+                type="radio"
+                value="none"
+                id="for_encryption_type_none"
+                ng-model="options.couchbase_link.encryption_type">
+              <label
+                for="for_encryption_type_none"
+                class="checkbox">
+                None (password is not secured)
+              </label>
+            </div>
+            <div>
+              <input
+                 type="radio"
+                 value="half"
+                 id="for_encryption_type_half"
+                 ng-model="options.couchbase_link.encryption_type">
+              <label
+                 for="for_encryption_type_half"
+                 class="checkbox">
+                Half (secure password with SCRAM-SHA)
+              </label>
+            </div>
+            <div>
+              <input
+                 type="radio"
+                 value="full_password"
+                 id="for_encryption_type_full_password"
+                 ng-model="options.couchbase_link.encryption_type">
+              <label
+                 for="for_encryption_type_full_password"
+                 class="checkbox">
+                Full (using credentials)
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                value="full_client_certificate"
+                id="for_encryption_type_full_client_certificate"
+                ng-model="options.couchbase_link.encryption_type">
+              <label
+                for="for_encryption_type_full_client_certificate"
+                class="checkbox">
+                Full (using client certificate)
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                value="full_encrypted_client_certificate"
+                id="for_encryption_type_full_encrypted_client_certificate"
+                ng-model="options.couchbase_link.encryption_type">
+              <label
+                for="for_encryption_type_full_encrypted_client_certificate"
+                class="checkbox">
+                Full (using encrypted client certificate)
+              </label>
+            </div>
           </div>
         </div>
-        <div class="formrow" ng-if="options.couchbase_link.encryption_type == 'full'">
+
+        <div class="formrow"  ng-if="showUsernameAndPasswordFields(options.couchbase_link.encryption_type)">
+          <label>Username for Remote Cluster</label>
+          <input
+            ng-model="options.couchbase_link.username"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow" ng-if="showUsernameAndPasswordFields(options.couchbase_link.encryption_type)">
+          <label>Password</label>
+          <input
+            ng-model="options.couchbase_link.password"
+            type="password"
+            autocorrect="off"
+            spellcheck="false"
+            autocomplete="one-time-code"
+            mn-autocomplete-off
+            required>
+        </div>
+        <div class="formrow" ng-if="showClusterCertificateField(options.couchbase_link.encryption_type)">
+          <label>Remote Cluster Certificate</label>
           <textarea
              rows="4"
              autocorrect="off"
              autocompleterg="off"
              spellcheck="false"
              ng-model="options.couchbase_link.certificate"
-             placeholder="Copy/paste the certificate information from your remote cluster into this field. You can find the certificate information on the Couchbase Web Console in the security area.">
+             placeholder="Copy/paste the certificate information from your remote cluster into this field. You can find the certificate information on the Couchbase Web Console in the security area."
+             required>
           </textarea>
         </div>
-        <div class="formrow" ng-if="options.couchbase_link.encryption_type == 'full'">
+        <div class="formrow" ng-if="showClientCertificateField(options.couchbase_link.encryption_type)">
+          <label>Client Certificate</label>
           <textarea
              rows="4"
              autocorrect="off"
              autocompleterg="off"
              spellcheck="false"
              ng-model="options.couchbase_link.client_certificate"
-             placeholder="Client Certificate">
+             placeholder="Client Certificate"
+             required>
           </textarea>
         </div>
-        <textarea
-           ng-if="options.couchbase_link.encryption_type == 'full'"
-           rows="4"
-           autocorrect="off"
-           autocompleterg="off"
-           spellcheck="false"
-           ng-model="options.couchbase_link.client_key"
-           placeholder="Client Key">
-        </textarea>
-      </div>
+        <div class="formrow" ng-if="showClientCertificateField(options.couchbase_link.encryption_type)">
+          <label>Client Key</label>
+          <textarea
+             rows="4"
+             autocorrect="off"
+             autocompleterg="off"
+             spellcheck="false"
+             ng-model="options.couchbase_link.client_key"
+             placeholder="Client Key"
+             required>
+          </textarea>
+        </div>
+        <div class="checkbox-list formrow" ng-if="showPassphraseField(options.couchbase_link.encryption_type)">
+          <label>Passphrase Type</label>
+          <div>
+            <input
+              type="radio"
+              value="plain"
+              id="for_passphrase_type_plain"
+              ng-model="options.couchbase_link.client_key_passphrase.type">
+            <label
+              for="for_passphrase_type_plain"
+              class="checkbox">
+              Plain
+            </label>
+            <input
+              type="radio"
+              value="rest"
+              id="for_passphrase_type_rest"
+              ng-model="options.couchbase_link.client_key_passphrase.type">
+            <label
+              for="for_passphrase_type_rest"
+              class="checkbox">
+              REST
+            </label>
+          </div>
+        </div>
+        <div ng-if="showPlainPassphraseFields(options.couchbase_link.encryption_type, options.couchbase_link.client_key_passphrase.type)">
+          <div class="formrow">
+            <label>Password</label>
+            <input
+              ng-model="options.couchbase_link.client_key_passphrase.password"
+              autocorrect="off"
+              spellcheck="false"
+              mn-autocomplete-off
+              type="password"
+              name="client_key_passphrase_password"
+              autocomplete="one-time-code"
+              required>
+          </div>
+        </div>
+        <div ng-if="showRestPassphraseFields(options.couchbase_link.encryption_type, options.couchbase_link.client_key_passphrase.type)">
+          <div class="formrow" ng-if="options.couchbase_link.client_key_passphrase.type == 'rest'">
+            <label>URL</label>
+            <input
+              ng-model="options.couchbase_link.client_key_passphrase.url"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              required>
+          </div>
+          <div class="formrow" ng-if="options.couchbase_link.client_key_passphrase.type == 'rest'">
+              <label>Timeout</label>
+              <input
+                ng-model="options.couchbase_link.client_key_passphrase.timeout"
+                type="number"
+                autocorrect="off"
+                spellcheck="false"
+                autocapitalize="off"
+                required>
+          </div>
+          <div class="formrow" ng-if="options.couchbase_link.client_key_passphrase.type == 'rest'"
+               ng-click="options.couchbase_link.client_key_passphrase.https_opts.verify_peer = !options.couchbase_link.client_key_passphrase.https_opts.verify_peer">
+            <input ng-model="options.couchbase_link.client_key_passphrase.https_opts.verify_peer" type="checkbox"
+                   name="verify_peer">
+            <label for="verify_peer">Verify Peer</label>
+          </div>
+        </div>
       </div>
 
       <!-- Options for S3 Links -->

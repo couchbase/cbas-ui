@@ -2543,21 +2543,44 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
     if (scope.link_type == "couchbase") {
       formData.hostname = scope.couchbase_link.hostname;
-      if (scope.couchbase_link.username)
+
+      // none, half and full encryption types
+      if (['none', 'half', 'full_password'].includes(scope.couchbase_link.encryption_type)) {
         formData.username = scope.couchbase_link.username;
-      if (scope.couchbase_link.password)
         formData.password = scope.couchbase_link.password;
-      if (!scope.couchbase_link.demand_encryption)
-        formData.encryption = "none";
-      else
         formData.encryption = scope.couchbase_link.encryption_type;
-      if (formData.encryption != "none") {
-        if (scope.couchbase_link.certificate)
+
+        if (scope.couchbase_link.encryption_type == 'full_password') {
+          formData.encryption = 'full';
           formData.certificate = scope.couchbase_link.certificate;
-        if (scope.couchbase_link.client_certificate)
-          formData.clientCertificate = scope.couchbase_link.client_certificate;
-        if (scope.couchbase_link.client_key)
-          formData.clientKey = scope.couchbase_link.client_key;
+        }
+      }
+
+      // client certificate and encrypted client certificate encryption types
+      if (['full_client_certificate', 'full_encrypted_client_certificate'].includes(scope.couchbase_link.encryption_type)) {
+        formData.certificate = scope.couchbase_link.certificate;
+        formData.clientCertificate = scope.couchbase_link.client_certificate;
+        formData.clientKey = scope.couchbase_link.client_key;
+        formData.encryption = 'full';
+
+        if (scope.couchbase_link.encryption_type == 'full_encrypted_client_certificate') {
+          formData.clientKeyPassphrase = {};
+          formData.clientKeyPassphrase.type = scope.couchbase_link.client_key_passphrase.type;
+
+          // plain private key passphrase type
+          if (formData.clientKeyPassphrase.type == 'plain') {
+            formData.clientKeyPassphrase.password = scope.couchbase_link.client_key_passphrase.password;
+          }
+
+          // rest private key passphrase type
+          if (formData.clientKeyPassphrase.type == 'rest') {
+            formData.clientKeyPassphrase.httpsOpts = {};
+            formData.clientKeyPassphrase.url = scope.couchbase_link.client_key_passphrase.url;
+            formData.clientKeyPassphrase.timeout = scope.couchbase_link.client_key_passphrase.timeout;
+            formData.clientKeyPassphrase.httpsOpts.verifyPeer = scope.couchbase_link.client_key_passphrase.https_opts.verify_peer;
+          }
+          formData.clientKeyPassphrase = JSON.stringify(formData.clientKeyPassphrase);
+        }
       }
     } else if (scope.link_type == "s3") {
       formData.accessKeyId = scope.s3_link.access_key_id;
@@ -2612,16 +2635,50 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     scope.dataverse = apiData.dataverse;
     if (apiData.type == "couchbase") {
       scope.couchbase_link.hostname = apiData.activeHostname;
-      scope.couchbase_link.username = apiData.username;
-      scope.couchbase_link.passward = apiData.password;
-      scope.couchbase_link.encryption_type = apiData.encryption;
-      if (apiData.encryption != "none") {
-        scope.couchbase_link.demand_encryption = true;
-        scope.couchbase_link.certificate = apiData.certificate;
-        scope.couchbase_link.client_certificate = apiData.clientCertificate;
-        scope.couchbase_link.client_key = apiData.clientKey;
+
+      // none and half encryption types
+      if (['none', 'half'].includes(apiData.encryption)) {
+        scope.couchbase_link.username = apiData.username;
+        scope.couchbase_link.password = "";
+        scope.couchbase_link.encryption_type = apiData.encryption;
       }
 
+      // full encryption type
+      if (apiData.encryption == 'full') {
+        scope.couchbase_link.certificate = apiData.certificate;
+
+        // full encryption using username, password and cluster certificate
+        if (apiData.username) {
+          scope.couchbase_link.username = apiData.username;
+          scope.couchbase_link.password = "";
+          scope.couchbase_link.encryption_type = 'full_password';
+        } else {
+          // full encryption using client certificate and key
+          scope.couchbase_link.client_certificate = apiData.clientCertificate;
+          scope.couchbase_link.client_key = "";
+          scope.couchbase_link.encryption_type = 'full_client_certificate';
+
+          // full encryption using encrypted client certificate and key
+          if (apiData.clientKeyPassphrase) {
+            scope.couchbase_link.client_key_passphrase = {};
+            scope.couchbase_link.client_key_passphrase.type = apiData.clientKeyPassphrase.type;
+            scope.couchbase_link.encryption_type = 'full_encrypted_client_certificate';
+
+            // plain encryption
+            if (apiData.clientKeyPassphrase.type == 'plain') {
+              scope.couchbase_link.client_key_passphrase.password = "";
+            }
+
+            // rest encryption
+            if (apiData.clientKeyPassphrase.type == 'rest') {
+              scope.couchbase_link.client_key_passphrase.https_opts = {};
+              scope.couchbase_link.client_key_passphrase.url = apiData.clientKeyPassphrase.url;
+              scope.couchbase_link.client_key_passphrase.timeout = apiData.clientKeyPassphrase.timeout;
+              scope.couchbase_link.client_key_passphrase.https_opts.verify_peer = apiData.clientKeyPassphrase.httpsOpts.verifyPeer;
+            }
+          }
+        }
+      }
     } else if (apiData.type == "s3") {
       scope.s3_link.access_key_id = apiData.accessKeyId;
       scope.s3_link.access_key = apiData.secretAccessKey;

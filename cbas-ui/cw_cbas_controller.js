@@ -1459,13 +1459,21 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       is_new: true,
       couchbase_link: {
         hostname: "",
+        encryption_type: "none",
         username: "",
         password: "",
-        demand_encryption: false,
-        encryption_type: "none",
         certificate: "",
         client_certificate: "",
-        client_key: ""
+        client_key: "",
+        client_key_passphrase: {
+          type: "plain",
+          password: "",
+          url: "",
+          timeout: 30000,
+          https_opts: {
+            verify_peer: true
+            }
+        }
       },
       s3_link: {
         access_key_id: "",
@@ -1504,16 +1512,28 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function createNewLink(dataverse) {
       linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
       linkDialogScope.options.is_new = true;
-      linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
+
+      // couchbase
       linkDialogScope.options.couchbase_link.password = "";
       linkDialogScope.options.couchbase_link.client_key = "";
+      if (linkDialogScope.options.couchbase_link.client_key_passphrase.password) {
+        linkDialogScope.options.couchbase_link.client_key_passphrase.password = "";
+      }
+      setCouchbaseLinkFunctions(linkDialogScope);
+
+      // aws s3
+      linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
       linkDialogScope.options.s3_link.access_key = "";
+
+      // azure blob/datalake
       linkDialogScope.options.azure_link.auth_type = "anonymous";
       linkDialogScope.options.azure_link.account_key = "";
       linkDialogScope.options.azure_link.shared_access_signature = "";
       linkDialogScope.options.azure_link.client_secret = "";
       linkDialogScope.options.azure_link.client_certificate = "";
       linkDialogScope.options.azure_link.client_certificate_password = "";
+
+      // google cloud storage
       linkDialogScope.options.gcs_link.auth_type = "anonymous";
       linkDialogScope.options.gcs_link.json_credentials = "";
 
@@ -1577,9 +1597,16 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       if (linkInfo) {
         cwQueryService.convertAPIdataToDialogScope(linkInfo, linkDialogScope.options);
         linkDialogScope.options.is_new = false;
-        linkDialogScope.options.couchbase_link.password = ""; // is never stored
         linkDialogScope.options.s3_link.access_key = ""; // is never stored
         linkDialogScope.options.dataverse = link.DVName;
+
+        // couchbase
+        linkDialogScope.options.couchbase_link.password = "";
+        linkDialogScope.options.couchbase_link.client_key = "";
+        if (linkDialogScope.options.couchbase_link.client_key_passphrase.password) {
+           linkDialogScope.options.couchbase_link.client_key_passphrase.password = "";
+        }
+        setCouchbaseLinkFunctions(linkDialogScope);
 
         // bring up the dialog
         $uibModal.open({
@@ -1982,6 +2009,28 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                 });
           }
         });
+    }
+
+    // Set of functions used for couchbase links dialog
+    function setCouchbaseLinkFunctions(linkDialogScope) {
+      linkDialogScope.showUsernameAndPasswordFields = function(encryptionType) {
+        return ['none', 'half', 'full_password'].includes(encryptionType);
+      }
+      linkDialogScope.showClusterCertificateField = function(encryptionType) {
+        return ['full_password', 'full_client_certificate', 'full_encrypted_client_certificate'].includes(encryptionType);
+      }
+      linkDialogScope.showClientCertificateField = function(encryptionType) {
+        return ['full_client_certificate', 'full_encrypted_client_certificate'].includes(encryptionType);
+      }
+      linkDialogScope.showPassphraseField = function(encryptionType) {
+        return encryptionType == 'full_encrypted_client_certificate';
+      }
+      linkDialogScope.showPlainPassphraseFields = function(encryptionType, passphraseType) {
+        return encryptionType == 'full_encrypted_client_certificate' && passphraseType == 'plain';
+      }
+      linkDialogScope.showRestPassphraseFields = function(encryptionType, passphraseType) {
+        return encryptionType == 'full_encrypted_client_certificate' && passphraseType == 'rest';
+      }
     }
 
   } // end of CBasController function
