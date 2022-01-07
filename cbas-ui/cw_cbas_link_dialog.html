@@ -33,81 +33,15 @@ licenses/APL2.txt.
       </div>
 
       <div class="formrow">
-        <label for="cluster_reference_name">Link Type</label>
-        <div class="checkbox-list formrow">
-          <div>
-            <input
-               ng-disabled="!options.is_new"
-               type="radio"
-               value="couchbase"
-               id="couchbase_link"
-               ng-model="options.link_type">
-            <label
-               ng-disabled="!options.is_new"
-               for="couchbase_link"
-               class="checkbox">
-              Couchbase
-            </label>
-          </div>
-          <div>
-            <input
-               ng-disabled="!options.is_new"
-               type="radio"
-               value="s3"
-               id="s3_link"
-               ng-model="options.link_type">
-            <label
-               ng-disabled="!options.is_new"
-               for="s3_link"
-               class="checkbox">
-              S3
-            </label>
-          </div>
-          <div>
-            <input
-               ng-disabled="!options.is_new"
-               type="radio"
-               value="azureblob"
-               id="azureblob_link"
-               ng-model="options.link_type">
-            <label
-               ng-disabled="!options.is_new"
-               for="azureblob_link"
-               class="checkbox">
-               Azure Blob
-            </label>
-          </div>
-          <div ng-if="isDeveloperPreview()">
-            <input
-              ng-disabled="!options.is_new"
-              type="radio"
-              value="azuredatalake"
-              id="azuredatalake_link"
-              ng-model="options.link_type">
-            <label
-              ng-disabled="!options.is_new"
-              for="azuredatalake_link"
-              class="checkbox">
-              Azure Data Lake
-            </label>
-          </div>
-          <div ng-if="isDeveloperPreview()">
-            <input
-              ng-disabled="!options.is_new"
-              type="radio"
-              value="gcs"
-              id="gcs_link"
-              ng-model="options.link_type">
-            <label
-              ng-disabled="!options.is_new"
-              for="gcs_link"
-              class="checkbox">
-              Google Cloud Storage
-            </label>
-          </div>
-        </div>
+        <label for="link_type">Link Type</label>
+        <select id="link_type" ng-model="options.link_type" ng-disabled="!options.is_new" required>
+          <option value="couchbase">Couchbase</option>
+          <option value="s3">S3</option>
+          <option value="azureblob">Azure Blob</option>
+          <option value="azuredatalake" ng-if="isDeveloperPreview()">Azure Datalake</option>
+          <option value="gcs" ng-if="isDeveloperPreview()">Google Cloud</option>
+        </select>
       </div>
-
 
       <!-- Options for Couchbase Links -->
       <div ng-if="options.link_type == 'couchbase'">
@@ -131,69 +65,14 @@ licenses/APL2.txt.
         </div>
 
         <div class="formrow">
-          <label>Encryption Type</label>
-          <div class="checkbox-list formrow">
-            <div>
-              <input
-                type="radio"
-                value="none"
-                id="for_encryption_type_none"
-                ng-model="options.couchbase_link.encryption_type">
-              <label
-                for="for_encryption_type_none"
-                class="checkbox">
-                None (password is not secured)
-              </label>
-            </div>
-            <div>
-              <input
-                 type="radio"
-                 value="half"
-                 id="for_encryption_type_half"
-                 ng-model="options.couchbase_link.encryption_type">
-              <label
-                 for="for_encryption_type_half"
-                 class="checkbox">
-                Half (secure password with SCRAM-SHA)
-              </label>
-            </div>
-            <div>
-              <input
-                 type="radio"
-                 value="full_password"
-                 id="for_encryption_type_full_password"
-                 ng-model="options.couchbase_link.encryption_type">
-              <label
-                 for="for_encryption_type_full_password"
-                 class="checkbox">
-                Full (using credentials)
-              </label>
-            </div>
-            <div>
-              <input
-                type="radio"
-                value="full_client_certificate"
-                id="for_encryption_type_full_client_certificate"
-                ng-model="options.couchbase_link.encryption_type">
-              <label
-                for="for_encryption_type_full_client_certificate"
-                class="checkbox">
-                Full (using client certificate)
-              </label>
-            </div>
-            <div>
-              <input
-                type="radio"
-                value="full_encrypted_client_certificate"
-                id="for_encryption_type_full_encrypted_client_certificate"
-                ng-model="options.couchbase_link.encryption_type">
-              <label
-                for="for_encryption_type_full_encrypted_client_certificate"
-                class="checkbox">
-                Full (using encrypted client certificate)
-              </label>
-            </div>
-          </div>
+          <label for="encryption_type">Encryption Type</label>
+          <select id="encryption_type" ng-model="options.couchbase_link.encryption_type" required>
+            <option value="none">None (password is not secured)</option>
+            <option value="half">Half (secure password with SCRAM-SHA)</option>
+            <option value="full_password">Full (using credentials)</option>
+            <option value="full_client_certificate">Full (using client certificate)</option>
+            <option value="full_encrypted_client_certificate">Full (using encrypted client certificate)</option>
+          </select>
         </div>
 
         <div class="formrow"  ng-if="showUsernameAndPasswordFields(options.couchbase_link.encryption_type)">
@@ -389,79 +268,16 @@ licenses/APL2.txt.
             required>
         </div>
         <label>Authentication Method</label>
-        <div class="checkbox-list formrow">
-          <div>
-            <input
-              type="radio"
-              value="anonymous"
-              id="for_auth_type_anonymous"
-              ng-model="options.azure_link.auth_type">
-            <label
-              for="for_auth_type_anonymous"
-              class="checkbox">
-              Anonymous (No credentials/authentication)
-            </label>
-          </div>
-          <div>
-            <input
-              type="radio"
-              value="sharedkey"
-              id="for_auth_type_sharedkey"
-              ng-model="options.azure_link.auth_type">
-            <label
-              for="for_auth_type_sharedkey"
-              class="checkbox">
-              Shared Key
-            </label>
-          </div>
-          <div>
-            <input
-              type="radio"
-              value="sharedaccesssignature"
-              id="for_auth_type_sharedaccesssignature"
-              ng-model="options.azure_link.auth_type">
-            <label
-              for="for_auth_type_sharedaccesssignature"
-              class="checkbox">
-              Shared Access Signature
-            </label>
-          </div>
-          <div>
-            <input
-              type="radio"
-              value="managedidentityid"
-              id="for_auth_type_managedidentityid"
-              ng-model="options.azure_link.auth_type">
-            <label
-              for="for_auth_type_managedidentityid"
-              class="checkbox">
-              Managed Identity ID
-            </label>
-          </div>
-          <div>
-            <input
-              type="radio"
-              value="clientsecret"
-              id="for_auth_type_clientsecret"
-              ng-model="options.azure_link.auth_type">
-            <label
-              for="for_auth_type_clientsecret"
-              class="checkbox">
-              Client Secret
-            </label>
-          </div>
-          <div>
-            <input
-              type="radio"
-              value="clientcertificate"
-              id="for_auth_type_clientcertificate"
-              ng-model="options.azure_link.auth_type">
-            <label
-              for="for_auth_type_clientcertificate"
-              class="checkbox">
-              Client Certificate
-            </label>
-          </div>
+        <div class="formrow">
+          <label for="azure_auth_type">Encryption Type</label>
+          <select id="azure_auth_type" ng-model="options.azure_link.auth_type" required>
+            <option value="anonymous">Anonymous (No credentials/authentication)</option>
+            <option value="sharedkey">Shared Key</option>
+            <option value="sharedaccesssignature">Shared Access Signature</option>
+            <option value="managedidentityid">Managed Identity ID</option>
+            <option value="clientsecret">Client Secret</option>
+            <option value="clientcertificate">Client Certificate</option>
+          </select>
         </div>
         <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedkey'">
           <label>Account Name</label>
@@ -581,31 +397,12 @@ licenses/APL2.txt.
       <!-- Options for Google Cloud Storage -->
       <div ng-if="options.link_type == 'gcs'">
         <label>Authentication Method</label>
-        <div class="checkbox-list formrow">
-          <div>
-            <input
-              type="radio"
-              value="anonymous"
-              id="for_gcs_auth_type_anonymous"
-              ng-model="options.gcs_link.auth_type">
-            <label
-              for="for_gcs_auth_type_anonymous"
-              class="checkbox">
-              Anonymous (No credentials/authentication)
-            </label>
-          </div>
-          <div>
-            <input
-              type="radio"
-              value="jsoncredentials"
-              id="for_auth_type_jsoncredentials"
-              ng-model="options.gcs_link.auth_type">
-            <label
-              for="for_auth_type_jsoncredentials"
-              class="checkbox">
-              JSON Credentials
-            </label>
-          </div>
+        <div class="formrow">
+          <label for="gcs_auth_type">Encryption Type</label>
+          <select id="gcs_auth_type" ng-model="options.gcs_link.auth_type" required>
+            <option value="anonymous">Anonymous (No credentials/authentication)</option>
+            <option value="jsoncredentials">JSON Credentials</option>
+          </select>
         </div>
         <div class="formrow" ng-if="options.gcs_link.auth_type == 'jsoncredentials'">
           <label>JSON Credentials</label>
