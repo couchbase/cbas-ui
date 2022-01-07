@@ -2583,12 +2583,20 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     } else if (scope.link_type == "s3") {
-      formData.accessKeyId = scope.s3_link.access_key_id;
-      if (scope.s3_link.access_key)
-        formData.secretAccessKey = scope.s3_link.access_key;
       formData.region = scope.s3_link.region;
-      if (scope.s3_link.endpoint)
+
+      if (scope.s3_link.access_key_id) {
+        formData.accessKeyId = scope.s3_link.access_key_id;
+      }
+      if (scope.s3_link.access_key) {
+        formData.secretAccessKey = scope.s3_link.access_key;
+      }
+      if (scope.s3_link.session_token) {
+        formData.sessionToken = scope.s3_link.session_token;
+      }
+      if (scope.s3_link.endpoint) {
         formData.serviceEndpoint = scope.s3_link.endpoint;
+      }
     } else if (scope.link_type == "azureblob" || scope.link_type == "azuredatalake") {
         formData.endpoint = scope.azure_link.endpoint;
 
@@ -2682,6 +2690,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     } else if (apiData.type == "s3") {
       scope.s3_link.access_key_id = apiData.accessKeyId;
       scope.s3_link.access_key = apiData.secretAccessKey;
+      scope.s3_link.session_token = apiData.sessionToken;
       scope.s3_link.region = apiData.region;
       scope.s3_link.endpoint = apiData.serviceEndpoint;
     } else if (apiData.type == "azureblob" || apiData.type == "azuredatalake") {

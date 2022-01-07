@@ -1478,6 +1478,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       s3_link: {
         access_key_id: "",
         access_key: "",
+        session_token: "",
         region: "",
         endpoint: ""
       },
@@ -1524,6 +1525,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       // aws s3
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
       linkDialogScope.options.s3_link.access_key = "";
+      linkDialogScope.options.s3_link.session_token = "";
 
       // azure blob/datalake
       linkDialogScope.options.azure_link.auth_type = "anonymous";
@@ -1598,6 +1600,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         cwQueryService.convertAPIdataToDialogScope(linkInfo, linkDialogScope.options);
         linkDialogScope.options.is_new = false;
         linkDialogScope.options.s3_link.access_key = ""; // is never stored
+        linkDialogScope.options.s3_link.session_token = ""; // is never stored
         linkDialogScope.options.dataverse = link.DVName;
 
         // couchbase
