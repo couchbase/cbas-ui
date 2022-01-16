@@ -269,7 +269,6 @@ licenses/APL2.txt.
         </div>
         <label>Authentication Method</label>
         <div class="formrow">
-          <label for="azure_auth_type">Encryption Type</label>
           <select id="azure_auth_type" ng-model="options.azure_link.auth_type" required>
             <option value="anonymous">Anonymous (No credentials/authentication)</option>
             <option value="sharedkey">Shared Key</option>
@@ -398,7 +397,6 @@ licenses/APL2.txt.
       <div ng-if="options.link_type == 'gcs'">
         <label>Authentication Method</label>
         <div class="formrow">
-          <label for="gcs_auth_type">Encryption Type</label>
           <select id="gcs_auth_type" ng-model="options.gcs_link.auth_type" required>
             <option value="anonymous">Anonymous (No credentials/authentication)</option>
             <option value="jsoncredentials">JSON Credentials</option>
