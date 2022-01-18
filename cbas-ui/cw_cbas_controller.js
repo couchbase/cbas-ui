@@ -1569,19 +1569,24 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         if (resp.config && resp.config.url)
           errorStr += resp.config.url;
       }
+      else if (resp && resp.data && _.isArray(resp.data.errors)) {
+        if (resp.data.errors[0] && resp.data.errors[0].msg) {
+          errorStr += resp.data.errors[0].msg;
+        } else {
+          errorStr += JSON.stringify(resp.data.errors);
+        }
+      }
+      else if (resp && resp.data && _.isString(resp.data)) {
+        errorStr += resp.data;
+      }
+      // resp.message might be a string
+      else if (resp && resp.message && _.isString(resp.message)) {
+        errorStr += resp.message;
+      }
       // 500 means some kind of server error
       else if (resp.status == 500)
         errorStr += resp.statusText + " 500";
       // resp.data might be message string
-      else if (resp.data && _.isString(resp.data))
-        errorStr += resp.data;
-      // resp.data might contain an array of error messages
-      else if (resp.data && _.isArray(resp.data.errors)) {
-        errorStr += JSON.stringify(resp.data.errors);
-      }
-      // resp.message might be a string
-      else if (_.isString(resp.message))
-        errorStr += resp.message;
       else
         errorStr += "unexpected error response " + resp.statusText + ' ' + resp.status;
 
