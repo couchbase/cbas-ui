@@ -61,6 +61,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.scopeNames = cwQueryService.scopeNames;
 
     qc.atLeast70 = cwQueryService.atLeast70;
+    qc.atLeast71 = cwQueryService.atLeast71;
 
     // functions for connecting dataverses to links and datasets
     qc.getLinksInDataverse = getLinksInDataverse;
@@ -1589,7 +1590,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     function editLink(link,dataverse) {
       // can't edit links on mixed clusters
-      if (!qc.atLeast70)
+      if (!qc.atLeast71)
         return;
       //console.log("Edit Link");
       linkDialogScope.options.aws_regions = cwQueryService.awsRegions;

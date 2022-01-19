@@ -51,6 +51,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.validated = validateCbasService;
 
   cwQueryService.atLeast70 = mnPoolDefault.export.compat.atLeast70;
+  cwQueryService.atLeast71 = mnPoolDefault.export.compat.atLeast71;
   // analytics monitoring
 
   var monitoringOptions = {
