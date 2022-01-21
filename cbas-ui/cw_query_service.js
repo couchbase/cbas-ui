@@ -2553,13 +2553,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
         if (scope.couchbase_link.encryption_type == 'full_password') {
           formData.encryption = 'full';
-          formData.certificate = scope.couchbase_link.certificate;
+          formData.certificates = JSON.stringify(scope.couchbase_link.certificates);
         }
       }
 
       // client certificate and encrypted client certificate encryption types
       if (['full_client_certificate', 'full_encrypted_client_certificate'].includes(scope.couchbase_link.encryption_type)) {
-        formData.certificate = scope.couchbase_link.certificate;
+        formData.certificates = JSON.stringify(scope.couchbase_link.certificates);
         formData.clientCertificate = scope.couchbase_link.client_certificate;
         formData.clientKey = scope.couchbase_link.client_key;
         formData.encryption = 'full';
@@ -2654,7 +2654,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
       // full encryption type
       if (apiData.encryption == 'full') {
-        scope.couchbase_link.certificate = apiData.certificate;
+        if (mnPoolDefault.export.compat.atLeast71) {
+          scope.couchbase_link.certificates = apiData.certificates;
+        } else {
+          scope.couchbase_link.certificates = [apiData.certificate];
+        }
 
         // full encryption using username, password and cluster certificate
         if (apiData.username) {

@@ -1463,7 +1463,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         encryption_type: "none",
         username: "",
         password: "",
-        certificate: "",
+        certificates: [""],
         client_certificate: "",
         client_key: "",
         client_key_passphrase: {
@@ -1605,9 +1605,11 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       if (linkInfo) {
         cwQueryService.convertAPIdataToDialogScope(linkInfo, linkDialogScope.options);
         linkDialogScope.options.is_new = false;
+        linkDialogScope.options.dataverse = link.DVName;
+
+        // s3
         linkDialogScope.options.s3_link.access_key = ""; // is never stored
         linkDialogScope.options.s3_link.session_token = ""; // is never stored
-        linkDialogScope.options.dataverse = link.DVName;
 
         // couchbase
         linkDialogScope.options.couchbase_link.password = "";
@@ -2022,21 +2024,38 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     // Set of functions used for couchbase links dialog
     function setCouchbaseLinkFunctions(linkDialogScope) {
+      linkDialogScope.addCertificate = function() {
+        linkDialogScope.options.couchbase_link.certificates.push("");
+      };
+
+      linkDialogScope.removeCertificate = function(index) {
+        if (linkDialogScope.options.couchbase_link.certificates.length == 1) {
+          linkDialogScope.options.couchbase_link.certificates = [""];
+        } else {
+          linkDialogScope.options.couchbase_link.certificates.splice(index, 1);
+        }
+      };
+
       linkDialogScope.showUsernameAndPasswordFields = function(encryptionType) {
         return ['none', 'half', 'full_password'].includes(encryptionType);
       }
+
       linkDialogScope.showClusterCertificateField = function(encryptionType) {
         return ['full_password', 'full_client_certificate', 'full_encrypted_client_certificate'].includes(encryptionType);
       }
+
       linkDialogScope.showClientCertificateField = function(encryptionType) {
         return ['full_client_certificate', 'full_encrypted_client_certificate'].includes(encryptionType);
       }
+
       linkDialogScope.showPassphraseField = function(encryptionType) {
         return encryptionType == 'full_encrypted_client_certificate';
       }
+
       linkDialogScope.showPlainPassphraseFields = function(encryptionType, passphraseType) {
         return encryptionType == 'full_encrypted_client_certificate' && passphraseType == 'plain';
       }
+
       linkDialogScope.showRestPassphraseFields = function(encryptionType, passphraseType) {
         return encryptionType == 'full_encrypted_client_certificate' && passphraseType == 'rest';
       }

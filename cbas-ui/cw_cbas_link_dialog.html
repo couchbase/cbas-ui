@@ -97,16 +97,23 @@ licenses/APL2.txt.
             required>
         </div>
         <div class="formrow" ng-if="showClusterCertificateField(options.couchbase_link.encryption_type)">
-          <label>Remote Cluster Certificate</label>
-          <textarea
-             rows="4"
-             autocorrect="off"
-             autocompleterg="off"
-             spellcheck="false"
-             ng-model="options.couchbase_link.certificate"
-             placeholder="Copy/paste the certificate information from your remote cluster into this field. You can find the certificate information on the Couchbase Web Console in the security area."
-             required>
-          </textarea>
+          <label>Remote Cluster Certificates</label>
+          <button ng-click="addCertificate()" type="button">Add Certificate</button>
+          <div class="formrow margin-top-1" ng-repeat="certificate in options.couchbase_link.certificates track by $index">
+            <div>
+              <label class="inline" style="margin-top: 3px">Cluster Remote Certificate {{$index + 1}}</label>
+              <button type="button" ng-click="removeCertificate($index)" class="outline inline tight ellipsis width-3" style="margin-bottom: 5px; margin-left: 3px">Delete</button>
+            </div>
+            <textarea
+               rows="5"
+               autocorrect="off"
+               autocompleterg="off"
+               spellcheck="false"
+               ng-model="options.couchbase_link.certificates[$index]"
+               placeholder="Copy/paste the certificate information from your remote cluster into this field. You can find the certificate information on the Couchbase Web Console in the security area."
+               required>
+            </textarea>
+          </div>
         </div>
         <div class="formrow" ng-if="showClientCertificateField(options.couchbase_link.encryption_type)">
           <label>Client Certificate</label>
