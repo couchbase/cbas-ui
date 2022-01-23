@@ -1940,7 +1940,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     function dropView(dataverse, view) {
       cwQueryService.showConfirmationDialog("Confirm Drop Analytics View",
-          "Warning, this will drop the analytics view: ",[view.id])
+          "Warning, this will drop the analytics view: ",[view.dataverseDisplayName + "." + view.id])
         .then(function yes(resp) {
           if (resp == "ok") {
             var queryText = "drop analytics view " + dataverse.dataverseQueryName + '.`' + view.id + '`';
