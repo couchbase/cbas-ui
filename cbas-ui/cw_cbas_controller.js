@@ -1512,6 +1512,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     }
 
     function createNewLink(dataverse) {
+      // Prevent creating new links in mixed mode
+      if (!qc.atLeast71)
+        return;
+
       linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
       linkDialogScope.options.is_new = true;
 
@@ -1594,7 +1598,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     }
 
     function editLink(link,dataverse) {
-      // can't edit links on mixed clusters
+      // Prevent editing links in mixed mode
       if (!qc.atLeast71)
         return;
       //console.log("Edit Link");
