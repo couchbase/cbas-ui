@@ -17,8 +17,7 @@ import { NgModule } from '@angular/core';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 
 import { QwCollectionMenu }       from "../query/angular-directives/qw.collection.menu.component.js";
-import { QwJsonDataTable,
-         QwJsonDataTableComp }    from "../query/angular-directives/qw.json.datatable.directive.js";
+import { QwJsonDataTableComp }    from "../query/angular-directives/qw.json.datatable.directive.js";
 import { QwExplainViz }           from "../query/angular-directives/qw.explain.viz.component.js";
 import { QwDialogService }        from "../query/angular-directives/qw.dialog.service.js";
 
