@@ -1525,6 +1525,11 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       if (linkDialogScope.options.couchbase_link.client_key_passphrase.password) {
         linkDialogScope.options.couchbase_link.client_key_passphrase.password = "";
       }
+
+      // Prepare the temporary certificates holder if it does not exist
+      if (!linkDialogScope.options.couchbase_link.certificates_temp) {
+        linkDialogScope.options.couchbase_link.certificates_temp = [""];
+      }
       setCouchbaseLinkFunctions(linkDialogScope);
 
       // aws s3
@@ -2029,14 +2034,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // Set of functions used for couchbase links dialog
     function setCouchbaseLinkFunctions(linkDialogScope) {
       linkDialogScope.addCertificate = function() {
-        linkDialogScope.options.couchbase_link.certificates.push("");
+        linkDialogScope.options.couchbase_link.certificates_temp.push("");
       };
 
       linkDialogScope.removeCertificate = function(index) {
         if (linkDialogScope.options.couchbase_link.certificates.length == 1) {
-          linkDialogScope.options.couchbase_link.certificates = [""];
+          linkDialogScope.options.couchbase_link.certificates_temp = [""];
         } else {
-          linkDialogScope.options.couchbase_link.certificates.splice(index, 1);
+          linkDialogScope.options.couchbase_link.certificates_temp.splice(index, 1);
         }
       };
 

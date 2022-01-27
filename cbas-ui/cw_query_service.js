@@ -2551,15 +2551,32 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         formData.password = scope.couchbase_link.password;
         formData.encryption = scope.couchbase_link.encryption_type;
 
+        /*
+          Since "certificates" is an array, any modification done on it is persisted and copied-by-reference everywhere.
+          This could lead to side effects like editing a link, then closing the dialog or failing the operation
+          (no successful edit), but still persisting the effect.
+
+          Example:
+          1- link1: certificates = ["cert1", "cert2", "cert3"]
+          2- open edit link1 dialog, delete "cert1", close the dialog, without saving (or save but fail the operation)
+          3- open the dialog again, the link will show ["cert2", "cert3"], the effect of deleting "cert1" got persisted
+          in the cache even though the edit operation is not completed because arrays are copied-by-reference.
+
+          To avoid this, the operations will all work on "certificates_temp", upon submitting, the value is put into
+          "certificates" and "certificates_temp" is deleted, this will ensure that any modifications will not
+          persist unless the operation is successful.
+        */
         if (scope.couchbase_link.encryption_type == 'full_password') {
           formData.encryption = 'full';
-          formData.certificates = JSON.stringify(scope.couchbase_link.certificates);
+          formData.certificates = JSON.stringify(scope.couchbase_link.certificates_temp);
+          delete scope.couchbase_link.certificates_temp;
         }
       }
 
       // client certificate and encrypted client certificate encryption types
       if (['full_client_certificate', 'full_encrypted_client_certificate'].includes(scope.couchbase_link.encryption_type)) {
-        formData.certificates = JSON.stringify(scope.couchbase_link.certificates);
+        formData.certificates = JSON.stringify(scope.couchbase_link.certificates_temp);
+        delete scope.couchbase_link.certificates_temp;
         formData.clientCertificate = scope.couchbase_link.client_certificate;
         formData.clientKey = scope.couchbase_link.client_key;
         formData.encryption = 'full';
@@ -2656,8 +2673,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (apiData.encryption == 'full') {
         if (mnPoolDefault.export.compat.atLeast71) {
           scope.couchbase_link.certificates = apiData.certificates;
+          scope.couchbase_link.certificates_temp = apiData.certificates.slice();  // copy-by-value of certificates
         } else {
           scope.couchbase_link.certificates = [apiData.certificate];
+          scope.couchbase_link.certificates_temp = [apiData.certificate];
         }
 
         // full encryption using username, password and cluster certificate
