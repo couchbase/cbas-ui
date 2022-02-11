@@ -23,9 +23,8 @@ import cwCbasMapCollectionsDialogTemplate from "./cw_cbas_map_collections_dialog
 import cwCbasDatasetDialogTemplate from "./cw_cbas_dataset_dialog.html";
 
 export default cbasController;
-cbasController.$inject = ["$rootScope", "$stateParams", "$uibModal", "$timeout", "cwQueryService", "validateCbasService", "mnPools", "$scope", "cwConstantsService", "mnPoolDefault", "mnAlertsService", "mnServersService", "$interval", "qwJsonCsvService", "mnjQuery", "qwCollectionsService", "qwDialogService"];
-function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService, mnServersService, $interval, qwJsonCsvService, mnjQuery, qwCollectionsService, qwDialogService) {
-    var $ = mnjQuery;
+cbasController.$inject = ["$rootScope", "$stateParams", "$uibModal", "$timeout", "cwQueryService", "validateCbasService", "mnPools", "$scope", "cwConstantsService", "mnPoolDefault", "mnAlertsService", "mnServersService", "$interval", "qwJsonCsvService", "qwCollectionsService", "qwDialogService"];
+function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService, mnServersService, $interval, qwJsonCsvService, qwCollectionsService, qwDialogService) {
     var qc = this;
     var statsRefreshInterval = 5000;
     var updateEditorSizes = _.throttle(updateEditorSizesInner, 100);
@@ -444,8 +443,11 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       // make the query editor "catch" drag and drop files
       //
 
-      $(".wb-query-editor")[0].addEventListener('dragover', handleDragOver, false);
-      $(".wb-query-editor")[0].addEventListener('drop', handleFileDrop, false);
+      angular.element(document.querySelector('.wb-query-editor'))
+        .off('dragover', handleDragOver)
+        .on('dragover', handleDragOver)
+        .off('drop', handleFileDrop)
+        .on('drop', handleFileDrop);
     };
 
     //
@@ -555,9 +557,13 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // when they click the Load Query button
 
     function load_query() {
-      $("#loadQuery")[0].value = null;
-      $("#loadQuery")[0].addEventListener('change', handleFileSelect, false);
-      $("#loadQuery")[0].click();
+      var loadQueryInput = angular.element(document.querySelector("#loadQuery"));
+      loadQueryInput
+        .val(null)
+        .off('change', handleFileSelect)
+        .on('change', handleFileSelect);
+
+      loadQueryInput[0].click();
     }
 
     // bring the contents of a file into the query editor and history
@@ -638,7 +644,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     function updateEditorSizesInner() {
       var totalHeight = window.innerHeight - 130; // window minus header size
-      var aceEditorHeight = 0;
+      qc.aceEditorHeight = 0;
 
       // how much does the query editor need?
       if (qc.inputEditor) {
@@ -652,11 +658,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
         // if the user has been clicking on the results, minimize the query editor
         if (qc.userInterest == 'results')
-          aceEditorHeight = 23;//Math.min(totalHeight/5,desiredQueryHeight); // 1/5 space for editor, more for results
+          qc.aceEditorHeight = 23;//Math.min(totalHeight/5,desiredQueryHeight); // 1/5 space for editor, more for results
         else
-          aceEditorHeight = Math.min(maxEditorSize, desiredQueryHeight);      // don't give it more than it wants
+          qc.aceEditorHeight = Math.min(maxEditorSize, desiredQueryHeight);      // don't give it more than it wants
 
-        $(".wb-ace-editor").height(aceEditorHeight);
         $timeout(resizeInputEditor, 200); // wait until after transition
       }
     }
@@ -683,7 +688,9 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       }
     }
 
-    $(window).resize(updateEditorSizes);
+    angular.element(window)
+      .off('resize', updateEditorSizes)
+      .on('resize', updateEditorSizes);
 
     //
     // keep track of which parts of the UI the user is clicking, indicating their interest
@@ -1146,17 +1153,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     //
 
     function toggleAnalysisSize() {
-      if (!qc.analysisExpanded) {
-        $(".insights-sidebar").removeClass("width-3");
-        $(".insights-sidebar").addClass("width-6");
-        $(".wb-main-wrapper").removeClass("width-9");
-        $(".wb-main-wrapper").addClass("width-6")
-      } else {
-        $(".insights-sidebar").removeClass("width-6");
-        $(".insights-sidebar").addClass("width-3");
-        $(".wb-main-wrapper").removeClass("width-6");
-        $(".wb-main-wrapper").addClass("width-9");
-      }
       qc.analysisExpanded = !qc.analysisExpanded;
     }
 
@@ -1165,20 +1161,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
   //
 
   function toggleFullscreen() {
-    if (!qc.fullscreen) {
-      $(".insights-sidebar").removeClass("width-3");
-      $(".insights-sidebar").addClass("fix-width-0");
-      $(".wb-main-wrapper").removeClass("width-9");
-      $(".wb-main-wrapper").addClass("width-12");
-      mnPoolDefault.setHideNavSidebar(true);
-    }
-    else {
-      $(".insights-sidebar").removeClass("fix-width-0");
-      $(".insights-sidebar").addClass("width-3");
-      $(".wb-main-wrapper").removeClass("width-12");
-      $(".wb-main-wrapper").addClass("width-9");
-      mnPoolDefault.setHideNavSidebar(false);
-    }
+    mnPoolDefault.setHideNavSidebar(!qc.fullscreen);
     qc.fullscreen = !qc.fullscreen;
   }
 
@@ -1284,32 +1267,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         cwQueryService.addNewQueryAtEndOfHistory($stateParams.query);
       }
 
-      // Prevent the backspace key from navigating back. Thanks StackOverflow!
-      $(document).unbind('keydown').bind('keydown', function (event) {
-        var doPrevent = false;
-        if (event.keyCode === 8) {
-          var d = event.srcElement || event.target;
-          if ((d.tagName.toUpperCase() === 'INPUT' &&
-              (
-                d.type.toUpperCase() === 'TEXT' ||
-                d.type.toUpperCase() === 'PASSWORD' ||
-                d.type.toUpperCase() === 'FILE' ||
-                d.type.toUpperCase() === 'SEARCH' ||
-                d.type.toUpperCase() === 'EMAIL' ||
-                d.type.toUpperCase() === 'NUMBER' ||
-                d.type.toUpperCase() === 'DATE')
-            ) ||
-            d.tagName.toUpperCase() === 'TEXTAREA') {
-            doPrevent = d.readOnly || d.disabled;
-          } else {
-            doPrevent = true;
-          }
-        }
+      angular.element(document)
+        .off('keydown', handleKeydown)
+        .on('keydown', handleKeydown);
 
-        if (doPrevent) {
-          event.preventDefault();
-        }
-      });
 
       // schedule a timer to poll analytics stats
       if (!cwQueryService.pollShadowingStats) {
@@ -1342,24 +1303,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     }
 
     // hide & show the datasets sidebar + the main navigation sidebar
-    function toggleFullscreen() {
-      if (!qc.fullscreen) {
-        $(".insights-sidebar").removeClass("width-3");
-        $(".insights-sidebar").addClass("fix-width-0");
-        $(".wb-main-wrapper").removeClass("width-9");
-        $(".wb-main-wrapper").addClass("width-12");
-        $(".wb-refresh-btn").addClass("hidden");
-        mnPoolDefault.setHideNavSidebar(true);
-      } else {
-        $(".insights-sidebar").removeClass("fix-width-0");
-        $(".insights-sidebar").addClass("width-3");
-        $(".wb-main-wrapper").removeClass("width-12");
-        $(".wb-main-wrapper").addClass("width-9");
-        $(".wb-refresh-btn").removeClass("hidden");
-        mnPoolDefault.setHideNavSidebar(false);
-      }
-      qc.fullscreen = !qc.fullscreen;
-    }
 
     function containsValidStatements(input) {
       var statements = input.split(";");
@@ -2083,3 +2026,30 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       location.reload();
     }
   }
+
+// Prevent the backspace key from navigating back. Thanks StackOverflow!
+function handleKeydown(event) {
+  var doPrevent = false;
+  if (event.keyCode === 8) {
+    var d = event.srcElement || event.target;
+    if ((d.tagName.toUpperCase() === 'INPUT' &&
+        (
+          d.type.toUpperCase() === 'TEXT' ||
+          d.type.toUpperCase() === 'PASSWORD' ||
+          d.type.toUpperCase() === 'FILE' ||
+          d.type.toUpperCase() === 'SEARCH' ||
+          d.type.toUpperCase() === 'EMAIL' ||
+          d.type.toUpperCase() === 'NUMBER' ||
+          d.type.toUpperCase() === 'DATE')
+      ) ||
+      d.tagName.toUpperCase() === 'TEXTAREA') {
+      doPrevent = d.readOnly || d.disabled;
+    } else {
+      doPrevent = true;
+    }
+  }
+
+  if (doPrevent) {
+    event.preventDefault();
+  }
+}

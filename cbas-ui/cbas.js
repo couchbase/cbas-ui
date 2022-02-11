@@ -17,7 +17,6 @@ import uiBootstrap from "angular-ui-bootstrap";
 import uiAce from "ui-ace";
 
 import mnAlertsService from 'components/mn_alerts';
-import mnJquery from "components/mn_jquery";
 import mnPools from "components/mn_pools";
 import mnPoolDefault from "components/mn_pool_default";
 import mnPermissions from "components/mn_permissions";
@@ -58,7 +57,6 @@ angular.module('cwCbas', [
   uiAce,
 
   mnAlertsService,
-  mnJquery,
   mnPools,
   mnPoolDefault,
   mnPermissions,

@@ -29,7 +29,9 @@ licenses/APL2.txt.
   </mn-element-cargo>
 
 <!-- wrapper for query editor and results ------------------------------------->
-  <div mn-spinner="queryInProgress" class="wb-main-wrapper width-9 resp-small">
+  <div mn-spinner="queryInProgress"
+       class="wb-main-wrapper width-9 resp-small"
+       ng-class="{'width-9': !qc.analysisExpanded || !qc.fullscreen, 'width-6': qc.analysisExpanded, 'width-12': qc.fullscreen}">
 <!-- query editor header, main editor area, and results footer ---------------->
     <div class="wb-query-editor">
 <!-- Editor "header row" ------------------------------------------------------>
@@ -76,7 +78,8 @@ licenses/APL2.txt.
          class="wb-ace-editor" ng-click="qc.handleClick('editor')"
          ui-ace="qc.aceInputOptions"
          ng-disabled="qc.executingQuery.busy"
-         ng-model="qc.lastResult.query">
+         ng-model="qc.lastResult.query"
+         ng-style="{'height': qc.aceEditorHeight + 'px'}">
       </div>
 
 <!-- wrapper under query editor for button and stats -------------------------->
@@ -207,7 +210,9 @@ licenses/APL2.txt.
   </div>
 
 <!-- manage analytics scopes sidebar ----------------------------------- -->
-   <div class="insights-sidebar width-3 resp-hide-sml">
+   <div
+      class="insights-sidebar width-3 resp-hide-sml"
+      ng-class="{'width-6': qc.analysisExpanded, 'width-3': !qc.analysisExpanded || !qc.fullscreen, 'fix-width-0': qc.fullscreen}">
     <div class="row margin-bottom-half">
      <h5>Analytics Scopes, Links, & Collections</h5>
       <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
@@ -417,7 +422,7 @@ licenses/APL2.txt.
         </div>
 
 <!-- footer buttons -------------------------------------------------------- -->
-        <div class="row fix-position-br wb-refresh-btn">
+        <div class="row fix-position-br wb-refresh-btn" ng-show="!qc.fullscreen">
           <button
              title="Refresh scopes and collections"
              ng-click="qc.updateBuckets()"
