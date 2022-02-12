@@ -181,12 +181,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // error message when result is too large to display
     //
 
-    qc.maxTableSize = 750000;
-    qc.maxTreeSize = 750000;
     qc.maxAceSize = 10485760;
-    qc.maxSizeMsgTable = {error: "The table view is slow with results sized > " + qc.maxTableSize + " bytes. Try using the JSON view or specifying a lower limit in your query."};
-    qc.maxSizeMsgTree = {error: "The tree view is slow with results sized > " + qc.maxTreeSize + " bytes. Try using the JSON view or specifying a lower limit in your query."};
-    qc.maxSizeMsgJSON = "{\"error\": \"The JSON view is slow with results sized > " + qc.maxAceSize + " bytes. Try specifying a lower limit in your query.\"}";
+    qc.maxSizeMsgJSON = "{\"error\": \"The JSON view is slow with results sized > " + qc.maxAceSize + " bytes. Try the table view or specifying a lower limit in your query.\"}";
 
     qc.showBigDatasets = false;     // allow the user to override the limit on showing big datasets
 
@@ -247,12 +243,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       switch (cwQueryService.outputTab) {
         case 1:
           return (qc.lastResult.resultSize / qc.maxAceSize) > 1.1;
-        case 2:
-          return (qc.lastResult.resultSize / qc.maxTableSize) > 1.1;
-        case 3:
-          return (qc.lastResult.resultSize / qc.maxTreeSize) > 1.1;
       }
-
+	return(false);
     }
 
     //
@@ -265,12 +257,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         case 1:
           fraction = qc.lastResult.resultSize / qc.maxAceSize;
           break;
-        case 2:
-          fraction = qc.lastResult.resultSize / qc.maxTableSize;
-          break;
-        case 3:
-          fraction = qc.lastResult.resultSize / qc.maxTreeSize;
-          break;
+      default:
+	  return("");
       }
       var timeEstimate = Math.round(fraction * 2.5);
       var timeUnits = "seconds";
