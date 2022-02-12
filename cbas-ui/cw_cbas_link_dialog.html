@@ -76,7 +76,7 @@ licenses/APL2.txt.
         </div>
 
         <div class="formrow"  ng-if="showUsernameAndPasswordFields(options.couchbase_link.encryption_type)">
-          <label>Username for Remote Cluster</label>
+          <label>Remote Username</label>
           <input
             ng-model="options.couchbase_link.username"
             type="text"
@@ -86,7 +86,7 @@ licenses/APL2.txt.
             required>
         </div>
         <div class="formrow" ng-if="showUsernameAndPasswordFields(options.couchbase_link.encryption_type)">
-          <label>Password</label>
+          <label>Remote Password</label>
           <input
             ng-model="options.couchbase_link.password"
             type="password"
@@ -97,11 +97,9 @@ licenses/APL2.txt.
             required>
         </div>
         <div class="formrow" ng-if="showClusterCertificateField(options.couchbase_link.encryption_type)">
-          <label>Remote Cluster Certificates</label>
-          <button ng-click="addCertificate()" type="button">Add Certificate</button>
+          <label>Remote Cluster Certificate(s)</label>
           <div class="formrow margin-top-1" ng-repeat="certificate in options.couchbase_link.certificates_temp track by $index">
-            <div>
-              <label class="inline" style="margin-top: 3px">Cluster Remote Certificate {{$index + 1}}</label>
+            <div ng-if="options.couchbase_link.certificates_temp.length > 1">
               <button type="button" ng-click="removeCertificate($index)" class="outline inline tight ellipsis width-3" style="margin-bottom: 5px; margin-left: 3px">Delete</button>
             </div>
             <textarea
@@ -114,6 +112,7 @@ licenses/APL2.txt.
                required>
             </textarea>
           </div>
+          <button ng-click="addCertificate()" type="button">Add</button>
         </div>
         <div class="formrow" ng-if="showClientCertificateField(options.couchbase_link.encryption_type)">
           <label>Client Certificate</label>
