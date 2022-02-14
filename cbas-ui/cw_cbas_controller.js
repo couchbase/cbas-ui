@@ -14,6 +14,14 @@ import saveAs from "file-saver";
 
 import { BehaviorSubject }              from 'rxjs';
 
+import cwPrefsDialogTemplate from "./cw_prefs_dialog.html";
+import cwFileDialogTemplate from "./cw_file_dialog.html";
+import cwUnifiedFileDialogTemplate from "./cw_unified_file_dialog.html";
+import cwHistoryDialogTemplate from "./cw_history_dialog.html";
+import cwCbasLinkDialogTemplate from "./cw_cbas_link_dialog.html";
+import cwCbasMapCollectionsDialogTemplate from "./cw_cbas_map_collections_dialog.html";
+import cwCbasDatasetDialogTemplate from "./cw_cbas_dataset_dialog.html";
+
 export default cbasController;
 cbasController.$inject = ["$rootScope", "$stateParams", "$uibModal", "$timeout", "cwQueryService", "validateCbasService", "mnPools", "$scope", "cwConstantsService", "mnPoolDefault", "mnAlertsService", "mnServersService", "$interval", "qwJsonCsvService", "mnjQuery", "qwCollectionsService", "qwDialogService"];
 function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService, mnServersService, $interval, qwJsonCsvService, mnjQuery, qwCollectionsService, qwDialogService) {
@@ -857,7 +865,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_prefs_dialog.html',
+        template: cwPrefsDialogTemplate,
         scope: dialogScope
       }).result;
 
@@ -899,7 +907,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       dialogScope.file = dialogScope.data_file;
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_file_dialog.html',
+        template: cwFileDialogTemplate,
         scope: dialogScope
       }).result;
 
@@ -936,7 +944,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       dialogScope.file = dialogScope.query_file;
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_file_dialog.html',
+        template: cwFileDialogTemplate,
         scope: dialogScope
       }).result;
 
@@ -965,7 +973,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       dialogScope.selected = {item: 0};
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_unified_file_dialog.html',
+        template: cwUnifiedFileDialogTemplate,
         scope: dialogScope
       }).result;
 
@@ -1040,7 +1048,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       dialogScope.selectPrevMatch = selectPrevMatch;
 
       var promise = $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_history_dialog.html',
+        template: cwHistoryDialogTemplate,
         scope: dialogScope
       }).result;
 
@@ -1539,7 +1547,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       // bring up the dialog
       $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_cbas_link_dialog.html',
+        template: cwCbasLinkDialogTemplate,
         scope: linkDialogScope
       }).result
         .then(function success(resp) {
@@ -1618,7 +1626,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
         // bring up the dialog
         $uibModal.open({
-          templateUrl: '../_p/ui/cbas/cw_cbas_link_dialog.html',
+          template: cwCbasLinkDialogTemplate,
           scope: linkDialogScope
         }).result
           .then(function success(resp) {
@@ -1783,7 +1791,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       dataset_options.selected_collections = {};
       // bring up the dialog
       $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_cbas_map_collections_dialog.html',
+        template: cwCbasMapCollectionsDialogTemplate,
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
@@ -1844,7 +1852,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       // bring up the dialog
       $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_cbas_dataset_dialog.html',
+        template: cwCbasDatasetDialogTemplate,
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
@@ -1970,7 +1978,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       // bring up the dialog
       $uibModal.open({
-        templateUrl: '../_p/ui/cbas/cw_cbas_dataset_dialog.html',
+        template: cwCbasDatasetDialogTemplate,
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {

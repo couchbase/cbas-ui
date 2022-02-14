@@ -45,6 +45,9 @@ import { QwQueryService }       from "../query/angular-services/qw.query.service
 
 import {downgradeComponent}     from "@angular/upgrade/static";
 import {downgradeInjectable}    from '@angular/upgrade/static';
+import cbasToplevelTemplate     from "./cbas_toplevel.html";
+import cbasMonitoringTemplate   from "./cbas_monitoring.html";
+import cbasTemplate             from "./cbas.html";
 
 
 export default "cwCbas";
@@ -85,7 +88,7 @@ angular.module('cwCbas', [
         views: {
           "main@app.admin": {
             controller: 'cwCbasController as qc',
-            templateUrl: '../_p/ui/cbas/cbas_toplevel.html'
+            template: cbasToplevelTemplate
           }
         },
         data: {
@@ -97,12 +100,12 @@ angular.module('cwCbas', [
       .state('app.admin.cbas.monitoring', {
         url: '/monitoring',
         controller: 'cwCbasMonitorController as qmc',
-        templateUrl: '../_p/ui/cbas/cbas_monitoring.html'
+        template: cbasMonitoringTemplate
       })
       .state('app.admin.cbas.workbench', {
         url: '/workbench?query',
         controller: 'cwCbasController as qc',
-        templateUrl: '../_p/ui/cbas/cbas.html'
+        template: cbasTemplate
       });
 
     //
