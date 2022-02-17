@@ -1696,8 +1696,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     }
-    // put datasets in alphabetical order
-    cwQueryService.shadows.sort((a,b) => a.id ? a.id.localeCompare(b.id) : -1);
     // put the fully qualified datasets in as auto-completion
     cwQueryService.shadows.forEach(shadow => addToken(shadow.dataverseQueryName + '.`' + shadow.id + '`',"path"));
     // we want the Local scope to always come first in each scope
@@ -1709,11 +1707,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         else return a.LinkName.localeCompare(b.LinkName)
       });
     }
-    // want menu of scope names in order
-    cwQueryService.scopeNames.sort();
-    // sort the dataverses by name, and add everything to the automcomplete index
-    cwQueryService.dataverses.sort((a,b) =>
-      a.DataverseName ? a.DataverseName.localeCompare(b.DataverseName) : -1);
     refreshAutoCompleteArray();
   }
 

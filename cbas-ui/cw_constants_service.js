@@ -138,7 +138,8 @@ function getCwConstantsService() {
     "  `Type` as LinkType, " +
     "  TRUE as isLink " +
     "FROM " +
-    "  Metadata.`Link`) meta order by meta.isDataverse desc, meta.isLink desc;"; // make sure dataverses first, then links, then datasets
+    "  Metadata.`Link`) meta order by " +
+    "    meta.isDataverse desc, meta.isLink desc, meta.DataverseName, meta.LinkName, meta.id;"; // make sure dataverses first, then links, then datasets
 
   // for mixed clusters, use the 6.6 version of the query
   cwConstantsService.keyspaceQuery6_6 =
@@ -187,7 +188,7 @@ function getCwConstantsService() {
     "  `Type` as LinkType, " +
     "  TRUE as isLink " +
     "FROM " +
-    "  Metadata.`Link`) i order by i.isDataverse desc, i.isLink desc;";
+    "  Metadata.`Link`) i order by i.isDataverse desc, i.isLink desc, i.DataverseName, i.LinkName, i.id;";
 
   // should we permit schema inquiries in the bucket analysis pane?
   cwConstantsService.showSchemas = false;
