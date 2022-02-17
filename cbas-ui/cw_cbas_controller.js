@@ -2034,7 +2034,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       };
 
       linkDialogScope.removeCertificate = function(index) {
-        if (linkDialogScope.options.couchbase_link.certificates.length == 1) {
+        if (linkDialogScope.options.couchbase_link.certificates_temp.length == 1) {
           linkDialogScope.options.couchbase_link.certificates_temp = [""];
         } else {
           linkDialogScope.options.couchbase_link.certificates_temp.splice(index, 1);
