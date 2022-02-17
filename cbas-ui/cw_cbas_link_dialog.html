@@ -8,7 +8,7 @@ be governed by the Apache License, Version 2.0, included in the file
 licenses/APL2.txt.
 -->
 
-<div class="dialog-med">
+<div class="dialog-med" style="width: 542px">
   <div class="panel-header">
     <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Link to {{options.dataverse}}</h2>
     <h2 ng-show="!options.is_new">Edit Link</h2>
@@ -98,43 +98,49 @@ licenses/APL2.txt.
         </div>
         <div class="formrow" ng-if="showClusterCertificateField(options.couchbase_link.encryption_type)">
           <label>Remote Cluster Certificate(s)</label>
-          <div class="formrow margin-top-1" ng-repeat="certificate in options.couchbase_link.certificates_temp track by $index">
-            <div ng-if="options.couchbase_link.certificates_temp.length > 1">
-              <button type="button" ng-click="removeCertificate($index)" class="outline inline tight ellipsis width-3" style="margin-bottom: 5px; margin-left: 3px">Delete</button>
-            </div>
+          <div class="row" ng-repeat="certificate in options.couchbase_link.certificates_temp track by $index">
             <textarea
                rows="5"
+               class="monospaced certificate-props ng-binding"
+               style="word-break: break-word;max-width: 480px"
                autocorrect="off"
                autocompleterg="off"
                spellcheck="false"
                ng-model="options.couchbase_link.certificates_temp[$index]"
-               placeholder="Copy/paste the certificate information from your remote cluster into this field. You can find the certificate information on the Couchbase Web Console in the security area."
+               placeholder="Copy/paste a trusted root certificate from the remote cluster into this field. You can find the certificate(s) on the Couchbase Web Console under Security->Certificates."
                required>
             </textarea>
+            <div style="width: 30px">
+              <button type="button" ng-if="options.couchbase_link.certificates_temp.length > 1" class="outline btn-small" title="Remove this cluster certificate." ng-click="removeCertificate($index)">-</button>
+              <button type="button" class="outline btn-small margin-left-0" title="Add a new cluster certificate." ng-click="addCertificate()">+</button>
+            </div>
           </div>
-          <button ng-click="addCertificate()" type="button">Add</button>
         </div>
         <div class="formrow" ng-if="showClientCertificateField(options.couchbase_link.encryption_type)">
           <label>Client Certificate</label>
           <textarea
-             rows="4"
+             rows="5"
+             class="monospaced certificate-props ng-binding"
+             style="word-break: break-word;max-width: 480px"
              autocorrect="off"
              autocompleterg="off"
              spellcheck="false"
              ng-model="options.couchbase_link.client_certificate"
-             placeholder="Client Certificate"
+             placeholder="Copy/paste the certificate used to identify the user on the remote cluster into this field."
              required>
           </textarea>
         </div>
         <div class="formrow" ng-if="showClientCertificateField(options.couchbase_link.encryption_type)">
-          <label>Client Key</label>
+          <label>{{options.couchbase_link.encryption_type == 'full_encrypted_client_certificate' ? "Encrypted " : ""}}Client Key</label>
           <textarea
-             rows="4"
+             rows="5"
+             class="monospaced certificate-props ng-binding"
+             style="word-break: break-word;max-width: 480px"
              autocorrect="off"
              autocompleterg="off"
              spellcheck="false"
              ng-model="options.couchbase_link.client_key"
-             placeholder="Client Key"
+             placeholder="{{clientKeyPlaceholderText(options.couchbase_link.encryption_type)}}"
              required>
           </textarea>
         </div>
@@ -188,8 +194,17 @@ licenses/APL2.txt.
               autocapitalize="off"
               required>
           </div>
+          <div class="row" ng-if="options.couchbase_link.client_key_passphrase.type == 'rest' && options.couchbase_link.client_key_passphrase.url.startsWith('https://')">
+            <label>HTTPS Options</label>
+          </div>
+          <div class="formrow" ng-if="options.couchbase_link.client_key_passphrase.type == 'rest' && options.couchbase_link.client_key_passphrase.url.startsWith('https://')"
+               ng-click="options.couchbase_link.client_key_passphrase.https_opts.verify_peer = !options.couchbase_link.client_key_passphrase.https_opts.verify_peer">
+            <input ng-model="options.couchbase_link.client_key_passphrase.https_opts.verify_peer" type="checkbox"
+                   name="verify_peer">
+            <label for="verify_peer">Verify Peer</label>
+          </div>
           <div class="formrow" ng-if="options.couchbase_link.client_key_passphrase.type == 'rest'">
-              <label>Timeout</label>
+              <label title="The request timeout for the REST request (in milliseconds).">Timeout</label>
               <input
                 ng-model="options.couchbase_link.client_key_passphrase.timeout"
                 type="number"
@@ -198,11 +213,26 @@ licenses/APL2.txt.
                 autocapitalize="off"
                 required>
           </div>
-          <div class="formrow" ng-if="options.couchbase_link.client_key_passphrase.type == 'rest'"
-               ng-click="options.couchbase_link.client_key_passphrase.https_opts.verify_peer = !options.couchbase_link.client_key_passphrase.https_opts.verify_peer">
-            <input ng-model="options.couchbase_link.client_key_passphrase.https_opts.verify_peer" type="checkbox"
-                   name="verify_peer">
-            <label for="verify_peer">Verify Peer</label>
+          <div class="row">
+            <label title="Optional HTTP headers to include on the passphrase REST request.">HTTP Headers</label>
+          </div>
+          <div class="row">
+            <div class="column width-5" style="margin-bottom:.5rem">
+              <label>Name</label>
+            </div>
+            <div class="column width-7" style="margin-bottom:.5rem">
+              <label>Value</label>
+            </div>
+          </div>
+          <div class="row" ng-repeat="param in options.couchbase_link.client_key_passphrase.http_headers_temp track by $index">
+            <div class="column width-6" style="margin-bottom:.5rem">
+              <input placeholder="name" type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers_temp[$index].name" required>
+            </div>
+            <div class="column width-6" style="margin-bottom:.5rem">
+              <input type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers_temp[$index].value">
+            </div>
+            <button ng-if="showHttpHeaderRemoveButton()" type="button" class="outline btn-small" title="Remove this HTTP header." ng-click="removeHttpHeader($index)">-</button>
+            <button type="button" class="outline btn-small" title="Add new HTTP header." ng-click="addHttpHeader()">+</button>
           </div>
         </div>
       </div>

@@ -1469,7 +1469,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           timeout: 30000,
           https_opts: {
             verify_peer: true
-            }
+            },
+          http_headers: [{ name: "", value: ""}]
         }
       },
       s3_link: {
@@ -1522,9 +1523,12 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         linkDialogScope.options.couchbase_link.client_key_passphrase.password = "";
       }
 
-      // Prepare the temporary certificates holder if it does not exist
+      // Prepare the temporary holders if they do not exist
       if (!linkDialogScope.options.couchbase_link.certificates_temp) {
         linkDialogScope.options.couchbase_link.certificates_temp = [""];
+      }
+      if (!linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp) {
+        linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp = [{ name: "", value: ""}];
       }
       setCouchbaseLinkFunctions(linkDialogScope);
 
@@ -2041,6 +2045,26 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         }
       };
 
+      linkDialogScope.addHttpHeader = function() {
+        linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.push({name: "", value: ""});
+      };
+
+      linkDialogScope.showHttpHeaderRemoveButton = function() {
+        let firstHeader = linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp[0];
+        return linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.length > 1
+            || (firstHeader.name != null && firstHeader.name != '')
+            || (firstHeader.value != null && firstHeader.value != '');
+      }
+
+      linkDialogScope.removeHttpHeader = function(index) {
+        if (linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.length == 1) {
+          linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp = [];
+          linkDialogScope.addHttpHeader();
+        } else {
+          linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.splice(index, 1);
+        }
+      }
+
       linkDialogScope.showUsernameAndPasswordFields = function(encryptionType) {
         return ['none', 'half', 'full_password'].includes(encryptionType);
       }
@@ -2051,6 +2075,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       linkDialogScope.showClientCertificateField = function(encryptionType) {
         return ['full_client_certificate', 'full_encrypted_client_certificate'].includes(encryptionType);
+      }
+
+      linkDialogScope.clientKeyPlaceholderText = function (encryptionType) {
+        if (encryptionType == 'full_encrypted_client_certificate') {
+          return "Copy/paste the encrypted private key for the above client certificate into this field.";
+        } else {
+          return "Copy/paste the private key for the above client certificate into this field.";
+        }
       }
 
       linkDialogScope.showPassphraseField = function(encryptionType) {

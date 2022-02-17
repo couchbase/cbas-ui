@@ -2589,6 +2589,16 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             formData.clientKeyPassphrase.url = scope.couchbase_link.client_key_passphrase.url;
             formData.clientKeyPassphrase.timeout = scope.couchbase_link.client_key_passphrase.timeout;
             formData.clientKeyPassphrase.httpsOpts.verifyPeer = scope.couchbase_link.client_key_passphrase.https_opts.verify_peer;
+            var filtered = scope.couchbase_link.client_key_passphrase.http_headers_temp.filter(function(value, index, arr){
+              return value.name != null && value.name != '';
+            });
+            if (filtered.length > 0) {
+              let headers = {};
+              filtered.forEach(function (value, index, array) {
+                headers[value.name] = value.value;
+              });
+              formData.clientKeyPassphrase.headers = headers;
+            }
           }
           formData.clientKeyPassphrase = JSON.stringify(formData.clientKeyPassphrase);
         }
@@ -2700,6 +2710,15 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               scope.couchbase_link.client_key_passphrase.url = apiData.clientKeyPassphrase.url;
               scope.couchbase_link.client_key_passphrase.timeout = apiData.clientKeyPassphrase.timeout;
               scope.couchbase_link.client_key_passphrase.https_opts.verify_peer = apiData.clientKeyPassphrase.httpsOpts.verifyPeer;
+              scope.couchbase_link.client_key_passphrase.http_headers_temp = [];
+              if (apiData.clientKeyPassphrase.headers != null) {
+                for (const name in apiData.clientKeyPassphrase.headers) {
+                  scope.couchbase_link.client_key_passphrase.http_headers_temp.push({ "name": name, "value": apiData.clientKeyPassphrase.headers[name]});
+                }
+              }
+              if (scope.couchbase_link.client_key_passphrase.http_headers_temp.length == 0) {
+                scope.couchbase_link.client_key_passphrase.http_headers_temp.push({"name": '', "value": ''});
+              }
             }
           }
         }
