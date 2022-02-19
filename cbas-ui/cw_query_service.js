@@ -2555,21 +2555,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           3- open the dialog again, the link will show ["cert2", "cert3"], the effect of deleting "cert1" got persisted
           in the cache even though the edit operation is not completed because arrays are copied-by-reference.
 
-          To avoid this, the operations will all work on "certificates_temp", upon submitting, the value is put into
-          "certificates" and "certificates_temp" is deleted, this will ensure that any modifications will not
-          persist unless the operation is successful.
+          To avoid this, the operations will all work on a copy (by value) of "certificates".
         */
         if (scope.couchbase_link.encryption_type == 'full_password') {
           formData.encryption = 'full';
-          formData.certificates = JSON.stringify(scope.couchbase_link.certificates_temp);
-          delete scope.couchbase_link.certificates_temp;
+          formData.certificates = JSON.stringify(scope.couchbase_link.certificates);
         }
       }
 
       // client certificate and encrypted client certificate encryption types
       if (['full_client_certificate', 'full_encrypted_client_certificate'].includes(scope.couchbase_link.encryption_type)) {
-        formData.certificates = JSON.stringify(scope.couchbase_link.certificates_temp);
-        delete scope.couchbase_link.certificates_temp;
+        formData.certificates = JSON.stringify(scope.couchbase_link.certificates);
         formData.clientCertificate = scope.couchbase_link.client_certificate;
         formData.clientKey = scope.couchbase_link.client_key;
         formData.encryption = 'full';
@@ -2589,7 +2585,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             formData.clientKeyPassphrase.url = scope.couchbase_link.client_key_passphrase.url;
             formData.clientKeyPassphrase.timeout = scope.couchbase_link.client_key_passphrase.timeout;
             formData.clientKeyPassphrase.httpsOpts.verifyPeer = scope.couchbase_link.client_key_passphrase.https_opts.verify_peer;
-            var filtered = scope.couchbase_link.client_key_passphrase.http_headers_temp.filter(function(value, index, arr){
+            var filtered = scope.couchbase_link.client_key_passphrase.http_headers.filter(function(value, index, arr){
               return value.name != null && value.name != '';
             });
             if (filtered.length > 0) {
@@ -2675,11 +2671,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       // full encryption type
       if (apiData.encryption == 'full') {
         if (mnPoolDefault.export.compat.atLeast71) {
-          scope.couchbase_link.certificates = apiData.certificates;
-          scope.couchbase_link.certificates_temp = apiData.certificates.slice();  // copy-by-value of certificates
+          scope.couchbase_link.certificates = apiData.certificates.slice();  // copy-by-value of certificates
         } else {
           scope.couchbase_link.certificates = [apiData.certificate];
-          scope.couchbase_link.certificates_temp = [apiData.certificate];
         }
 
         // full encryption using username, password and cluster certificate
@@ -2710,14 +2704,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               scope.couchbase_link.client_key_passphrase.url = apiData.clientKeyPassphrase.url;
               scope.couchbase_link.client_key_passphrase.timeout = apiData.clientKeyPassphrase.timeout;
               scope.couchbase_link.client_key_passphrase.https_opts.verify_peer = apiData.clientKeyPassphrase.httpsOpts.verifyPeer;
-              scope.couchbase_link.client_key_passphrase.http_headers_temp = [];
+              scope.couchbase_link.client_key_passphrase.http_headers = [];
               if (apiData.clientKeyPassphrase.headers != null) {
                 for (const name in apiData.clientKeyPassphrase.headers) {
-                  scope.couchbase_link.client_key_passphrase.http_headers_temp.push({ "name": name, "value": apiData.clientKeyPassphrase.headers[name]});
+                  scope.couchbase_link.client_key_passphrase.http_headers.push({ "name": name, "value": apiData.clientKeyPassphrase.headers[name]});
                 }
               }
-              if (scope.couchbase_link.client_key_passphrase.http_headers_temp.length == 0) {
-                scope.couchbase_link.client_key_passphrase.http_headers_temp.push({"name": '', "value": ''});
+              if (scope.couchbase_link.client_key_passphrase.http_headers.length == 0) {
+                scope.couchbase_link.client_key_passphrase.http_headers.push({"name": '', "value": ''});
               }
             }
           }

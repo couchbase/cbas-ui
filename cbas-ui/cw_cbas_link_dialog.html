@@ -15,9 +15,9 @@ licenses/APL2.txt.
   </div>
   <form class="forms" name="linkForm">
     <div class="panel-content">
-      <div class="error error-form">
+      <div class="error error-form" style="word-break: break-word">
         <div ng-repeat="error in errors">
-          Attention: {{error}}
+          {{error}}
         </div>
       </div>
       <div class="formrow">
@@ -98,7 +98,7 @@ licenses/APL2.txt.
         </div>
         <div class="formrow" ng-if="showClusterCertificateField(options.couchbase_link.encryption_type)">
           <label>Remote Cluster Certificate(s)</label>
-          <div class="row" ng-repeat="certificate in options.couchbase_link.certificates_temp track by $index">
+          <div class="row" ng-repeat="certificate in options.couchbase_link.certificates track by $index">
             <textarea
                rows="5"
                class="monospaced certificate-props ng-binding"
@@ -106,12 +106,12 @@ licenses/APL2.txt.
                autocorrect="off"
                autocompleterg="off"
                spellcheck="false"
-               ng-model="options.couchbase_link.certificates_temp[$index]"
+               ng-model="options.couchbase_link.certificates[$index]"
                placeholder="Copy/paste a trusted root certificate from the remote cluster into this field. You can find the certificate(s) on the Couchbase Web Console under Security->Certificates."
                required>
             </textarea>
             <div style="width: 30px">
-              <button type="button" ng-if="options.couchbase_link.certificates_temp.length > 1" class="outline btn-small" title="Remove this cluster certificate." ng-click="removeCertificate($index)">-</button>
+              <button type="button" ng-if="options.couchbase_link.certificates.length > 1" class="outline btn-small" title="Remove this cluster certificate." ng-click="removeCertificate($index)">-</button>
               <button type="button" class="outline btn-small margin-left-0" title="Add a new cluster certificate." ng-click="addCertificate()">+</button>
             </div>
           </div>
@@ -224,12 +224,12 @@ licenses/APL2.txt.
               <label>Value</label>
             </div>
           </div>
-          <div class="row" ng-repeat="param in options.couchbase_link.client_key_passphrase.http_headers_temp track by $index">
+          <div class="row" ng-repeat="param in options.couchbase_link.client_key_passphrase.http_headers track by $index">
             <div class="column width-6" style="margin-bottom:.5rem">
-              <input placeholder="name" type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers_temp[$index].name" required>
+              <input placeholder="name" type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers[$index].name" required>
             </div>
             <div class="column width-6" style="margin-bottom:.5rem">
-              <input type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers_temp[$index].value">
+              <input type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers[$index].value">
             </div>
             <button ng-if="showHttpHeaderRemoveButton()" type="button" class="outline btn-small" title="Remove this HTTP header." ng-click="removeHttpHeader($index)">-</button>
             <button type="button" class="outline btn-small" title="Add new HTTP header." ng-click="addHttpHeader()">+</button>
@@ -455,8 +455,8 @@ licenses/APL2.txt.
     <div class="panel-footer" ng-class="{spaced: !options.is_new}">
       <a  ng-if="options.is_new" ng-click="$dismiss('cancel')">Cancel</a>
       <button ng-if="!options.is_new" class="outline" ng-click="$close('drop')">Drop Link</button>
-      <button ng-if="!options.is_new" class="outline"  ng-click="$dismiss('cancel')">Close Dialog</button>
-      <button ng-disabled="linkForm.$invalid" type="submit" ng-click="$close('ok')">Save</button>
+      <button ng-if="!options.is_new" class="outline"  ng-click="$dismiss('cancel')">Discard Changes</button>
+      <button ng-disabled="linkForm.$invalid" type="submit" ng-click="submitLink()">Save</button>
     </div>
   </form>
 </div>

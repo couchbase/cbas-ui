@@ -1449,58 +1449,61 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // callbacks for creating new links and new datasets
     //
 
-    var linkOptions = {
-      link_name: "",
-      link_type: "couchbase",
-      dataverse: "",
-      is_new: true,
-      couchbase_link: {
-        hostname: "",
-        encryption_type: "none",
-        username: "",
-        password: "",
-        certificates: [""],
-        client_certificate: "",
-        client_key: "",
-        client_key_passphrase: {
-          type: "plain",
+    function defaultLinkOptions() {
+      return {
+        link_name: "",
+        link_type: "couchbase",
+        dataverse: "",
+        is_new: true,
+        aws_regions: cwQueryService.awsRegions,
+        couchbase_link: {
+          hostname: "",
+          encryption_type: "none",
+          username: "",
           password: "",
-          url: "",
-          timeout: 30000,
-          https_opts: {
-            verify_peer: true
-            },
-          http_headers: [{ name: "", value: ""}]
+          certificates: [""],
+          client_certificate: "",
+          client_key: "",
+          client_key_passphrase: {
+            type: "plain",
+            password: "",
+            url: "",
+            timeout: 30000,
+            https_opts: {
+              verify_peer: true
+              },
+            http_headers: [{ name: "", value: ""}]
+          }
+        },
+        s3_link: {
+          access_key_id: "",
+          access_key: "",
+          session_token: "",
+          region: "",
+          endpoint: ""
+        },
+        azure_link: {
+          account_name: "",
+          account_key: "",
+          shared_access_signature: "",
+          managed_identity_id: "",
+          client_id: "",
+          tenant_id: "",
+          client_secret: "",
+          client_certificate: "",
+          is_client_certificate_password: false,
+          client_certificate_password: "",
+          auth_type: "anonymous",
+          endpoint: ""
+        },
+        gcs_link: {
+          auth_type: "anonymous",
+          json_credentials: ""
         }
-      },
-      s3_link: {
-        access_key_id: "",
-        access_key: "",
-        session_token: "",
-        region: "",
-        endpoint: ""
-      },
-      azure_link: {
-        account_name: "",
-        account_key: "",
-        shared_access_signature: "",
-        managed_identity_id: "",
-        client_id: "",
-        tenant_id: "",
-        client_secret: "",
-        client_certificate: "",
-        is_client_certificate_password: false,
-        client_certificate_password: "",
-        auth_type: "anonymous",
-        endpoint: ""
-      },
-      gcs_link: {
-        json_credentials: ""
-      }
-    };
+      };
+    }
     var linkDialogScope = $rootScope.$new(true);
     linkDialogScope.isDeveloperPreview = qc.isDeveloperPreview;
-    linkDialogScope.options = linkOptions;
     linkDialogScope.change_encryption = function() {
       if (!linkDialogScope.options.couchbase_link.demand_encryption)
         linkDialogScope.options.couchbase_link.encryption_type = "none";
@@ -1513,59 +1516,20 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       if (!qc.atLeast71)
         return;
 
+      linkDialogScope.create_dataverse = dataverse;
+
+      linkDialogScope.options = defaultLinkOptions();
       linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
       linkDialogScope.options.is_new = true;
+      linkDialogScope.errors = []
 
-      // couchbase
-      linkDialogScope.options.couchbase_link.password = "";
-      linkDialogScope.options.couchbase_link.client_key = "";
-      if (linkDialogScope.options.couchbase_link.client_key_passphrase.password) {
-        linkDialogScope.options.couchbase_link.client_key_passphrase.password = "";
-      }
-
-      // Prepare the temporary holders if they do not exist
-      if (!linkDialogScope.options.couchbase_link.certificates_temp) {
-        linkDialogScope.options.couchbase_link.certificates_temp = [""];
-      }
-      if (!linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp) {
-        linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp = [{ name: "", value: ""}];
-      }
       setCouchbaseLinkFunctions(linkDialogScope);
 
-      // aws s3
-      linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
-      linkDialogScope.options.s3_link.access_key = "";
-      linkDialogScope.options.s3_link.session_token = "";
-
-      // azure blob/datalake
-      linkDialogScope.options.azure_link.auth_type = "anonymous";
-      linkDialogScope.options.azure_link.account_key = "";
-      linkDialogScope.options.azure_link.shared_access_signature = "";
-      linkDialogScope.options.azure_link.client_secret = "";
-      linkDialogScope.options.azure_link.client_certificate = "";
-      linkDialogScope.options.azure_link.client_certificate_password = "";
-
-      // google cloud storage
-      linkDialogScope.options.gcs_link.auth_type = "anonymous";
-      linkDialogScope.options.gcs_link.json_credentials = "";
-
       // bring up the dialog
-      $uibModal.open({
+      linkDialogScope.modal = $uibModal.open({
         template: cwCbasLinkDialogTemplate,
         scope: linkDialogScope
-      }).result
-        .then(function success(resp) {
-          mnAlertsService.formatAndSetAlerts("Creating link " + linkDialogScope.options.link_name,'warning',10000);
-          cwQueryService.createLink(linkDialogScope.options,dataverse)
-            .then(function success(resp) {
-              qc.updateBuckets();
-            }, function error(resp) {
-              //console.log("Got create link error: " + JSON.stringify(resp));
-              cwQueryService.showErrorDialog(errorRespToString(resp,"Error creating link: "));
-            });
-
-        }, function error(resp) {
-        });
+      });
     }
 
     // make a user-visible error message based on the many possible ways that errors can exist in an HTTP response
@@ -1607,7 +1571,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       if (!qc.atLeast71)
         return;
       //console.log("Edit Link");
-      linkDialogScope.options.aws_regions = cwQueryService.awsRegions;
+      linkDialogScope.options = defaultLinkOptions();
 
       // get the info about the link
       var linkInfo = cwQueryService.getCachedLinkInfo(link.DVName, link.LinkName);
@@ -1626,18 +1590,19 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         if (linkDialogScope.options.couchbase_link.client_key_passphrase.password) {
            linkDialogScope.options.couchbase_link.client_key_passphrase.password = "";
         }
+        linkDialogScope.errors = []
+
         setCouchbaseLinkFunctions(linkDialogScope);
 
         // bring up the dialog
-        $uibModal.open({
+        linkDialogScope.modal = $uibModal.open({
           template: cwCbasLinkDialogTemplate,
           scope: linkDialogScope
-        }).result
-          .then(function success(resp) {
-
+        });
+        linkDialogScope.modal.result.then(function success(resp) {
             if (resp == "drop") {
               cwQueryService.showConfirmationDialog("Confirm Drop Link",
-                "Warning, this will drop the link: ",[dataverse.dataverseDisplayName + '.' + link.LinkName])
+                "Warning: this will drop the link: ",[dataverse.dataverseDisplayName + '.' + link.LinkName])
                 .then(function yes(resp) {
                   if (resp == "ok") {
                     cwQueryService.deleteLink(link.DVName, link.LinkName)
@@ -1652,17 +1617,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                   }
                 }, function no() {return Promise.resolve("no")});
             }
-
-            else if (resp == 'ok')
-              cwQueryService.editLink(linkDialogScope.options)
-              .then(function success(resp) {
-                qc.updateBuckets();
-              }, function error(resp) {
-                //console.log("Got create link error: " + JSON.stringify(resp));
-                //var errorStr = "Error creating link: " + (resp.data ? resp.data : JSON.stringify(resp));
-                cwQueryService.showErrorDialog(errorRespToString(resp,"Error editing link: "));
-              });
-
           }, function error(resp) {
           });
       }
@@ -2034,34 +1988,34 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // Set of functions used for couchbase links dialog
     function setCouchbaseLinkFunctions(linkDialogScope) {
       linkDialogScope.addCertificate = function() {
-        linkDialogScope.options.couchbase_link.certificates_temp.push("");
+        linkDialogScope.options.couchbase_link.certificates.push("");
       };
 
       linkDialogScope.removeCertificate = function(index) {
-        if (linkDialogScope.options.couchbase_link.certificates_temp.length == 1) {
-          linkDialogScope.options.couchbase_link.certificates_temp = [""];
+        if (linkDialogScope.options.couchbase_link.certificates.length == 1) {
+          linkDialogScope.options.couchbase_link.certificates = [""];
         } else {
-          linkDialogScope.options.couchbase_link.certificates_temp.splice(index, 1);
+          linkDialogScope.options.couchbase_link.certificates.splice(index, 1);
         }
       };
 
       linkDialogScope.addHttpHeader = function() {
-        linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.push({name: "", value: ""});
+        linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers.push({name: "", value: ""});
       };
 
       linkDialogScope.showHttpHeaderRemoveButton = function() {
-        let firstHeader = linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp[0];
-        return linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.length > 1
+        let firstHeader = linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers[0];
+        return linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers.length > 1
             || (firstHeader.name != null && firstHeader.name != '')
             || (firstHeader.value != null && firstHeader.value != '');
       }
 
       linkDialogScope.removeHttpHeader = function(index) {
-        if (linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.length == 1) {
-          linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp = [];
+        if (linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers.length == 1) {
+          linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers = [];
           linkDialogScope.addHttpHeader();
         } else {
-          linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers_temp.splice(index, 1);
+          linkDialogScope.options.couchbase_link.client_key_passphrase.http_headers.splice(index, 1);
         }
       }
 
@@ -2095,6 +2049,30 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       linkDialogScope.showRestPassphraseFields = function(encryptionType, passphraseType) {
         return encryptionType == 'full_encrypted_client_certificate' && passphraseType == 'rest';
+      }
+
+      linkDialogScope.submitLink = function() {
+        if (linkDialogScope.options.is_new) {
+          cwQueryService.createLink(linkDialogScope.options,linkDialogScope.create_dataverse)
+              .then(function success(resp) {
+                linkDialogScope.modal.close('ok')
+                mnAlertsService.formatAndSetAlerts("Created " + linkDialogScope.options.link_type + " link "
+                    + linkDialogScope.options.dataverse + '.' + linkDialogScope.options.link_name,'success',2000);
+                qc.updateBuckets();
+              }, function error(resp) {
+                linkDialogScope.errors = [errorRespToString(resp,"Error creating link: ")];
+                document.getElementsByClassName('panel-header')[0].scrollIntoView(true);
+              });
+          return;
+        }
+        cwQueryService.editLink(linkDialogScope.options)
+            .then(function success(resp) {
+              linkDialogScope.modal.close('ok')
+              qc.updateBuckets();
+            }, function error(resp) {
+              linkDialogScope.errors = [errorRespToString(resp,"Error editing link: ")];
+              document.getElementsByClassName('panel-header')[0].scrollIntoView(true);
+            });
       }
     }
 
