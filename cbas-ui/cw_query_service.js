@@ -2707,7 +2707,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               scope.couchbase_link.client_key_passphrase.http_headers = [];
               if (apiData.clientKeyPassphrase.headers != null) {
                 for (const name in apiData.clientKeyPassphrase.headers) {
-                  scope.couchbase_link.client_key_passphrase.http_headers.push({ "name": name, "value": apiData.clientKeyPassphrase.headers[name]});
+                  let value;
+                  if (name.toLowerCase() == 'authorization') {
+                    // Authorization values are redacted in the REST response; clear the redacted value for the form
+                    value = ''
+                  } else {
+                    value = apiData.clientKeyPassphrase.headers[name];
+                  }
+                  scope.couchbase_link.client_key_passphrase.http_headers.push({"name": name, "value": value});
                 }
               }
               if (scope.couchbase_link.client_key_passphrase.http_headers.length == 0) {
