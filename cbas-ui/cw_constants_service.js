@@ -98,7 +98,7 @@ function getCwConstantsService() {
     "  concat2(', ', (select value FieldName || ' ' || (" +
     "          CASE WHEN lower(FieldType) = 'int64' THEN 'BIGINT'" +
     "               ELSE upper(FieldType) END) || (" +
-    "          CASE WHEN NOT IsNullable AND NOT IsMissable THEN ' IS NOT UNKNOWN'" +
+    "          CASE WHEN NOT IsNullable AND NOT IsMissable THEN ' NOT UNKNOWN'" +
     "               ELSE '' END)" +
     "        from t.Derived.Record.Fields)) AS TypeString," +
     "  ( SELECT " +
