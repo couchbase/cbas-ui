@@ -226,10 +226,14 @@ licenses/APL2.txt.
           </div>
           <div class="row" ng-repeat="param in options.couchbase_link.client_key_passphrase.http_headers track by $index">
             <div class="column width-6" style="margin-bottom:.5rem">
-              <input placeholder="name" type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers[$index].name" required>
+              <input placeholder="name" type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers[$index].name"
+                     ng-required="options.couchbase_link.client_key_passphrase.http_headers[$index].value != ''">
             </div>
-            <div class="column width-6" style="margin-bottom:.5rem">
-              <input type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers[$index].value">
+            <div class="column width-6" style="margin-bottom:.5rem"
+                 ng-switch on="options.couchbase_link.client_key_passphrase.http_headers[$index].name != null
+                    && options.couchbase_link.client_key_passphrase.http_headers[$index].name.toLowerCase() == 'authorization'">
+              <input ng-switch-when="true" type="password" ng-model="options.couchbase_link.client_key_passphrase.http_headers[$index].value">
+              <input ng-switch-when="false" type="text" ng-model="options.couchbase_link.client_key_passphrase.http_headers[$index].value">
             </div>
             <button ng-if="showHttpHeaderRemoveButton()" type="button" class="outline btn-small" title="Remove this HTTP header." ng-click="removeHttpHeader($index)">-</button>
             <button type="button" class="outline btn-small" title="Add new HTTP header." ng-click="addHttpHeader()">+</button>
