@@ -365,10 +365,8 @@ licenses/APL2.txt.
             <div ng-if="dataverse.views && dataverse.views.length">
               <div class="row margin-left-half margin-right-half margin-top-half">
                 <span class="row flex-left ellipsis">
-                  <h6 class="ellipsis margin-right-quarter"
-                      ng-class="{'cursor-pointer' : link.LinkName != 'Local'}"
-                      ng-click="link.LinkName != 'Local' && qc.editLink(link,dataverse)">
-                    <span class="ellipsis" ng-if="link.DVName != dataverse.DataverseName">
+                  <h6 class="ellipsis margin-right-quarter">
+                    <span class="ellipsis">
                       Analytics Views
                     </span>
                   </h6>
@@ -383,8 +381,7 @@ licenses/APL2.txt.
                        class="disclosure padding-left-1 ellipsis"
                        ng-click="shadow.expanded = !shadow.expanded"
                        ng-class="{disclosed : shadow.expanded}">
-                      <span
-                         class="icon fa-database text-smaller grayblue-2 margin-right-quarter"></span>
+                      <span class="icon fa-eye text-smaller grayblue-2 margin-right-quarter"></span>
                       {{view.id}}
                     </div>
 
