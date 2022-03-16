@@ -27,7 +27,14 @@ cbasController.$inject = ["$rootScope", "$stateParams", "$uibModal", "$timeout",
 function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQueryService, validateCbasService, mnPools, $scope, cwConstantsService, mnPoolDefault, mnAlertsService, mnServersService, $interval, qwJsonCsvService, qwCollectionsService, qwDialogService) {
     var qc = this;
     var statsRefreshInterval = 5000;
-    var updateEditorSizes = _.throttle(updateEditorSizesInner, 100);
+    var toggleInputEditor = _.throttle(toggleInputEditorInner, 100, {trailing: true});
+
+    function collapseInputEditor() {
+      toggleInputEditor(false);
+    }
+    function expandInputEditor() {
+      toggleInputEditor(true);
+    }
 
     qc.isDeveloperPreview = function() {return cwQueryService.pools.isDeveloperPreview;};
 
@@ -79,6 +86,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     qc.prev = prevResult;
     qc.next = nextResult;
+    qc.stopPropagation = stopPropagation;
 
     qc.hasNext = cwQueryService.hasNextResult;
     qc.hasPrev = cwQueryService.hasPrevResult;
@@ -109,7 +117,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.aceInputChanged = aceInputChanged;
     qc.aceOutputLoaded = aceOutputLoaded;
     qc.aceOutputChanged = aceOutputChanged;
-    qc.updateEditorSizes = updateEditorSizes;
 
     qc.acePlanLoaded = acePlanLoaded;
     qc.acePlanChanged = acePlanChanged;
@@ -288,7 +295,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     function setShowBigData(show) {
       qc.showBigDatasets = show;
-      $timeout(swapEditorFocus, 10);
     }
 
     //
@@ -301,8 +307,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       qc.showBigDatasets = false;
       cwQueryService.selectTab(tabNum);
-      // select focus after a delay to try and force update of the editor
-      $timeout(swapEditorFocus, 10);
     };
 
     //
@@ -310,31 +314,22 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // user creates a new blank query, we need to refocus on it.
     //
 
-    function nextResult() {
+    function stopPropagation($event) {
+      $event.stopPropagation();
+    }
+
+    function nextResult($event) {
+      stopPropagation($event);
       qc.showBigDatasets = false;
       cwQueryService.nextResult();
       qc.result_subject.next(cwQueryService.getPastQueries()[cwQueryService.getCurrentIndexNumber()]);
-      $timeout(swapEditorFocus, 10);
     }
 
-    function prevResult() {
+    function prevResult($event) {
+      stopPropagation($event);
       qc.showBigDatasets = false;
       cwQueryService.prevResult();
       qc.result_subject.next(cwQueryService.getPastQueries()[cwQueryService.getCurrentIndexNumber()]);
-      $timeout(swapEditorFocus, 10);
-    }
-
-    //
-    // the text editor doesn't update visually if changed when off screen. Force
-    // update by focusing on it
-    //
-
-    function swapEditorFocus() {
-      if (qc.outputEditor) {
-        qc.outputEditor.focus();
-        qc.inputEditor.focus();
-      }
-      updateEditorSizes();
     }
 
     //
@@ -376,9 +371,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       // for inserts, by default move the cursor to the end of the insert
 
       if (e[0].action === 'insert') {
-        updateEditorSizes();
         qc.inputEditor.moveCursorToPosition(e[0].end);
-        qc.inputEditor.focus();
+        expandInputEditor();
 
         // if they pasted more than one line, and we're at the end of the editor, trim
         var pos = qc.inputEditor.getCursorPosition();
@@ -423,6 +417,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       qc.inputEditor = _editor;
 
+      _editor.on("focus", expandInputEditor);
+
       //
       // only support auto-complete if we're in enterprise mode
       //
@@ -432,7 +428,11 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         autocomplete.Autocomplete.startCommand.bindKey = "Ctrl-Space|Ctrl-Shift-Space|Alt-Space|Tab";
         autocomplete.Autocomplete.startCommand.exec = autocomplete_exec;
         // enable autocomplete
-        _editor.setOptions({enableBasicAutocompletion: true});
+        _editor.setOptions({
+          enableBasicAutocompletion: true,
+          minLines: 3,
+          maxLines: Infinity
+        });
         // add completer that works with path expressions with '.'
         langTools.setCompleters([identifierCompleter, langTools.keyWordCompleter]);
       }
@@ -588,11 +588,9 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         _editor.renderer.scrollBarV.width = 20; // fix for missing scrollbars in Safari
 
       qc.outputEditor = _editor;
-      updateEditorSizes();
     };
 
     function aceOutputChanged(e) {
-      updateEditorSizes();
 
       // show a placeholder when nothing has been typed
       var curSession = qc.outputEditor.getSession();
@@ -623,7 +621,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         _editor.renderer.scrollBarV.width = 20; // fix for missing scrollbars in Safari
 
       //qc.outputEditor = _editor;
-      updateEditorSizes();
     }
 
     function acePlanChanged(e) {
@@ -633,8 +630,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         qc.planEditor.session.setMode("ace/mode/text");
       }
       //e.$blockScrolling = Infinity;
-
-      updateEditorSizes();
     }
 
     //
@@ -642,64 +637,19 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // since it doesn't auto-resize
     //
 
-    function updateEditorSizesInner() {
-      var totalHeight = window.innerHeight - 130; // window minus header size
-      qc.aceEditorHeight = 0;
-
-      // how much does the query editor need?
-      if (qc.inputEditor) {
-        // give the query editor at least 3 lines, but it might want more if the query has > 3 lines
-        var lines = qc.inputEditor.getSession().getLength();       // how long in the query?
-        var desiredQueryHeight = Math.max(23, (lines - 1) * 22 - 11);         // make sure height no less than 23
-
-        // when focused on the query editor, give it up to 3/4 of the total height, but make sure the results
-        // never gets smaller than 270
-        var maxEditorSize = Math.min(totalHeight * 3 / 4, totalHeight - 270);
-
-        // if the user has been clicking on the results, minimize the query editor
-        if (qc.userInterest == 'results')
-          qc.aceEditorHeight = 23;//Math.min(totalHeight/5,desiredQueryHeight); // 1/5 space for editor, more for results
-        else
-          qc.aceEditorHeight = Math.min(maxEditorSize, desiredQueryHeight);      // don't give it more than it wants
-
-        $timeout(resizeInputEditor, 200); // wait until after transition
-      }
+  function toggleInputEditorInner(expandMe) {
+    if (!qc.inputEditor) {
+      return;
     }
-
-    //
-    // convenience functions for safely refreshing the ACE editors
-    //
-
-    function resizeInputEditor() {
-      try {
-        if (qc.inputEditor && qc.inputEditor.renderer && qc.inputEditor.resize)
-          qc.inputEditor.resize();
-      } catch (e) {
-        console.log("Input error: " + e);/*ignore*/
-      }
+    if (expandMe) {
+      let lineHeight = qc.inputEditor.renderer.lineHeight;
+      let totalHeight = window.innerHeight;
+      let desiredQuerylines = (totalHeight * 0.5 - 130) / lineHeight;
+      qc.inputEditor.setOption('maxLines', Math.round(desiredQuerylines));
+    } else {
+      qc.inputEditor.setOption('maxLines', 3);
     }
-
-    function resizeOutputEditor() {
-      try {
-        if (qc.outputEditor && qc.outputEditor.renderer && qc.outputEditor.resize)
-          qc.outputEditor.resize();
-      } catch (e) {
-        console.log("Output error: " + e);/*ignore*/
-      }
-    }
-
-    angular.element(window)
-      .off('resize', updateEditorSizes)
-      .on('resize', updateEditorSizes);
-
-    //
-    // keep track of which parts of the UI the user is clicking, indicating their interest
-    //
-
-    qc.handleClick = function (detail) {
-      qc.userInterest = detail;
-      updateEditorSizes();
-    }
+  }
 
     //
     // make the focus go to the input field, so that backspace doesn't trigger
@@ -819,10 +769,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       // now update everything
       qc.inputEditor.setReadOnly(false);
-      qc.userInterest = 'results';
       qc.markerIds = markerIds;
-      updateEditorSizes();
-      focusOnInput();
+      collapseInputEditor();
 
       // check if updating bucket insights is needed
       if (qc.lastResult.status == "success") {
@@ -1247,7 +1195,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       updateValidNodes();
 
-      $rootScope.$on("nodesChanged", function () {
+      let nodesChangedUnsubscribe = $rootScope.$on("nodesChanged", function () {
         mnServersService.getNodes().then(function (nodes) {
           if (prev_active_nodes && !nodeListsEqual(prev_active_nodes, nodes.active)) {
             updateValidNodes();
@@ -1267,22 +1215,27 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         cwQueryService.addNewQueryAtEndOfHistory($stateParams.query);
       }
 
-      angular.element(document)
-        .off('keydown', handleKeydown)
-        .on('keydown', handleKeydown);
-
+      angular.element(document).on('keydown', handleKeydown);
+      angular.element(document).on('click', collapseInputEditor);
+      angular.element(window).on('resize', expandInputEditor);
 
       // schedule a timer to poll analytics stats
       if (!cwQueryService.pollShadowingStats) {
         cwQueryService.pollShadowingStats = $interval(function () {
           $rootScope.$broadcast("pollAnalyticsShadowingStats");
         }, statsRefreshInterval);
+      }
 
-        $scope.$on('$destroy', function () {
+      $scope.$on('$destroy', function () {
+        if (cwQueryService.pollShadowingStats) {
           $interval.cancel(cwQueryService.pollShadowingStats);
           cwQueryService.pollShadowingStats = null;
-        });
-      }
+        }
+        angular.element(document).off('keydown', handleKeydown);
+        angular.element(document).off('click', collapseInputEditor);
+        angular.element(window).off('resize', expandInputEditor);
+        nodesChangedUnsubscribe();
+      });
 
       // get the list of buckets
       qc.updateBuckets();
@@ -1295,11 +1248,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       //
 
       qc.result_subject.next(qc.lastResult);
-
-      //
-      // now let's make sure the window is the right size
-      //
-      $timeout(updateEditorSizes(), 100);
     }
 
     // hide & show the datasets sidebar + the main navigation sidebar

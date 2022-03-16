@@ -35,12 +35,12 @@ licenses/APL2.txt.
 <!-- query editor header, main editor area, and results footer ---------------->
     <div class="wb-query-editor">
 <!-- Editor "header row" ------------------------------------------------------>
-      <div class="wb-query-editor-header" ng-click="qc.handleClick('editor')">
+      <div class="wb-query-editor-header">
         <h5>Query Editor</h5>
         <span>
           <button
              title="View previous queries/results"
-             ng-click="qc.prev()"
+             ng-click="qc.prev($event)"
              qw-long-press="qc.historyMenu"
              class="outline btn-small"
              ng-disabled="!qc.hasPrev()">
@@ -52,7 +52,7 @@ licenses/APL2.txt.
           </span>
           <button
              title="View subsequent queries/results"
-             ng-click="qc.next()"
+             ng-click="qc.next($event)"
              qw-long-press="qc.historyMenu"
              class="outline btn-small"
              ng-disabled="!qc.hasNext()">
@@ -75,11 +75,12 @@ licenses/APL2.txt.
 
 <!-- Ace editor --------------------------------------------------------------->
       <div
-         class="wb-ace-editor" ng-click="qc.handleClick('editor')"
+         ng-click="qc.stopPropagation($event)"
+         class="wb-ace-editor"
          ui-ace="qc.aceInputOptions"
+         style="padding:0!important;"
          ng-disabled="qc.executingQuery.busy"
-         ng-model="qc.lastResult.query"
-         ng-style="{'height': qc.aceEditorHeight + 'px'}">
+         ng-model="qc.lastResult.query">
       </div>
 
 <!-- wrapper under query editor for button and stats -------------------------->
@@ -149,7 +150,7 @@ licenses/APL2.txt.
     </div>
 
 <!-- query results ------------------------------------------------------------>
-    <div class="wb-results-header" ng-click="qc.handleClick('results')">
+    <div class="wb-results-header">
       <h4>Query Results
         <a ng-click="qc.copyResultAsCSV()" title="Copy results in tabular format" class="margin-left-half">
           <span class="icon fa-copy"></span>
@@ -178,7 +179,7 @@ licenses/APL2.txt.
       </span>
     </div>
 
-    <div class="wb-results-wrapper" ng-click="qc.handleClick('results')">
+    <div class="wb-results-wrapper">
       <div class="wb-results-show-anyway" ng-if="!qc.showBigDatasets && qc.dataTooBig()">
         <div ng-bind-html="qc.getBigDataMessage()"></div>
         <a ng-click="qc.setShowBigData(true)" class="text-medium link-heavy">
