@@ -625,6 +625,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function canCreateBlankQuery() {
     return (currentQueryIndex == pastQueries.length - 1 &&
+            (lastResult.query !== void 0) &&
       lastResult.query.trim() === pastQueries[pastQueries.length - 1].query.trim() &&
       lastResult.status != newQueryTemplate.status &&
       !cwQueryService.executingQuery.busy);
@@ -649,6 +650,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       // history
 
       if (currentQueryIndex === (pastQueries.length - 1) &&
+          (lastResult.query !== void 0) &&
         lastResult.query.trim() !== pastQueries[pastQueries.length - 1].query.trim()) {
         var newResult = newQueryTemplate.clone();
         newResult.query = lastResult.query;
@@ -1013,7 +1015,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     // or current query is "not yet run",
     // update the results from the history
 
-    if ((currentQueryIndex < pastQueries.length &&
+    if ((currentQueryIndex < pastQueries.length && (lastResult.query !== void 0) &&
       lastResult.query.trim() === pastQueries[currentQueryIndex].query.trim()) ||
       (lastResult.status == newQueryTemplate.status)) {
       newResult = executingQueryTemplate.clone();
