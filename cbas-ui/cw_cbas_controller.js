@@ -1697,7 +1697,22 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       datasetDialogScope.options = dataset_options;
       datasetDialogScope.isExternalCollection = cwConstantsService.isExternalCollection;
       datasetDialogScope.requireTypeDefinition = cwConstantsService.requireTypeDefinition;
-      datasetDialogScope.isParquetSupported = cwConstantsService.isParquetSupported;
+      datasetDialogScope.showParquet = function(linkType) {
+        // check if link type supports parquet
+        var supported = cwConstantsService.isParquetSupported(linkType);
+        if (!supported) {
+          return false;
+        }
+
+        // link type supports parquet, check if developer preview is required
+        var developerPreviewNeeded = cwConstantsService.isParquetRequiresDeveloperPreview(linkType);
+        if (!developerPreviewNeeded) {
+          return true;
+        }
+
+        // developer preview is required, check if it is enabled
+        return qc.isDeveloperPreview();
+      }
 
       // bring up the dialog
       $uibModal.open({

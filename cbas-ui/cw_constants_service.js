@@ -218,6 +218,9 @@ function getCwConstantsService() {
   cwConstantsService.supportedExternalCollectionFormats = ['json', 'csv', 'tsv'];
   cwConstantsService.linkTypesSupportingParquet = ['s3', 'azureblob', 'azuredatalake'];
 
+  // types that required developer preview, once all types are GAed, this field can be removed
+  cwConstantsService.linkTypeParquetRequiresDeveloperPreview = ['azureblob', 'azuredatalake'];
+
   cwConstantsService.isExternalCollection = function (type) {
     return cwConstantsService.externalCollectionTypes.includes(type)
   };
@@ -228,6 +231,11 @@ function getCwConstantsService() {
 
   cwConstantsService.isParquetSupported = function (linkType) {
     return cwConstantsService.linkTypesSupportingParquet.includes(linkType);
+  };
+
+  // types that required developer preview, once all types are GAed, this function can be removed
+  cwConstantsService.isParquetRequiresDeveloperPreview = function (linkType) {
+    return cwConstantsService.linkTypeParquetRequiresDeveloperPreview.includes(linkType);
   };
   // external collection constants end
 
