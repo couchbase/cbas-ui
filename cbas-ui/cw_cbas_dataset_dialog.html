@@ -93,6 +93,33 @@ licenses/APL2.txt.
           </select>
         </div>
 
+        <div class="formrow"
+             ng-if="options.external_dataset.format == 'parquet'"
+             ng-click="options.toggle_decimal_to_double()">
+          <input ng-model="options.external_dataset.decimal_to_double" type="checkbox"
+                 name="decimal_to_double">
+          <label for="decimal_to_double">Convert Decimal to Double</label>
+        </div>
+
+        <div class="formrow"
+             ng-if="options.external_dataset.format == 'parquet'"
+             ng-click="options.toggle_parse_json_string()">
+          <input ng-model="options.external_dataset.parse_json_string" type="checkbox"
+                 name="parse_json_string">
+          <label for="decimal_to_double">Parse JSON string</label>
+        </div>
+
+        <div class="formrow" ng-if="options.external_dataset.format == 'parquet'">
+          <label style="display: inline-block">Timezone</label>
+          <span class="fa-stack icon-info"
+                uib-tooltip='Timezone to convert `datetime` types to'>
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <input ng-model="options.external_dataset.timezone" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off">
+        </div>
+
         <div class="formrow margin-left-1"
              ng-if="isExternalCollection(options.link_details.type) && requireTypeDefinition(options.external_dataset.format)">
           <label style="display: inline-block">Type definition</label>

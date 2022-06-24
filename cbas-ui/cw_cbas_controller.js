@@ -1533,6 +1533,9 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         path: "",
         format: "json",
         header: true,
+        decimal_to_double: false,
+        parse_json_string: true,
+        timezone: "",
         inline_type_def: "",
         null_value: "",
         include: "",
@@ -1555,6 +1558,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     dataset_options.toggle_header = function() {
       dataset_options.external_dataset.header = !dataset_options.external_dataset.header;
     }
+
+    dataset_options.toggle_decimal_to_double = function() {
+      dataset_options.external_dataset.decimal_to_double = !dataset_options.external_dataset.decimal_to_double;
+    }
+
+    dataset_options.toggle_parse_json_string = function() {
+          dataset_options.external_dataset.parse_json_string = !dataset_options.external_dataset.parse_json_string;
+        }
 
     // called when MapDialog first comes up, want latest list of buckets
     dataset_options.update_buckets = function() {
@@ -1755,6 +1766,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                 queryText += ', "null": "' + dataset_options.external_dataset.null_value + '"';
               }
             }
+
+            // parquet related properties
+            if (dataset_options.external_dataset.format == 'parquet') {
+              queryText += ', "decimal-to-double": ' + dataset_options.external_dataset.decimal_to_double;
+              queryText += ', "parse-json-string": ' + dataset_options.external_dataset.parse_json_string;
+              queryText += ', "timezone": "' + dataset_options.external_dataset.timezone + '"';
+            }
+
             if (dataset_options.external_dataset.include)
               queryText += ', "include": ' + dataset_options.external_dataset.include;
 
