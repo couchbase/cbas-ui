@@ -1255,6 +1255,24 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             //        console.log("Success Headers: " + JSON.stringify(headers));
             //        console.log("Success Config: " + JSON.stringify(config));
 
+            // make sure "data" is not an error we are reporting
+            var failureRegex = /\{"status":\s".*"\}/ig;
+            if (failureRegex.exec(data)) {
+              newResult.result = data;
+              newResult.data = data;
+              newResult.status = "errors";
+              newResult.resultCount = 0;
+              newResult.resultSize = 0;
+              newResult.processedObjects = 0;
+              newResult.warningCount = 0;
+              newResult.queryDone = true;
+
+              // make sure to only finish if the explain query is also done
+              lastResult.copyIn(newResult);
+              finishQuery();
+              return;
+            }
+
             var result; // hold the result, or a combination of errors and result
             var isEmptyResult = (!_.isArray(data.results) || data.results.length == 0);
 
@@ -2137,62 +2155,67 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //
 
   function fixLongInts(rawBytes) {
-    if (!rawBytes)
-      return rawBytes;
+    try {
+      if (!rawBytes)
+        return rawBytes;
 
-    var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|([:\s]\-?[0-9]{16,})[,\s}]|([:\s]\-?[0-9\.]{17,})[,\s}]/ig;
-    var longIntCount = 0;
-    var matchArray = matchNonQuotedLongInts.exec(rawBytes);
-    while (matchArray != null) {
-      if (matchArray[1]) // group 1, a non-quoted long int
-        longIntCount++;
-      matchArray = matchNonQuotedLongInts.exec(rawBytes);
-    }
-
-    //console.log("Got response, longIntcount: " + longIntCount + ", raw bytes: " + rawBytes);
-
-    // if no long ints, just return the original bytes parsed
-
-    if (longIntCount == 0) try {
-      return (JSON.parse(rawBytes));
-    } catch (e) {
-      return (rawBytes);
-    }
-
-    // otherwise copy the raw bytes, replace all long ints in the copy, and add the raw bytes as a new field on the result
-    else {
-      matchNonQuotedLongInts.lastIndex = 0;
-      matchArray = matchNonQuotedLongInts.exec(rawBytes);
-      //console.log("Old raw: " + rawBytes);
-      var result = JSON.parse(rawBytes);
-      var newBytes = "";
-      var curBytes = rawBytes;
-
+      var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|([:\s]\-?[0-9]{16,})[,\s}]|([:\s]\-?[0-9\.]{17,})[,\s}]/ig;
+      var longIntCount = 0;
+      var matchArray = matchNonQuotedLongInts.exec(rawBytes);
       while (matchArray != null) {
-        if (matchArray[1]) { // group 1, a non-quoted long int
-          //console.log("  Got longInt: " + matchArray[1] + " with lastMatch: " + matchNonQuotedLongInts.lastIndex);
-          //console.log("  remainder: " + rawBytes.substring(matchNonQuotedLongInts.lastIndex));
-          var matchLen = matchArray[1].length;
-          newBytes += curBytes.substring(0, matchNonQuotedLongInts.lastIndex - matchLen - 1) + '"' +
-            matchArray[1] + '"';
-          curBytes = curBytes.substring(matchNonQuotedLongInts.lastIndex - 1);
-          matchNonQuotedLongInts.lastIndex = 0;
-        }
-        matchArray = matchNonQuotedLongInts.exec(curBytes);
+        if (matchArray[1]) // group 1, a non-quoted long int
+          longIntCount++;
+        matchArray = matchNonQuotedLongInts.exec(rawBytes);
       }
-      newBytes += curBytes;
-      //console.log("New raw: " + newBytes);
-      result = JSON.parse(newBytes);
 
-      // see if we can pull just the result out of the rawBytes
-      var rawResult = findResult(rawBytes);
+      //console.log("Got response, longIntcount: " + longIntCount + ", raw bytes: " + rawBytes);
 
-      if (rawResult)
-        result.rawJSON = '\t' + rawResult;
-      else
-        result.rawJSON = rawBytes;
+      // if no long ints, just return the original bytes parsed
 
-      return result;
+      if (longIntCount == 0) try {
+        return (JSON.parse(rawBytes));
+      } catch (e) {
+        return (rawBytes);
+      }
+
+      // otherwise copy the raw bytes, replace all long ints in the copy, and add the raw bytes as a new field on the result
+      else {
+        matchNonQuotedLongInts.lastIndex = 0;
+        matchArray = matchNonQuotedLongInts.exec(rawBytes);
+        //console.log("Old raw: " + rawBytes);
+        var result = JSON.parse(rawBytes);
+        var newBytes = "";
+        var curBytes = rawBytes;
+
+        while (matchArray != null) {
+          if (matchArray[1]) { // group 1, a non-quoted long int
+            //console.log("  Got longInt: " + matchArray[1] + " with lastMatch: " + matchNonQuotedLongInts.lastIndex);
+            //console.log("  remainder: " + rawBytes.substring(matchNonQuotedLongInts.lastIndex));
+            var matchLen = matchArray[1].length;
+            newBytes += curBytes.substring(0, matchNonQuotedLongInts.lastIndex - matchLen - 1) + '"' +
+            matchArray[1] + '"';
+            curBytes = curBytes.substring(matchNonQuotedLongInts.lastIndex - 1);
+            matchNonQuotedLongInts.lastIndex = 0;
+          }
+          matchArray = matchNonQuotedLongInts.exec(curBytes);
+        }
+        newBytes += curBytes;
+        //console.log("New raw: " + newBytes);
+        result = JSON.parse(newBytes);
+
+        // see if we can pull just the result out of the rawBytes
+        var rawResult = findResult(rawBytes);
+
+        if (rawResult)
+          result.rawJSON = '\t' + rawResult;
+        else
+          result.rawJSON = rawBytes;
+
+        return result;
+      }
+    } catch (error) {
+      // do not return the response data as it might be incorrect
+      return '{"status": "Result is returned but cannot be displayed"}';
     }
   }
 
