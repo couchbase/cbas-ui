@@ -39,7 +39,7 @@ licenses/APL2.txt.
           <option value="s3">S3</option>
           <option value="azureblob">Azure Blob</option>
           <option value="azuredatalake" ng-if="isDeveloperPreview()">Azure Datalake</option>
-          <option value="gcs" ng-if="isDeveloperPreview()">Google Cloud</option>
+          <option value="gcs">Google Cloud Storage</option>
         </select>
       </div>
 
@@ -439,6 +439,7 @@ licenses/APL2.txt.
         <div class="formrow">
           <select id="gcs_auth_type" ng-model="options.gcs_link.auth_type" required>
             <option value="anonymous">Anonymous (No credentials/authentication)</option>
+            <option value="applicationdefaultcredentials">Application Default Credentials</option>
             <option value="jsoncredentials">JSON Credentials</option>
           </select>
         </div>

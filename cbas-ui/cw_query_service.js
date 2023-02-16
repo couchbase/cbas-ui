@@ -2671,7 +2671,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             }
         }
     } else if (scope.link_type == "gcs") {
-        if (scope.gcs_link.auth_type == "jsoncredentials") {
+        if (scope.gcs_link.auth_type === "applicationdefaultcredentials") {
+          formData.applicationDefaultCredentials = "true"
+        }
+        else if (scope.gcs_link.auth_type === "jsoncredentials") {
           formData.jsonCredentials = scope.gcs_link.json_credentials;
         }
     }
@@ -2785,7 +2788,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       scope.azure_link.client_certificate = "";
       scope.azure_link.client_certificate_password = "";
     } else if (apiData.type == "gcs") {
-      if (apiData.jsonCredentials) {
+      if (apiData.applicationDefaultCredentials) {
+        scope.gcs_link.auth_type = "applicationdefaultcredentials"
+      }
+      else if (apiData.jsonCredentials) {
         scope.gcs_link.auth_type = "jsoncredentials";
       } else {
         scope.gcs_link.auth_type = "anonymous";
