@@ -1693,9 +1693,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           } else {
             beforePromise = Promise.resolve();
           }
-          beforePromise.then(result => executeStatementList(statements, collections, function error(resp) {
-            cwQueryService.showErrorDialog(errorRespToString(resp, "Error mapping collection " + collections[index] + ": "));
-          }).then(result => {
+          beforePromise.then(result => executeStatementList(statements, collections).then(result => {
             let afterPromise;
             if (linksToSuspendResume.size > 0) {
               afterStatements.push("connect link " + Array.from(linksToSuspendResume).join() + ";");
@@ -1714,9 +1712,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         });
     }
   // execute a list of statements
-    function executeStatementList(queryList, collections, onError = function error(resp) {
-      // default is to ignore errors
-    }) {
+    function executeStatementList(queryList, collections) {
       var promises = [];
       for (let index = 0; index < queryList.length; index++) {
         promises.push(cwQueryService.executeQueryUtil(queryList[index], false, false)
@@ -1724,7 +1720,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                   if (queryList[index].startsWith("alter collection") && collections && collections[index])
                     mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
                 },
-                onError))
+                function error(resp) {
+                  if (queryList[index].startsWith("alter collection") && collections && collections[index])
+                    cwQueryService.showErrorDialog(errorRespToString(resp, "Error mapping collection " + collections[index] + ": "));
+                }))
       }
       return Promise.allSettled(promises);
     }
