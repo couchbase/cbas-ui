@@ -389,16 +389,17 @@ licenses/APL2.txt.
         </div>
         <div class="formrow" ng-if="options.azure_link.auth_type == 'clientcertificate'">
           <label>Client Certificate</label>
-          <input
-            ng-model="options.azure_link.client_certificate"
-            type="password"
-            rows="4"
+          <textarea
+            rows="5"
+            class="monospaced certificate-props ng-binding"
+            style="word-break: break-word;max-width: 480px"
             autocorrect="off"
+            autocompleterg="off"
             spellcheck="false"
-            autocapitalize="off"
-            mn-autocomplete-off
-            autocomplete="one-time-code"
+            ng-model="options.azure_link.client_certificate"
+            placeholder="Copy/paste the certificate and the private key."
             required>
+            </textarea>
         </div>
         <div class="formrow" ng-if="options.azure_link.auth_type == 'clientsecret' ||
                                     options.azure_link.auth_type == 'clientcertificate'">
