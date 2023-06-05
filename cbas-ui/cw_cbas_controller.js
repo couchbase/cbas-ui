@@ -51,7 +51,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     //
 
     qc.dataverses = cwQueryService.dataverses;          // dataverses
-    qc.dataverse_links = cwQueryService.dataverse_links; // all links used in each dataverse
     qc.shadows = cwQueryService.shadows;                // shadow datasets on cluster
     qc.clusterBuckets = cwQueryService.clusterBuckets; // all cluster buckets
     qc.gettingBuckets = cwQueryService.gettingBuckets;  // busy retrieving?
@@ -1389,7 +1388,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         },
         gcs_link: {
           auth_type: "anonymous",
-          json_credentials: ""
+          json_credentials: "",
+          endpoint: ""
         }
       };
     }
@@ -1655,38 +1655,78 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
-          var queries = [];
+          var beforeStatements = [];
+          var statements = [];
+          var afterStatements = [];
           var collections = [];
+          var scopesToCreate = new Set();
+          var linksToSuspendResume = new Set();
           for (const selection in dataset_options.selected_collections) {
             var details = selection.split('`');
-            queries.push("alter collection `" + details[0] + "`.`" +
+            const localLinkName = "`" + details[0] + "`.`" + details[1] + "`.Local";
+            const dataverseLinks = cwQueryService.dataverse_links[details[0] + "/" + details[1]];
+            if (dataverseLinks) {
+              // dataverse exists!
+              const localLink = dataverseLinks.find(element => element.LinkName === "Local");
+              if (!localLink) {
+                // TODO(mblow): recreate Local link if we ever support dropping the Local link (MB-51263)
+              } else if (localLink.IsActive) {
+                // Local link exists & is connected- we need to disconnect & reconnect it around the mapping statements
+                linksToSuspendResume.add(localLinkName);
+              }
+            } else {
+              scopesToCreate.add("`" + details[0] + "`.`" + details[1] + "`");
+              linksToSuspendResume.add(localLinkName);
+            }
+            statements.push("alter collection `" + details[0] + "`.`" +
               details[1] + '`.`' + details[2] + '` enable analytics;');
             collections.push(details[0] + '.' + details[1] + '.' + details[2]);
           }
-          executeQueryList(queries,0, collections);
+          for (const scope of scopesToCreate) {
+            beforeStatements.push("create analytics scope " + scope + " if not exists;");
+          }
+          if (linksToSuspendResume.size > 0) {
+            beforeStatements.push("disconnect link " + Array.from(linksToSuspendResume).join() + ";");
+          }
+          let beforePromise;
+          if (beforeStatements.length > 0) {
+            beforePromise = executeStatementList(beforeStatements);
+          } else {
+            beforePromise = Promise.resolve();
+          }
+          beforePromise.then(result => executeStatementList(statements, collections).then(result => {
+            let afterPromise;
+            if (linksToSuspendResume.size > 0) {
+              afterStatements.push("connect link " + Array.from(linksToSuspendResume).join() + ";");
+              afterPromise = executeStatementList(afterStatements);
+            } else {
+              afterPromise = Promise.resolve();
+            }
+            afterPromise.then(result => {
+              // all done
+              setTimeout(qc.updateBuckets, 500);
+            })
+          }));
         },
         function error(resp) {
           // they hit cancel, nothing to do
         });
     }
-
-    // execute a list of queries in sequence, stopping at the first error
-    function executeQueryList(queryList, index, collections) {
-      if (index >= queryList.length) { // all done
-        setTimeout(qc.updateBuckets, 500);
-        return;
+  // execute a list of statements
+    function executeStatementList(queryList, collections) {
+      var promises = [];
+      for (let index = 0; index < queryList.length; index++) {
+        promises.push(cwQueryService.executeQueryUtil(queryList[index], false, false)
+            .then(function success() {
+                  if (queryList[index].startsWith("alter collection") && collections && collections[index])
+                    mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
+                },
+                function error(resp) {
+                  if (queryList[index].startsWith("alter collection") && collections && collections[index])
+                    cwQueryService.showErrorDialog(errorRespToString(resp, "Error mapping collection " + collections[index] + ": "));
+                }))
       }
-
-      cwQueryService.executeQueryUtil(queryList[index], false, false)
-        .then(function success() {
-            if (collections && collections[index])
-              mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
-            executeQueryList(queryList,index+1, collections);
-          },
-          function error(resp) {
-            //var errorStr = "Error running query: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-            cwQueryService.showErrorDialog(errorRespToString(resp,"Error running query: "));
-          });
+      return Promise.allSettled(promises);
     }
 
     // create a custom dataset on a given link
