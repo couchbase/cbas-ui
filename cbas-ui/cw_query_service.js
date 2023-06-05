@@ -2677,6 +2677,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         else if (scope.gcs_link.auth_type === "jsoncredentials") {
           formData.jsonCredentials = scope.gcs_link.json_credentials;
         }
+
+      if (scope.gcs_link.endpoint) {
+        formData.endpoint = scope.gcs_link.endpoint;
+      }
     }
 
     return formData;
@@ -2797,6 +2801,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         scope.gcs_link.auth_type = "anonymous";
       }
 
+      scope.gcs_link.endpoint = apiData.endpoint;
       scope.gcs_link.json_credentials = "";
     }
   }

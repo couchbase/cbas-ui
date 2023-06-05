@@ -1388,7 +1388,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         },
         gcs_link: {
           auth_type: "anonymous",
-          json_credentials: ""
+          json_credentials: "",
+          endpoint: ""
         }
       };
     }
