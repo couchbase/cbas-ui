@@ -5,12 +5,12 @@
 
   <form class="forms" name="prefs_form" novalidate>
     <div class="panel-content">
-      <div class="formrow" ng-hide="mode == 'analytics'">
+      <div class="formrow">
         <input id="for-collect-timings" type="checkbox" ng-model="options.timings">
         <label for="for-collect-timings" class="checkbox inline margin-right-zero">Collect query timings</label>
         <span
            class="fa-stack icon-info"
-           uib-tooltip="Collects per-operator query timings during query execution and displays them in the query plan. This preference is ON by default.">
+           uib-tooltip="Collects per-operator query timings during query execution and displays them in the query plan. This preference is OFF by default.">
            <span class="icon fa-circle-thin fa-stack-2x"></span>
            <span class="icon fa-info fa-stack-1x"></span>
         </span>

@@ -218,7 +218,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //
 
   cwQueryService.options = {
-    timings: true,
+    timings: false,
     max_parallelism: "",
     scan_consistency: "not_bounded",
     positional_parameters: [],
@@ -901,6 +901,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (queryOptions.named_parameters)
         for (var i = 0; i < queryOptions.named_parameters.length; i++)
           queryData[queryOptions.named_parameters[i].name] = queryOptions.named_parameters[i].value;
+
+      if(queryOptions.timings)
+        queryData.profile = "timings"
 
       //console.log("Running query: " + JSON.stringify(queryData));
     }
