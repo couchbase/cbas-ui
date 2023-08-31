@@ -443,6 +443,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         cwQueryService.outputTab = savedState.outputTab;
         if (savedState.options)
           cwQueryService.options = savedState.options;
+          //reset timings because we don't want to save this across sessions
+          //it is expensive full accounting of all operators, not samples
+          cwQueryService.options.timings = false;
         if (savedState.doc_editor_options) {
           cwQueryService.doc_editor_options = savedState.doc_editor_options;
         }
