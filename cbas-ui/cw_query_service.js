@@ -259,13 +259,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //
 
   function QueryResult(status, elapsedTime, executionTime, resultCount, resultSize, result,
-                       data, query, requestID, explainResult, mutationCount, processedObjects,
+                       data, query, requestID, explainResult, mutationCount, processedObjects, queueWaitTime,
                        warningCount, warnings, limitedWarningsCount, queryContext, chart_options) {
     this.status = status;
     this.resultCount = resultCount;
     this.resultCount = mutationCount;
     this.resultSize = resultSize;
     this.processedObjects = processedObjects;
+    this.queueWaitTime = truncateTime(queueWaitTime);
     this.result = result;
     this.data = data;
     this.query = query;
@@ -322,7 +323,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   QueryResult.prototype.clone = function () {
     return new QueryResult(this.status, this.elapsedTime, this.executionTime, this.resultCount,
                            this.resultSize, this.result, this.data, this.query, this.requestID, this.explainResult,
-                           this.mutationCount, this.processedObjects, this.warningCount, this.warnings,
+                           this.mutationCount, this.processedObjects, this.queueWaitTime, this.warningCount, this.warnings,
                            this.limitedWarningsCount, this.queryContext, this.chart_options
                           );
   };
@@ -332,6 +333,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.executionTime = truncateTime(other.executionTime);
     this.resultCount = other.resultCount;
     this.processedObjects = other.processedObjects;
+    this.queueWaitTime = truncateTime(other.queueWaitTime);
     this.mutationCount = other.mutationCount;
     this.resultSize = other.resultSize;
     this.result = other.result;
@@ -1329,6 +1331,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             newResult.executionTime = data.metrics.executionTime;
             newResult.resultCount = data.metrics.resultCount;
             newResult.processedObjects = data.metrics.processedObjects;
+            newResult.queueWaitTime = data.metrics.queueWaitTime; 
             newResult.warningCount = data.metrics.warningCount;
             if (data.metrics.mutationCount)
               newResult.mutationCount = data.metrics.mutationCount;
@@ -1542,6 +1545,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               newResult.mutationCount = data.metrics.mutationCount;
             newResult.resultSize = data.metrics.resultSize;
             newResult.processedObjects = data.metrics.processedObjects;
+            newResult.queueWaitTime = data.metrics.queueWaitTime;
             if (data.metrics.warningCount)
               newResult.warningCount = data.metrics.warningCount;
           }

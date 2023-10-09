@@ -116,6 +116,9 @@ licenses/APL2.txt.
           <span ng-if="qc.lastResult.executionTime" class="nowrap pipe">
             execution: {{qc.lastResult.executionTime}}
           </span>
+          <span ng-if="qc.lastResult.queueWaitTime" class="nowrap pipe">
+            waiting in queue: {{qc.lastResult.queueWaitTime}}
+          </span>
           <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects" class="nowrap pipe">
             docs scanned: {{qc.lastResult.processedObjects}}
           </span>
