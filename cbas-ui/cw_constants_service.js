@@ -213,6 +213,12 @@ function getCwConstantsService() {
   // default max warnings returned by user queries
   cwConstantsService.maxWarnings = 10;
 
+  // default max bytes for the response until the user gets the "too big" error
+  cwConstantsService.maxAceSize = 10485760;
+
+  // default max bytes for the in progress response until the user gets the "too big for UI" error
+  cwConstantsService.maxSizeForUI = 262144000; // 250MB
+
   // external collection constants start
   cwConstantsService.externalCollectionTypes = ['s3', 'azureblob', 'azuredatalake', 'gcs'];
   cwConstantsService.supportedExternalCollectionFormats = ['json', 'csv', 'tsv'];

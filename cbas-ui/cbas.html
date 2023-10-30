@@ -183,7 +183,10 @@ licenses/APL2.txt.
     </div>
 
     <div class="wb-results-wrapper">
-      <div class="wb-results-show-anyway" ng-if="!qc.showBigDatasets && qc.dataTooBig()">
+      <div class="wb-results-show-anyway" ng-if="qc.lastResult.tooBigForUI">
+        <div ng-bind-html="qc.getBigDataForUIMessage()"></div>
+      </div>
+      <div class="wb-results-show-anyway" ng-if="!qc.showBigDatasets && qc.dataTooBig() && !qc.lastResult.tooBigForUI">
         <div ng-bind-html="qc.getBigDataMessage()"></div>
         <a ng-click="qc.setShowBigData(true)" class="text-medium link-heavy">
           Show anyway <span class="icon fa-angle-right"></span>
