@@ -52,6 +52,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   cwQueryService.atLeast70 = mnPoolDefault.export.compat.atLeast70;
   cwQueryService.atLeast71 = mnPoolDefault.export.compat.atLeast71;
+
+  cwQueryService.dataWIPTooBigForUI = false;
+  cwQueryService.lastProgressResult = 0;
+  cwQueryService.isDataWIPTooBigForUI = function () {
+    return cwQueryService.dataWIPTooBigForUI;
+  }
+
   // analytics monitoring
 
   var monitoringOptions = {
@@ -260,7 +267,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function QueryResult(status, elapsedTime, executionTime, resultCount, resultSize, result,
                        data, query, requestID, explainResult, mutationCount, processedObjects,
-                       warningCount, warnings, limitedWarningsCount, queryContext, chart_options) {
+                       warningCount, warnings, limitedWarningsCount, queryContext, chart_options, tooBigForUI) {
     this.status = status;
     this.resultCount = resultCount;
     this.resultCount = mutationCount;
@@ -283,6 +290,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.warnings = warnings;
     this.limitedWarningsCount = limitedWarningsCount;
     this.chart_options = chart_options;
+    this.tooBigForUI = tooBigForUI;
   };
 
   function getBucketState() {
@@ -323,7 +331,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     return new QueryResult(this.status, this.elapsedTime, this.executionTime, this.resultCount,
                            this.resultSize, this.result, this.data, this.query, this.requestID, this.explainResult,
                            this.mutationCount, this.processedObjects, this.warningCount, this.warnings,
-                           this.limitedWarningsCount, this.queryContext, this.chart_options
+                           this.limitedWarningsCount, this.queryContext, this.chart_options, this.tooBigForUI
                           );
   };
   QueryResult.prototype.copyIn = function (other) {
@@ -345,6 +353,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.limitedWarningsCount = other.limitedWarningsCount;
     this.queryContext = other.queryContext;
     this.chart_options = other.chart_options;
+    this.tooBigForUI = other.tooBigForUI;
   };
 
   QueryResult.prototype.set_chart_options = function(new_options) {
@@ -800,7 +809,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         .then(function success(resp) {
           },
           function error(resp) {
-            logWorkbenchError("Error cancelling query: " + JSON.stringif(resp));
+            logWorkbenchError("Error cancelling query: " + JSON.stringify(resp));
           });
     }
   }
@@ -946,7 +955,18 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       mnHttp: {
         isNotForm: true,
         group: "global"
-      }
+      },
+      eventHandlers: {
+        progress: function (e) {
+          if (e.loaded > cwConstantsService.maxSizeForUI) {
+            // show data too big error and cancel the query
+            cancelQuery();
+            finishQuery();
+            cwQueryService.dataWIPTooBigForUI = true;
+            cwQueryService.lastProgressResult = e.loaded;
+          }
+        }
+      },
     };
 
     queryRequest.planFormat = planFormat;
@@ -1036,6 +1056,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       pastQueries.push(newResult);
       currentQueryIndex = pastQueries.length - 1; // after run, set current result to end
     }
+
+    // reset dataWIPTooBigForUI
+    cwQueryService.dataWIPTooBigForUI = false;
+    cwQueryService.lastProgressResult = 0;
 
     // don't allow multiple queries, as indicated by anything after a semicolon
     // we test for semicolons in either single or double quotes, or semicolons outside
@@ -1472,10 +1496,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             newResult.data = {status: "Query interrupted."};
             newResult.status = "errors";
             newResult.resultCount = 0;
-            newResult.resultSize = 0;
+            newResult.resultSize = 0 || cwQueryService.lastProgressResult;
             newResult.processedObjects = 0;
             newResult.warningCount = 0;
             newResult.queryDone = true;
+            if (cwQueryService.isDataWIPTooBigForUI()) {
+              newResult.tooBigForUI = true;
+            }
 
             // make sure to only finish if the explain query is also done
             if (newResult.explainDone) {

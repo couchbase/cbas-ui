@@ -194,7 +194,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // error message when result is too large to display
     //
 
-    qc.maxAceSize = 10485760;
+    qc.maxAceSize = cwConstantsService.maxAceSize;
     qc.maxSizeMsgJSON = "{\"error\": \"The JSON view is slow with results sized > " + qc.maxAceSize + " bytes. Try the table view or specifying a lower limit in your query.\"}";
 
     qc.showBigDatasets = false;     // allow the user to override the limit on showing big datasets
@@ -202,6 +202,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.dataTooBig = dataTooBig;
     qc.setShowBigData = setShowBigData;
     qc.getBigDataMessage = getBigDataMessage;
+    qc.getBigDataForUIMessage = getBigDataForUIMessage;
+
 
     // should we have the extra explain tabs?
 
@@ -295,6 +297,18 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function setShowBigData(show) {
       qc.showBigDatasets = show;
     }
+
+  //
+  // get a string to describe why the dataset is too large for UI
+  //
+
+  function getBigDataForUIMessage() {
+    var message = "The statement results are larger than the workbench limit of " +
+      cwConstantsService.maxSizeForUI / (2 ** 20) + "MB and cannot be displayed.<br>" +
+      "Please use another client product to access them.";
+
+    return (message);
+  }
 
     //
     // change the tab selection
