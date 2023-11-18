@@ -1669,7 +1669,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
-          var beforeStatements = [];
+          var createScopeStatements = [];
           var statements = [];
           var afterStatements = [];
           var collections = [];
@@ -1697,18 +1697,22 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
             collections.push(details[0] + '.' + details[1] + '.' + details[2]);
           }
           for (const scope of scopesToCreate) {
-            beforeStatements.push("create analytics scope " + scope + " if not exists;");
+            createScopeStatements.push("create analytics scope " + scope + " if not exists;");
           }
-          if (linksToSuspendResume.size > 0) {
-            beforeStatements.push("disconnect link " + Array.from(linksToSuspendResume).join() + ";");
-          }
-          let beforePromise;
-          if (beforeStatements.length > 0) {
-            beforePromise = executeStatementList(beforeStatements);
+          let createScopePromise;
+          if (createScopeStatements.length > 0) {
+            createScopePromise = executeStatementList(createScopeStatements);
           } else {
-            beforePromise = Promise.resolve();
+            createScopePromise = Promise.resolve();
           }
-          beforePromise.then(result => executeStatementList(statements, collections).then(result => {
+          let disconnectLinkPromise;
+          if (linksToSuspendResume.size > 0) {
+            var disconnectLinkStatement = ["disconnect link " + Array.from(linksToSuspendResume).join() + ";"];
+            disconnectLinkPromise = executeStatementList(disconnectLinkStatement);
+          } else {
+            disconnectLinkPromise = Promise.resolve();
+          }
+            createScopePromise.then(result => disconnectLinkPromise.then(result => executeStatementList(statements, collections).then(result => {
             let afterPromise;
             if (linksToSuspendResume.size > 0) {
               afterStatements.push("connect link " + Array.from(linksToSuspendResume).join() + ";");
@@ -1720,7 +1724,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
               // all done
               setTimeout(qc.updateBuckets, 500);
             })
-          }));
+          })));
         },
         function error(resp) {
           // they hit cancel, nothing to do
