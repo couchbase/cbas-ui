@@ -101,7 +101,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   };
 
   cwQueryService.updateQueryMonitoring = updateQueryMonitoring;
-  cwQueryService.getStats = getStats;
 
   cwQueryService.showErrorDialog = showErrorDialog;
   cwQueryService.showWarningDialog = showWarningDialog;
@@ -2463,30 +2462,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
         });
   };
-
-  //
-  // get stats for the past minute
-  //
-
-  function getStats(stats) {
-    var requests = [];
-    var data = {
-      startTS: Date.now() - 5000,
-      endTS: Date.now(),
-      step: 1,
-      host: 'aggregate'
-    };
-    stats.forEach(function (statName) {
-      requests.push(
-        $http({
-          type: "GET",
-          url: "/_uistats/v2",
-          params: Object.assign({statName: statName}, data)
-        }));
-    });
-
-    return ($q.all(requests));
-  }
 
 
   //
