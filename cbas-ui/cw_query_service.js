@@ -29,6 +29,7 @@ angular
 
 
 cwQueryServiceFactory.$inject = ["$rootScope", "$q", "$uibModal", "$timeout", "$http", "validateCbasService", "mnPendingQueryKeeper", "cwConstantsService", "qwQueryPlanService", "mnPoolDefault", "mnPools", "qwDialogService"];
+
 function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, validateCbasService, mnPendingQueryKeeper, cwConstantsService, qwQueryPlanService, mnPoolDefault, mnPools, qwDialogService) {
 
   var cwQueryService = {};
@@ -52,6 +53,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   cwQueryService.atLeast70 = mnPoolDefault.export.compat.atLeast70;
   cwQueryService.atLeast71 = mnPoolDefault.export.compat.atLeast71;
+  cwQueryService.atLeast72 = mnPoolDefault.export.compat.atLeast72;
 
   cwQueryService.dataWIPTooBigForUI = false;
   cwQueryService.lastProgressResult = 0;
@@ -202,6 +204,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //    mnAuthService.whoami().then(function (resp) {
   //      if (resp) cwQueryService.user = resp;
   //    });
+
+  const queryEditorSource = "query_editor";
+  const uiInsightsSource = "ui_insights";
+  const schemaInferSource = "ui_schema_infer";
+  const uiMonitoringSource = "ui_monitoring";
 
   // for the front-end, distinguish error status and good statuses
 
@@ -837,9 +844,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //   3) set cwQueryService.currentQueryRequestID and qwQueryRequest.currentQueryRequest
   //
 
-  function executeQueryUtil(queryText, is_user_query, highPriority) {
+  function executeQueryUtil(queryText, source, queryOptions, is_user_query, highPriority) {
     //console.log("Running query: " + queryText);
-    var request = buildQueryRequest(queryText, is_user_query, null, highPriority);
+    var request = buildQueryRequest(queryText, source, is_user_query, queryOptions, highPriority);
 
     // if the request can't be built because the query is too big, return a dummy
     // promise that resolves immediately. This needs to follow the angular $http
@@ -868,7 +875,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     });
   }
 
-  function buildQueryRequest(queryText, is_user_query, queryOptions, highPriority, queryContext) {
+  function buildQueryRequest(queryText, source, is_user_query, queryOptions, highPriority, queryContext) {
 
     //console.log("Building query: " + queryText);
     //
@@ -929,6 +936,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           queryData["query_context"] = 'default:' + dv.dataverseQueryName;
       }
     }
+    // set the source if one has been provided, and we are >= 7.2 compat
+    if (source && source.length > 0 && cwQueryService.atLeast72)
+      queryData.source = source;
 
     //
     // build the query request
@@ -1118,7 +1128,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
       newResult.explainDone = false;
 
-      var explain_request = buildQueryRequest("explain " + queryText, false, null, false, queryContext);
+      var explain_request = buildQueryRequest("explain " + queryText, queryEditorSource, false, false, queryContext);
       if (!explain_request) {
         newResult.result = '{"status": "Query Failed."}';
         newResult.data = {status: "Query Failed."};
@@ -1251,7 +1261,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
     newResult.queryDone = false;
 
-    var request = buildQueryRequest(queryText, true, queryOptions, false, queryContext);
+    var request = buildQueryRequest(queryText, queryEditorSource, true, queryOptions, false, queryContext);
 
     if (!request) {
       newResult.result = '{"status": "Query Failed."}';
@@ -1614,8 +1624,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     if (!mnPoolDefault.export.compat.atLeast70)
       queryText = cwConstantsService.keyspaceQuery6_6;
     // run a query to get the dataverse, link, and dataset info from Metadata
-    executeQueryUtil(queryText, false, true)
-      .then(function (resp) {
+    executeQueryUtil(queryText, uiInsightsSource, null, false, true)
+        .then(function (resp) {
         processMetadataQueryResult(resp.data);
         return validateCbasService.userHasAnyBuckets() ? getClusterBuckets() : null;
       })
@@ -2014,7 +2024,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     // start by getting the document count for each bucket
     let queryText = "select count(*) cnt from `" + bucket.id + '`';
 
-    let res1 = executeQueryUtil(queryText, false, false)
+    let res1 = executeQueryUtil(queryText, null, null, false, false)
       .then(function successCallback(resp) {
           var data = resp.data, status = resp.status;
 
@@ -2058,8 +2068,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     //console.log("Getting schema for : " + bucket.id);
 
     //return $http(inferQueryRequest)
-    return executeQueryUtil("infer `" + bucket.id + "`;", false, false)
-      .then(function successCallback(response) {
+    return executeQueryUtil("infer `" + bucket.id + "`;", schemaInferSource, null, false, false)
+        .then(function successCallback(response) {
         //console.log("Done with schema for: " + bucket.id);
         //console.log("Schema status: " + status);
         //console.log("Schema data: " + JSON.stringify(response.data));
@@ -2385,7 +2395,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     //var config = {headers: {'Content-Type':'application/json','ns-server-proxy-timeout':20000}};
     //console.log("Running monitoring cat: " + category + ", query: " + payload.statement);
 
-    return (executeQueryUtil(query, false))
+    return (executeQueryUtil(query, uiMonitoringSource, null, false))
       .then(function success(response) {
           var data = response.data;
           var status = response.status;

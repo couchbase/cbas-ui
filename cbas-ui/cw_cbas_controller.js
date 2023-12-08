@@ -12,7 +12,7 @@ import _ from "lodash";
 import ace from 'ace/ace-wrapper';
 import saveAs from "file-saver";
 
-import { BehaviorSubject }              from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 
 import cwPrefsDialogTemplate from "./cw_prefs_dialog.html";
 import cwFileDialogTemplate from "./cw_file_dialog.html";
@@ -28,8 +28,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     var qc = this;
     var statsRefreshInterval = 5000;
     var toggleInputEditor = _.throttle(toggleInputEditorInner, 100, {trailing: true});
+    const scopesSource = "ui_scopes";
+    const mapCollectionsSource = "ui_map";
 
-    function collapseInputEditor() {
+  function collapseInputEditor() {
       toggleInputEditor(false);
     }
     function expandInputEditor() {
@@ -75,6 +77,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     qc.atLeast70 = cwQueryService.atLeast70;
     qc.atLeast71 = cwQueryService.atLeast71;
+    qc.atLeast72 = cwQueryService.atLeast72;
 
     // functions for connecting dataverses to links and datasets
     qc.getLinksInDataverse = getLinksInDataverse;
@@ -1319,7 +1322,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function disconnectLink(link,dataverse) {
       var queryText = "disconnect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
-      cwQueryService.executeQueryUtil(queryText, false, false)
+      cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
         .then(function success() {qc.updateBuckets();},
           handleConnectionFailure);
     }
@@ -1327,7 +1330,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function connectLink(link,dataverse) {
       var queryText = "connect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
-      cwQueryService.executeQueryUtil(queryText, false, false)
+      cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
         .then(function success() {qc.updateBuckets();},
           handleConnectionFailure);
     }
@@ -1734,7 +1737,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function executeStatementList(queryList, collections) {
       var promises = [];
       for (let index = 0; index < queryList.length; index++) {
-        promises.push(cwQueryService.executeQueryUtil(queryList[index], false, false)
+        promises.push(cwQueryService.executeQueryUtil(queryList[index], mapCollectionsSource, false, false)
             .then(function success() {
                   if (queryList[index].startsWith("alter collection") && collections && collections[index])
                     mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
@@ -1843,7 +1846,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
           //console.log("Got create query: " + queryText);
 
-          cwQueryService.executeQueryUtil(queryText, false, false)
+          cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
             .then(function success() {
                 qc.updateBuckets()
               },
@@ -1856,7 +1859,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                   errorMsg = JSON.stringify(resp.data.errors);
                 else if (resp.data)
                   errorMsg = JSON.stringify(resp.data);
-                var errorStr = "Error creating dataset: " + errorMsg;
+                var errorStr = "Error creating analytics collection: " + errorMsg;
                 cwQueryService.showErrorDialog(errorStr);
               });
 
@@ -1871,14 +1874,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           if (resp == "ok") {
             var queryText = "drop dataset " + dataset.dataverseQueryName + '.`' + dataset.id + '`';
 
-            cwQueryService.executeQueryUtil(queryText, false, false)
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
                 },
                 function error(resp) {
                   console.log("Got drop collection error: " + JSON.stringify(resp));
                   //var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping collection: "));
+                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping analytics collection: "));
                 });
           }
         }, function no() {return Promise.resolve("no")});
@@ -1891,7 +1894,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           if (resp == "ok") {
             var queryText = "drop analytics view " + dataverse.dataverseQueryName + '.`' + view.id + '`';
 
-            cwQueryService.executeQueryUtil(queryText, false, false)
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
                 },
@@ -1931,7 +1934,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                 if (resp == "ok") {
                   var queryText = "drop dataset " + dataset.dataverseQueryName + ".`" + dataset_options.dataset_name + "`";
 
-                  cwQueryService.executeQueryUtil(queryText, false, false)
+                  cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
                     .then(function success() {
                         qc.updateBuckets();
                       },
@@ -1955,7 +1958,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           if (resp == "ok") {
             var queryText = "drop dataverse " + scope.dataverseQueryName;
 
-            cwQueryService.executeQueryUtil(queryText, false, false)
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
                 },
