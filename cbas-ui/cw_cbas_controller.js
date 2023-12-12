@@ -1672,7 +1672,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
-          var createScopeStatements = [];
+          var beforeStatements = [];
           var statements = [];
           var afterStatements = [];
           var collections = [];
@@ -1700,54 +1700,37 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
             collections.push(details[0] + '.' + details[1] + '.' + details[2]);
           }
           for (const scope of scopesToCreate) {
-            createScopeStatements.push("create analytics scope " + scope + " if not exists;");
+            beforeStatements.push("create analytics scope " + scope + " if not exists;");
           }
-          let createScopePromise;
-          if (createScopeStatements.length > 0) {
-            createScopePromise = executeStatementList(createScopeStatements);
-          } else {
-            createScopePromise = Promise.resolve();
-          }
-          let disconnectLinkPromise;
           if (linksToSuspendResume.size > 0) {
-            var disconnectLinkStatement = ["disconnect link " + Array.from(linksToSuspendResume).join() + ";"];
-            disconnectLinkPromise = executeStatementList(disconnectLinkStatement);
-          } else {
-            disconnectLinkPromise = Promise.resolve();
+            beforeStatements.push("disconnect link " + Array.from(linksToSuspendResume).join() + ";");
+            afterStatements.push("connect link " + Array.from(linksToSuspendResume).join() + ";");
           }
-            createScopePromise.then(result => disconnectLinkPromise.then(result => executeStatementList(statements, collections).then(result => {
-            let afterPromise;
-            if (linksToSuspendResume.size > 0) {
-              afterStatements.push("connect link " + Array.from(linksToSuspendResume).join() + ";");
-              afterPromise = executeStatementList(afterStatements);
-            } else {
-              afterPromise = Promise.resolve();
-            }
-            afterPromise.then(result => {
-              // all done
-              setTimeout(qc.updateBuckets, 500);
-            })
-          })));
+          statements = beforeStatements.concat(statements, afterStatements);
+          collections = beforeStatements.concat(collections);
+          executeStatementList(statements, collections);
         },
         function error(resp) {
           // they hit cancel, nothing to do
         });
     }
   // execute a list of statements
-    function executeStatementList(queryList, collections) {
-      var promises = [];
-      for (let index = 0; index < queryList.length; index++) {
-        promises.push(cwQueryService.executeQueryUtil(queryList[index], mapCollectionsSource, false, false)
-            .then(function success() {
-                  if (queryList[index].startsWith("alter collection") && collections && collections[index])
-                    mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
-                },
-                function error(resp) {
-                  if (queryList[index].startsWith("alter collection") && collections && collections[index])
-                    cwQueryService.showErrorDialog(errorRespToString(resp, "Error mapping collection " + collections[index] + ": "));
-                }))
+    function executeStatementList(queryList, collections, index = 0) {
+      if (index >= queryList.length) { // all done
+        setTimeout(qc.updateBuckets, 500);
+        return;
       }
-      return Promise.allSettled(promises);
+      cwQueryService.executeQueryUtil(queryList[index], mapCollectionsSource, false, false)
+          .then(function success() {
+                if (queryList[index].startsWith("alter collection") && collections && collections[index])
+                  mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
+                executeStatementList(queryList, collections, index + 1);
+              },
+              function error(resp) {
+                if (queryList[index].startsWith("alter collection") && collections && collections[index])
+                  cwQueryService.showErrorDialog(errorRespToString(resp, "Error mapping collection " + collections[index] + ": "));
+                executeStatementList(queryList, collections, index + 1);
+              });
     }
 
     // create a custom dataset on a given link
