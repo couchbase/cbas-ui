@@ -12,7 +12,7 @@ import _ from "lodash";
 import ace from 'ace/ace-wrapper';
 import saveAs from "file-saver";
 
-import { BehaviorSubject }              from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 
 import cwPrefsDialogTemplate from "./cw_prefs_dialog.html";
 import cwFileDialogTemplate from "./cw_file_dialog.html";
@@ -28,8 +28,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     var qc = this;
     var statsRefreshInterval = 5000;
     var toggleInputEditor = _.throttle(toggleInputEditorInner, 100, {trailing: true});
+    const scopesSource = "ui_scopes";
+    const mapCollectionsSource = "ui_map";
 
-    function collapseInputEditor() {
+  function collapseInputEditor() {
       toggleInputEditor(false);
     }
     function expandInputEditor() {
@@ -75,6 +77,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     qc.atLeast70 = cwQueryService.atLeast70;
     qc.atLeast71 = cwQueryService.atLeast71;
+    qc.atLeast72 = cwQueryService.atLeast72;
 
     // functions for connecting dataverses to links and datasets
     qc.getLinksInDataverse = getLinksInDataverse;
@@ -1319,7 +1322,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function disconnectLink(link,dataverse) {
       var queryText = "disconnect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
-      cwQueryService.executeQueryUtil(queryText, false, false)
+      cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
         .then(function success() {qc.updateBuckets();},
           handleConnectionFailure);
     }
@@ -1327,7 +1330,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function connectLink(link,dataverse) {
       var queryText = "connect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
       link.IsActive = qc.datasetUnknownState;
-      cwQueryService.executeQueryUtil(queryText, false, false)
+      cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
         .then(function success() {qc.updateBuckets();},
           handleConnectionFailure);
     }
@@ -1669,7 +1672,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
-          var createScopeStatements = [];
+          var beforeStatements = [];
           var statements = [];
           var afterStatements = [];
           var collections = [];
@@ -1697,54 +1700,37 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
             collections.push(details[0] + '.' + details[1] + '.' + details[2]);
           }
           for (const scope of scopesToCreate) {
-            createScopeStatements.push("create analytics scope " + scope + " if not exists;");
+            beforeStatements.push("create analytics scope " + scope + " if not exists;");
           }
-          let createScopePromise;
-          if (createScopeStatements.length > 0) {
-            createScopePromise = executeStatementList(createScopeStatements);
-          } else {
-            createScopePromise = Promise.resolve();
-          }
-          let disconnectLinkPromise;
           if (linksToSuspendResume.size > 0) {
-            var disconnectLinkStatement = ["disconnect link " + Array.from(linksToSuspendResume).join() + ";"];
-            disconnectLinkPromise = executeStatementList(disconnectLinkStatement);
-          } else {
-            disconnectLinkPromise = Promise.resolve();
+            beforeStatements.push("disconnect link " + Array.from(linksToSuspendResume).join() + ";");
+            afterStatements.push("connect link " + Array.from(linksToSuspendResume).join() + ";");
           }
-            createScopePromise.then(result => disconnectLinkPromise.then(result => executeStatementList(statements, collections).then(result => {
-            let afterPromise;
-            if (linksToSuspendResume.size > 0) {
-              afterStatements.push("connect link " + Array.from(linksToSuspendResume).join() + ";");
-              afterPromise = executeStatementList(afterStatements);
-            } else {
-              afterPromise = Promise.resolve();
-            }
-            afterPromise.then(result => {
-              // all done
-              setTimeout(qc.updateBuckets, 500);
-            })
-          })));
+          statements = beforeStatements.concat(statements, afterStatements);
+          collections = beforeStatements.concat(collections);
+          executeStatementList(statements, collections);
         },
         function error(resp) {
           // they hit cancel, nothing to do
         });
     }
   // execute a list of statements
-    function executeStatementList(queryList, collections) {
-      var promises = [];
-      for (let index = 0; index < queryList.length; index++) {
-        promises.push(cwQueryService.executeQueryUtil(queryList[index], false, false)
-            .then(function success() {
-                  if (queryList[index].startsWith("alter collection") && collections && collections[index])
-                    mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
-                },
-                function error(resp) {
-                  if (queryList[index].startsWith("alter collection") && collections && collections[index])
-                    cwQueryService.showErrorDialog(errorRespToString(resp, "Error mapping collection " + collections[index] + ": "));
-                }))
+    function executeStatementList(queryList, collections, index = 0) {
+      if (index >= queryList.length) { // all done
+        setTimeout(qc.updateBuckets, 500);
+        return;
       }
-      return Promise.allSettled(promises);
+      cwQueryService.executeQueryUtil(queryList[index], mapCollectionsSource, false, false)
+          .then(function success() {
+                if (queryList[index].startsWith("alter collection") && collections && collections[index])
+                  mnAlertsService.formatAndSetAlerts("Mapped collection " + collections[index],'success',2000);
+                executeStatementList(queryList, collections, index + 1);
+              },
+              function error(resp) {
+                if (queryList[index].startsWith("alter collection") && collections && collections[index])
+                  cwQueryService.showErrorDialog(errorRespToString(resp, "Error mapping collection " + collections[index] + ": "));
+                executeStatementList(queryList, collections, index + 1);
+              });
     }
 
     // create a custom dataset on a given link
@@ -1843,7 +1829,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
           //console.log("Got create query: " + queryText);
 
-          cwQueryService.executeQueryUtil(queryText, false, false)
+          cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
             .then(function success() {
                 qc.updateBuckets()
               },
@@ -1856,7 +1842,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                   errorMsg = JSON.stringify(resp.data.errors);
                 else if (resp.data)
                   errorMsg = JSON.stringify(resp.data);
-                var errorStr = "Error creating dataset: " + errorMsg;
+                var errorStr = "Error creating analytics collection: " + errorMsg;
                 cwQueryService.showErrorDialog(errorStr);
               });
 
@@ -1871,14 +1857,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           if (resp == "ok") {
             var queryText = "drop dataset " + dataset.dataverseQueryName + '.`' + dataset.id + '`';
 
-            cwQueryService.executeQueryUtil(queryText, false, false)
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
                 },
                 function error(resp) {
                   console.log("Got drop collection error: " + JSON.stringify(resp));
                   //var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping collection: "));
+                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping analytics collection: "));
                 });
           }
         }, function no() {return Promise.resolve("no")});
@@ -1891,7 +1877,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           if (resp == "ok") {
             var queryText = "drop analytics view " + dataverse.dataverseQueryName + '.`' + view.id + '`';
 
-            cwQueryService.executeQueryUtil(queryText, false, false)
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
                 },
@@ -1931,7 +1917,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
                 if (resp == "ok") {
                   var queryText = "drop dataset " + dataset.dataverseQueryName + ".`" + dataset_options.dataset_name + "`";
 
-                  cwQueryService.executeQueryUtil(queryText, false, false)
+                  cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
                     .then(function success() {
                         qc.updateBuckets();
                       },
@@ -1955,7 +1941,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           if (resp == "ok") {
             var queryText = "drop dataverse " + scope.dataverseQueryName;
 
-            cwQueryService.executeQueryUtil(queryText, false, false)
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
                 },
