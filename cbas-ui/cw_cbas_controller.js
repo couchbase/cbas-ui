@@ -1380,7 +1380,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
               verify_peer: true
               },
             http_headers: [{ name: "", value: ""}]
-          }
+          },
+          prevent_redirects: true
         },
         s3_link: {
           access_key_id: "",
@@ -1420,10 +1421,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     }
 
     function createNewLink(dataverse) {
-      // Prevent creating new links in mixed mode
-      if (!qc.atLeast71)
-        return;
-
       linkDialogScope.create_dataverse = dataverse;
 
       linkDialogScope.options = defaultLinkOptions();
@@ -1475,9 +1472,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     }
 
     function editLink(link,dataverse) {
-      // Prevent editing links in mixed mode
-      if (!qc.atLeast71)
-        return;
       //console.log("Edit Link");
       linkDialogScope.options = defaultLinkOptions();
 
@@ -1736,7 +1730,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // create a custom dataset on a given link
     function createNewDataset(link) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
-      dataset_options.clusterBuckets = (qc.atLeast70 ? qc.clusterBuckets : null);
+      dataset_options.clusterBuckets = qc.clusterBuckets;
       if (link.LinkName == "Local") {
         dataset_options.proxy = null;
       }

@@ -239,6 +239,26 @@ licenses/APL2.txt.
             <button type="button" class="outline btn-small" title="Add new HTTP header." ng-click="addHttpHeader()">+</button>
           </div>
         </div>
+        <div class="formrow">
+          <input id="id_prevent_redirects"
+                 ng-model="options.couchbase_link.prevent_redirects"
+                 type="checkbox">
+          <label for="id_prevent_redirects" style="margin-right:0">Prevent Redirects</label>
+          <span
+                  class="fa-stack icon-info"
+                  uib-tooltip="Enabling this option will prevent HTTP connections for this remote link from following
+                  redirects. It is recommended to enable this option."
+                  tooltip-placement="auto right"
+          >
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <div ng-if="!options.couchbase_link.prevent_redirects" class="error error-form">
+            <strong>Attention:</strong> It is recommended to prevent redirects, as
+            redirects could be utilized by a compromised remote link target to
+            discern information from the network of the local cluster.
+          </div>
+        </div>
       </div>
 
       <!-- Options for S3 Links -->

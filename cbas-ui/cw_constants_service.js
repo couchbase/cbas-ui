@@ -197,12 +197,12 @@ function getCwConstantsService() {
   cwConstantsService.analysisFirstSection = "Datasets";
   cwConstantsService.analysisSecondSection = "Cluster Buckets";
 
-  // list of trigger queries to update update the bucket insights after
+  // list of trigger queries to update the bucket insights after
   cwConstantsService.bucketInsightsUpdateTriggers = ["CREATE DATAVERSE", "DROP DATAVERSE", "CONNECT LINK", "DISCONNECT LINK",
                                                      "CREATE DATASET", "CREATE EXTERNAL DATASET", "DROP DATASET", "CREATE INDEX",
                                                      "DROP INDEX", "CREATE ANALYTICS COLLECTION", "DROP ANALYTICS COLLECTION",
                                                      "CREATE ANALYTICS SCOPE", "DROP ANALYTICS SCOPE", "ALTER COLLECTION",
-                                                     "CREATE ANALYTICS VIEW", "DROP ANALYTICS VIEW",
+                                                     "CREATE ANALYTICS VIEW", "DROP ANALYTICS VIEW", "DROP LINK",
                                                      "CREATE OR REPLACE ANALYTICS VIEW"];
 
   cwConstantsService.healthCheckURL = "../_p/cbas/admin/ping";

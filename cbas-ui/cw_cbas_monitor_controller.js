@@ -43,11 +43,9 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
   qmc.get_update_flag = function() {return(cwQueryService.getMonitoringAutoUpdate());}
   qmc.options = cwQueryService.getMonitoringOptions;
 
-  qmc.getLatestStat =
-    mnPoolDefault.export.compat.atLeast70 ? getLatestStat70 : getLatestStat;
+  qmc.getLatestStat = getLatestStat70;
 
-  qmc.getAverageStat =
-    mnPoolDefault.export.compat.atLeast70 ? getAverageStat70 : getAverageStat;
+  qmc.getAverageStat = getAverageStat70;
 
   //
   // sorting for each of the two result tables
@@ -149,15 +147,6 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
   // get the latest stat from the server
   //
 
-  function getLatestStat(name) {
-    var s = $scope.mnUIStats;
-    if (s && s.stats && s.stats[name] && Array.isArray(s.stats[name].aggregate)) {
-      return(s.stats[name].aggregate.slice(-1)[0]);
-    }
-    else
-      return null;
-  }
-
   function getLatestStat70(name) {
     var s = $scope.mnUIStats;
     name = mnStatsDesc.mapping65(name);
@@ -171,17 +160,6 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
   //
   // get the average stat from the server
   //
-
-  function getAverageStat(name) {
-    var s = $scope.mnUIStats;
-    if (s && s.stats && s.stats[name] && Array.isArray(s.stats[name].aggregate)) {
-      var sum = 0;
-      s.stats[name].aggregate.forEach(function(n) {sum+=n});
-      return(sum/s.stats[name].aggregate.length);
-    }
-    else
-      return null;
-  }
 
   function getAverageStat70(name) {
     var s = $scope.mnUIStats;

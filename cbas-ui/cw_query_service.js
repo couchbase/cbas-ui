@@ -1630,8 +1630,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   function updateBucketsCallback() {
     cwQueryService.loadingBuckets = true;
     var queryText = cwConstantsService.keyspaceQuery;
-    if (!mnPoolDefault.export.compat.atLeast70)
-      queryText = cwConstantsService.keyspaceQuery6_6;
+    // MDB doesn't like the ugly whitespace in the metadata query, normalize it now
+    queryText = queryText.replace(/ +/g,' ');
     // run a query to get the dataverse, link, and dataset info from Metadata
     executeQueryUtil(queryText, uiInsightsSource, null, false, true)
         .then(function (resp) {
@@ -1895,8 +1895,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   }
 
   function getAnalyticsStats() {
-    if (!mnPoolDefault.export.compat.atLeast70)
-      return(null);
     var statsRequest = {
       url: cwConstantsService.analyticsStatsURL,
       method: "GET",
@@ -2527,8 +2525,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function createLink(linkDialogScope, dataverse) {
     var request = {
-      url: "/_p/cbas/analytics/link" + (mnPoolDefault.export.compat.atLeast70 ?
-        '/' + encodeURIComponent(dataverse.DataverseName) + "/" + encodeURIComponent(linkDialogScope.link_name) : ""),
+      url: "/_p/cbas/analytics/link/" + encodeURIComponent(dataverse.DataverseName) + "/" + encodeURIComponent(linkDialogScope.link_name),
       method: "POST",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };
@@ -2576,14 +2573,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       type: scope.link_type
     };
 
-    // 6.6 and before this is in form data, after that it's in the URL
-    if (!mnPoolDefault.export.compat.atLeast70) {
-      formData.dataverse = scope.dataverse;
-      formData.name = scope.link_name;
-    }
-
     if (scope.link_type == "couchbase") {
       formData.hostname = scope.couchbase_link.hostname;
+      formData.preventRedirects = scope.couchbase_link.prevent_redirects;
 
       // none, half and full encryption types
       if (['none', 'half', 'full_password'].includes(scope.couchbase_link.encryption_type)) {
@@ -2714,6 +2706,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     scope.dataverse = apiData.dataverse;
     if (apiData.type == "couchbase") {
       scope.couchbase_link.hostname = apiData.activeHostname;
+      scope.couchbase_link.prevent_redirects = apiData.preventRedirects;
 
       // none and half encryption types
       if (['none', 'half'].includes(apiData.encryption)) {
@@ -2724,11 +2717,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
       // full encryption type
       if (apiData.encryption == 'full') {
-        if (mnPoolDefault.export.compat.atLeast71) {
-          scope.couchbase_link.certificates = apiData.certificates.slice();  // copy-by-value of certificates
-        } else {
-          scope.couchbase_link.certificates = [apiData.certificate];
-        }
+        scope.couchbase_link.certificates = apiData.certificates.slice();  // copy-by-value of certificates
 
         // full encryption using username, password and cluster certificate
         if (apiData.username) {
