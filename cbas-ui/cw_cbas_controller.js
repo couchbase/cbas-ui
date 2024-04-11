@@ -80,9 +80,11 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.atLeast72 = cwQueryService.atLeast72;
 
     // functions for connecting dataverses to links and datasets
+    qc.getGlobalLinks = getGlobalLinks;
     qc.getLinksInDataverse = getLinksInDataverse;
     qc.getLocalLink = getLocalLink;
     qc.getDatasetsInLink = getDatasetsInLink;
+    qc.isGlobalLinks = isGlobalLinks;
 
     // some functions for handling query history, going backward and forward
 
@@ -240,9 +242,13 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     qc.showEmptyScopes = function() {return cwQueryService.showEmptyScopes;};
     qc.toggleEmptyScopes = function() {cwQueryService.showEmptyScopes = !cwQueryService.showEmptyScopes;};
-    qc.scopeEmpty = function(dataverse)
-    {return !cwQueryService.shadows.some(shadow => shadow.linkDataverseName == dataverse.DataverseName) &&
-      getLinksInDataverse(dataverse.DataverseName).length == 1 };
+    qc.scopeEmpty = function(dataverse) {
+      if (cwQueryService.globalLinks) {
+        return !cwQueryService.shadows.some(shadow => shadow.DataverseName == dataverse.DataverseName);
+      }
+      return !cwQueryService.shadows.some(shadow => shadow.linkDataverseName == dataverse.DataverseName) &&
+            getLinksInDataverse(dataverse.DataverseName).length == 1;
+    };
 
     // helper functions //
     qc.forceReload = forceReload;
@@ -1294,7 +1300,15 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // since data sets can use links from other dataverses, we have a special structure to collect all the links used
     // by any dataset in a dataverse
 
-    function getLinksInDataverse(dataverseName) {
+  function getGlobalLinks() {
+    return cwQueryService.global_links;
+  }
+
+  function isGlobalLinks() {
+    return cwQueryService.globalLinks;
+  }
+
+  function getLinksInDataverse(dataverseName) {
       return cwQueryService.dataverse_links[dataverseName];
     }
 
@@ -1304,31 +1318,42 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         .find(element => element.LinkName == "Local");
     }
 
-    function getDatasetsInLink(dataverse,link) {
+    function getDatasetsInLink(dataverse,link = null) {
       var result = [];
       qc.shadows.forEach(function(shadow) {
-        // internal datasets
-        if (shadow.DataverseName === dataverse.DataverseName && shadow.linkDataverseName == link.DVName &&
-            shadow.LinkName == link.LinkName)
-          result.push(shadow);
-        // external datasets
-        if (shadow.DataverseName === dataverse.DataverseName && shadow.dataverse == link.DVName &&
-            shadow.name == link.LinkName)
-          result.push(shadow);
+        if (shadow.DataverseName === dataverse.DataverseName) {
+          if (!link && (shadow.LinkName || shadow.name)) {
+              result.push(shadow);
+          } else if (link && shadow.linkDataverseName == link.DVName && shadow.LinkName == link.LinkName) {
+              // internal datasets
+              result.push(shadow);
+          } else if (link && shadow.dataverse == link.DVName && shadow.name == link.LinkName)
+              // external datasets
+              result.push(shadow);
+          }
       });
-
       return result;
     }
-    function disconnectLink(link,dataverse) {
-      var queryText = "disconnect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
+    function disconnectLink(link) {
+      var queryText;
+      if (link.dataverse) {
+        queryText = "disconnect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
+      } else {
+        queryText = "disconnect link `" + link.LinkName + "`";
+      }
       link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
         .then(function success() {qc.updateBuckets();},
           handleConnectionFailure);
     }
 
-    function connectLink(link,dataverse) {
-      var queryText = "connect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
+    function connectLink(link) {
+      var queryText;
+      if (link.dataverse) {
+        queryText = "connect link " + link.dataverse.dataverseQueryName + ".`" + link.LinkName + "`";
+      } else {
+        queryText = "connect link `" + link.LinkName + "`";
+      }
       link.IsActive = qc.datasetUnknownState;
       cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
         .then(function success() {qc.updateBuckets();},
@@ -1420,11 +1445,13 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         linkDialogScope.options.couchbase_link.encryption_type = "half";
     }
 
-    function createNewLink(dataverse) {
-      linkDialogScope.create_dataverse = dataverse;
+    function createNewLink(dataverse = null) {
 
       linkDialogScope.options = defaultLinkOptions();
-      linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
+      if (dataverse) {
+        linkDialogScope.create_dataverse = dataverse;
+        linkDialogScope.options.dataverse = dataverse.dataverseDisplayName;
+      }
       linkDialogScope.options.is_new = true;
       linkDialogScope.errors = []
 
@@ -1733,6 +1760,9 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       dataset_options.clusterBuckets = qc.clusterBuckets;
       if (link.LinkName == "Local") {
         dataset_options.proxy = null;
+      }
+      else if (cwQueryService.globalLinks) {
+        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link.LinkName);
       }
       else {
         dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link.DVName) + "/" + encodeURIComponent(link.LinkName);

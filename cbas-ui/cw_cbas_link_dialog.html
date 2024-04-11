@@ -10,7 +10,8 @@ licenses/APL2.txt.
 
 <div class="dialog-med" style="width: 542px">
   <div class="panel-header">
-    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Link to {{options.dataverse}}</h2>
+    <h2 ng-show="options.is_new && options.dataverse" class="ellipsis margin-right-1">Add Link to {{options.dataverse}}</h2>
+    <h2 ng-show="options.is_new && !options.dataverse" class="ellipsis margin-right-1">Add Link</h2>
     <h2 ng-show="!options.is_new">Edit Link</h2>
   </div>
   <form class="forms" name="linkForm">

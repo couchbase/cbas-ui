@@ -186,6 +186,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.dataverses = [];
   cwQueryService.scopeNames = [];
   cwQueryService.dataverse_links = {};
+  cwQueryService.global_links = [];
   cwQueryService.links = [];
   cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
   cwQueryService.getSchemaForBucket = getSchemaForBucket;   // get schema
@@ -195,6 +196,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.fetchingStats = false;
   cwQueryService.isAllowedMultiStatement = isAllowedMultiStatement;
   cwQueryService.showEmptyScopes = true;
+  cwQueryService.globalLinks = false;
 
   var explainTextFormat = "text";
   var explainJsonFormat = "json";
@@ -1647,7 +1649,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       .catch(function (err) {
         console.log("Error: " + JSON.stringify(err));
         var error = "Failed to get bucket insights.";
-        error = error + "\nTry refreshing the bucket insights.";
+        error = error + "\nTry refreshing the bucket insights.\n" + JSON.stringify(err);
         cwQueryService.buckets.length = 0;
         cwQueryService.shadows.length = 0;
         cwQueryService.clusterBuckets.length = 0;
@@ -1687,11 +1689,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.bucket_errors = null;
     cwQueryService.bucket_names.length = 0;
     cwQueryService.dataverse_links = {};
+    cwQueryService.global_links = [];
     // thanks to an 'order by' clause, we can count on the dataverses to show up first, then links, then datasets
     if (data && data.results) {
       for (var i = 0; i < data.results.length; i++) {
         var record = data.results[i];
-
         // dataverses
         if (record.isDataverse) {
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;
@@ -1704,18 +1706,27 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
 
         // links
-        else if (record.isLink) {
+        else if (record.isLink && record.DataverseName) {
           var linkType = (!record.LinkType || record.LinkType == "COUCHBASE") ? "INTERNAL" : "EXTERNAL";
           var dataverse = cwQueryService.dataverses.find(dv => dv.DataverseName == record.DataverseName);
           theLink = {LinkName: record.Name, DVName: record.DataverseName, LinkType: linkType,
             IsActive: record.IsActive, extLinkType: record.LinkType, dataverse: dataverse};
-          if (theLink.LinkType == "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
+          if (theLink.LinkType === "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
           // make sure the link has a known dataverse, to avoid problem from MB-46165
           if (cwQueryService.dataverse_links[record.DataverseName])
             cwQueryService.dataverse_links[record.DataverseName].push(theLink);
           addToken(record.Name, "link");
+        } else if (record.isLink && !record.DataverseName) {
+          // global links
+          var linkType = (!record.LinkType || record.LinkType == "COUCHBASE") ? "INTERNAL" : "EXTERNAL";
+          theLink = {
+            LinkName: record.Name, LinkType: linkType,
+            IsActive: record.IsActive, extLinkType: record.LinkType
+          };
+          if (theLink.LinkType === "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
+          cwQueryService.global_links.push(theLink)
+          addToken(record.Name, "link");
         }
-
         // datasets
         else if (record.isDataset) {
           record.expanded = true;
@@ -1749,16 +1760,19 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           if (record.DatasetType != "VIEW") {
             var theLink = cwQueryService.dataverse_links[record.DataverseName]
                 .find(link => link.LinkName == record.LinkName && link.DVName == record.linkDataverseName);
-            if (theLink == null) { // link isn't recorded in this dataverse yet, look for it in link's dataverse
+            if (theLink == null && record.linkDataverseName) { // link isn't recorded in this dataverse yet, look for it in link's dataverse
               theLink = cwQueryService.dataverse_links[record.linkDataverseName].find(link => link.LinkName == record.LinkName);
               if (theLink)
-                cwQueryService.dataverse_links[record.DataverseName].push(theLink);
+                cwQueryService.dataverse_links[record.DataverseName].push(theLink)
+            } else if (!record.linkDataverseName) {
+              theLink = cwQueryService.global_links.find(link => link.LinkName === record.LinkName)
             }
-
             // be able to access the link from the shadow record
             record.link = theLink;
             theLink.remaining = record.remaining;
           }
+        } else if (record.isGlobalLinks) {
+          cwQueryService.globalLinks = true
         }
       }
     }
@@ -2524,8 +2538,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   }
 
   function createLink(linkDialogScope, dataverse) {
+    var url = "/_p/cbas/analytics/link/";
+    if (dataverse) {
+      url += encodeURIComponent(dataverse.DataverseName) + "/";
+    }
+    url += encodeURIComponent(linkDialogScope.link_name);
     var request = {
-      url: "/_p/cbas/analytics/link/" + encodeURIComponent(dataverse.DataverseName) + "/" + encodeURIComponent(linkDialogScope.link_name),
+      url: url,
       method: "POST",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };

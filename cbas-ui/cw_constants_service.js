@@ -132,6 +132,13 @@ function getCwConstantsService() {
     "  dv.DataverseName != 'Metadata' " +
     "UNION ALL " +
     "SELECT " +
+      "len(InternalDetails.PrimaryKey) = 1 " +
+      "AS isGlobalLinks " +
+    "FROM " +
+    "  Metadata.`Dataset`" +
+    " WHERE DatasetName=\"Link\" " +
+    "UNION ALL " +
+    "SELECT " +
     "  DataverseName, " +
     "  Name, " +
     "  IsActive, " +
@@ -140,55 +147,6 @@ function getCwConstantsService() {
     "FROM " +
     "  Metadata.`Link`) meta order by " +
     "    meta.isDataverse desc, meta.isLink desc, meta.DataverseName, meta.LinkName, meta.id;"; // make sure dataverses first, then links, then datasets
-
-  // for mixed clusters, use the 6.6 version of the query
-  cwConstantsService.keyspaceQuery6_6 =
-    "select i.* from (SELECT " +
-    "  DataverseName, " +
-    "  DataverseName || '.' || DatasetName AS fullName, " +
-    "  DatasetName AS id, " +
-    "  TRUE AS isDataset, " +
-    "  BucketName AS bucketName, " +
-    "  BucketDataverseName as linkDataverseName, " +
-    "  `Filter` AS `filter`, " +
-    "  LinkName,  " +
-    "  DatasetType,  " +
-    "  ( SELECT " +
-    "      idx.IndexName, " +
-    "      idx.SearchKey, " +
-    "      idx.SearchKeyType " +
-    "    FROM " +
-    "      Metadata.`Index` AS idx " +
-    "    WHERE idx.IsPrimary = false " +
-    "      AND idx.DatasetName = ds.DatasetName" +
-    "      AND idx.DataverseName = ds.DataverseName) AS indexes, " +
-    "      ExternalDetails.Properties AS externalDetails " +
-    "FROM " +
-    "  Metadata.`Dataset` AS ds " +
-    "WHERE " +
-    "  (BucketName IS NOT missing OR DatasetType = 'EXTERNAL')" +
-    "UNION ALL " +
-    "SELECT " +
-    "  dv.DataverseName, " +
-    "  TRUE AS isDataverse, " +
-    "  ( SELECT " +
-    "      l.Name " +
-    "    FROM " +
-    "      Metadata.`Link` AS l " +
-    "    WHERE " +
-    "      l.DataverseName = dv.DataverseName) AS links " +
-    "FROM " +
-    "  Metadata.`Dataverse` AS dv " +
-    "WHERE " +
-    "  dv.DataverseName != 'Metadata' " +
-    "UNION ALL " +
-    "SELECT " +
-    "  DataverseName, " +
-    "  Name, " +
-    "  `Type` as LinkType, " +
-    "  TRUE as isLink " +
-    "FROM " +
-    "  Metadata.`Link`) i order by i.isDataverse desc, i.isLink desc, i.DataverseName, i.LinkName, i.id;";
 
   // should we permit schema inquiries in the bucket analysis pane?
   cwConstantsService.showSchemas = false;
