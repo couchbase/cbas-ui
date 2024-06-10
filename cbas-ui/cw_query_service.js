@@ -1649,7 +1649,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       .catch(function (err) {
         console.log("Error: " + JSON.stringify(err));
         var error = "Failed to get bucket insights.";
-        error = error + "\nTry refreshing the bucket insights.\n" + JSON.stringify(err);
+        error = error + "\nTry refreshing the bucket insights.";
         cwQueryService.buckets.length = 0;
         cwQueryService.shadows.length = 0;
         cwQueryService.clusterBuckets.length = 0;
