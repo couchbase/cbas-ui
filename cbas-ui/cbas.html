@@ -349,11 +349,11 @@ licenses/APL2.txt.
                       <span ng-show="shadow.format">({{shadow.format}})</span>
                     </p>
                     <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
-                    <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
+                    <p class="margin-bottom-0" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
                       Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
-                      <span ng-repeat="idx in shadow.indexes">
-                        {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
-                      </span>
+                      <div class="query-context cursor-pointer" ng-attr-title="{{idx.keys.join(', ')}}" ng-repeat="idx in shadow.indexes">
+                        {{idx.IndexName}} {{idx.keys.join(', ')}}
+                      </div>
                     </p>
                     <p ng-if="link.LinkType == 'EXTERNAL' && shadow.format != 'json'">
                       {{shadow.TypeString}}

@@ -104,6 +104,7 @@ function getCwConstantsService() {
     "  ( SELECT " +
     "      idx.IndexName, " +
     "      idx.SearchKey, " +
+    "      idx.SearchKeyElements, " +
     "      idx.SearchKeyType " +
     "    FROM " +
     "      Metadata.`Index` AS idx " +
