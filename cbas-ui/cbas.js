@@ -90,7 +90,7 @@ angular.module('cwCbas', [
           }
         },
         data: {
-          title: "Analytics"
+          title: "Columnar"
         }
       });
 

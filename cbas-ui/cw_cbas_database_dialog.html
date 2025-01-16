@@ -1,0 +1,50 @@
+<!--
+Copyright 2021-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<div class="dialog-med">
+  <div class="panel-header">
+    <h2>Create Columnar Database</h2>
+  </div>
+  <form class="forms" name="datasetForm">
+    <div class="panel-content">
+      <div class="formrow">
+        <label for="cluster_reference_name">Database Name*</label>
+        <input
+           ng-disabled="!options.is_new"
+           ng-model="options.databaseName"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off"
+           required>
+      </div>
+      <div class="formrow">
+        <label for="cluster_reference_name">Scope Name*</label>
+        <input
+           ng-disabled="!options.is_new"
+           ng-model="options.scopeName"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off"
+           placeholder="Scope Name (optional)"
+           required>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <a ng-if="options.is_new" ng-click="$dismiss('cancel')">Cancel</a>
+      <button ng-disabled="!options.databaseName" type="submit" ng-click="$close('ok')">Create</button>
+
+      <div ng-if="!options.is_new" class="row width-12">
+        <button class="outline"  ng-click="$close('close')">Close Dialog</button>
+      </div>
+    </div>
+  </form>
+</div>

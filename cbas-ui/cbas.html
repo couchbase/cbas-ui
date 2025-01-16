@@ -220,11 +220,41 @@ licenses/APL2.txt.
    <div
       class="insights-sidebar width-3 resp-hide-sml"
       ng-class="{'width-6': qc.analysisExpanded, 'width-3': !qc.analysisExpanded || !qc.fullscreen, 'fix-width-0': qc.fullscreen}">
-    <div ng-if="qc.isGlobalLinks()" class="row margin-bottom-half">
-      <h4>Analytics Links</h4>
-      <a ng-click="qc.createNewLink()" ng-if="qc.validated.canAccessLinks()" class="text-fine nowrap margin-left-1">
-        + remote link
-      </a>
+                <div class="flex-left row" >
+            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
+                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
+                    ng-click="qc.createNewLink()"
+                    class="outline tight ellipsis width-12 margin-bottom-1"
+                    title="Map analytics collections from existing data service collections">
+              Create Link
+            </button></div>
+            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
+                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
+                    ng-click="qc.createNewDatabase()"
+                    class="outline tight ellipsis width-12 margin-bottom-1"
+                    title="Map analytics collections from existing data service collections">
+              Create Database
+            </button></div>
+          </div>
+          <div class="flex-left row" >
+            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
+                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
+                    ng-click="qc.createNewScope()"
+                    class="outline tight ellipsis width-12 margin-bottom-1"
+                    title="Map analytics collections from existing data service collections">
+              Create Scope
+            </button></div>
+            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
+                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
+                    ng-click="qc.createNewCollection()"
+                    class="outline tight ellipsis width-12 margin-bottom-1"
+                    title="Map analytics collections from existing data service collections">
+              Create Standalone Collection
+            </button></div>
+          </div>
+    <div ng-if="!qc.isGlobalLinks()" class="row margin-bottom-half">
+      <h4>Columnar Links:</h4>
+     
       <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
         <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
         <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
@@ -239,7 +269,7 @@ licenses/APL2.txt.
       </div>
       <div ng-if="!qc.qqs.bucket_errors">
         <div class="insights-sidebar-body">
-          <section ng-if="qc.isGlobalLinks()">
+          <section ng-if="!qc.isGlobalLinks()">
             <div ng-repeat="link in qc.getGlobalLinks()">
               <div class="row margin-left-half margin-right-half margin-top-half">
                 <span class="row flex-left ellipsis">
@@ -286,120 +316,246 @@ licenses/APL2.txt.
                   </span>
 
                 </span>
-                <a ng-show="qc.validated.canAccessLinks()"
+                <!-- <a ng-show="qc.validated.canAccessLinks()"
                    title="Add new collection to link"
                    ng-click="qc.createNewDataset(link)"
                    class="text-fine nowrap margin-left-1">
                   + collection
-                </a>
+                </a> -->
               </div>
             </div>
           </section>
           <br>
-          <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
-                  ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
-                  ng-click="qc.mapCollections()"
-                  class="outline tight ellipsis width-12 margin-bottom-1"
-                  title="Map analytics collections from existing data service collections">
-            Map From Data Service
-          </button></div>
-          <h4 ng-if="qc.isGlobalLinks()">Analytics Scopes & Collections</h4>
-          <h4 ng-if="!qc.isGlobalLinks()">Analytics Scopes, Links, & Collections</h4>
+
+          <h4 ng-if="qc.isGlobalLinks()">DATA</h4>
+          <h4 ng-if="!qc.isGlobalLinks()">DATA</h4>
           <section
-             class="text-small margin-bottom-1-5"
-             ng-repeat="dataverse in qc.dataverses"
-             ng-if="!qc.scopeEmpty(dataverse) || qc.showEmptyScopes()">
-            <div class="analytics-scope-box">
-              <span class="ellipsis">
-                <h6 class="ellipsis">{{dataverse.dataverseDisplayName}}</h6>
-              </span>
-              <div>
-                <div class="text-fine row" ng-if="qc.validated.canAccessLinks() && dataverse.dataverseDisplayName != 'Default' && qc.scopeEmpty(dataverse)">
-                  <a ng-click="qc.dropScope(dataverse)"
-                     title="drop analytics scope">
-                    <span class="icon fa-trash"></span>
+          class="text-small margin-bottom-1-5"
+          ng-repeat="database in qc.databases"
+          >
+          <div class="analytics-scope-box" ng-init="database.expanded = false" style="display: block;"  >
+                 <div
+                       class="disclosure padding-left-1 ellipsis flex-left row"
+                    style="justify-content: start; align-items: center; gap: 4px;"
+                       ng-click="database.expanded = !database.expanded">
+                       <span
+                                class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
+                                ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}">
+                               </span>
+                       <h6 class="ellipsis">{{database.databaseDisplayName}}</h6>
+                       <div>
+                         <div class="text-fine row" ng-if="database.databaseDisplayName != 'Default'">
+                           <a ng-click="qc.dropDatabase(database)"
+                              title="drop analytics scope">
+                             <span class="icon fa-trash"></span>
+                           </a>
+                         </div>
+                       </div>
+                  </div>
+            <section
+               class="text-small margin-bottom-1-5 margin-left-3"
+               ng-show="database.expanded"
+               ng-repeat="dataverse in qc.getDataverseInDatabase(database)"
+               ng-if="!qc.scopeEmpty(dataverse) || qc.showEmptyScopes()">
+              <div ng-init="dataverse.expanded = false">
+                <div
+                       class="disclosure padding-left-1 ellipsis flex-left row"
+                    style="justify-content: start; align-items: center; gap: 4px;"
+                       ng-click="dataverse.expanded = !dataverse.expanded">
+                       <span
+                                class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
+                                ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}">
+                               </span>
+                <span style="display: flex; gap: 4px;" >
+                  <h6>{{dataverse.dataverseDisplayName}}</h6>
+                  <div class="text-fine row" ng-if="dataverse.dataverseDisplayName != 'Default'">
+                    <a ng-click="qc.dropScope(dataverse)"
+                       title="drop analytics scope">
+                      <span class="icon fa-trash"></span>
+                    </a>
+                  </div>
+                </span>
+                </div>
+              </div>
+                <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)" ng-show="dataverse.expanded">
+                  <div ng-init="shadow.expanded = false">
+                    <div class="row margin-left-half margin-top-half">
+  
+                      <div
+                         class="disclosure padding-left-1 ellipsis"
+                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                         ng-click="shadow.expanded = !shadow.expanded">
+                        <span
+                           class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
+                           ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                        {{shadow.id}}
+                      </div>
+                    </div>
+    <!-- expando section for details on each dataset -------------------------- -->
+                    <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
+                       <p ng-show="!shadow.external" class="margin-bottom-half" title="source collection and filter">
+                        {{shadow.bucketName}}<span ng-if="shadow.scopeName && shadow.collectionName">.{{shadow.scopeName}}.{{shadow.collectionName}}</span>
+                        <span ng-show="shadow.filter">|</span> {{shadow.filter}}
+                         <span ng-if="shadow.external" class="label neutral margin-right-quarter">
+                    {{shadow.bucketName}}
+                  </span>
+                      </p>
+                      <p ng-show="shadow.external" class="margin-bottom-half">
+                        Container:<br>
+                        {{shadow.container}}.{{shadow.bucketName}}
+                        <span ng-show="shadow.definition">|</span> {{shadow.definition}}
+                        <span ng-show="shadow.format">({{shadow.format}})</span>
+                      </p>
+                      <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
+                      <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
+                        Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
+                        <span ng-repeat="idx in shadow.indexes">
+                          {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
+                        </span>
+                      </p>
+                      <p ng-if="link.LinkType == 'EXTERNAL' && shadow.format != 'json'">
+                        {{shadow.TypeString}}
+                      </p>
+                      <p>
+                        <a ng-click="qc.dropDataset(link,shadow)"
+                           class="inline margin-bottom-half margin-top-half">
+                          drop Columnar collection
+                        </a>
+                      </p>
+                    </div>
+                    <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
+                      <em class="text-smaller">
+                        progress {{shadow.progress}}%<span ng-show="shadow.timeLag">| {{shadow.timeLag}} est. time remaining</span>
+                      </em>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Show datasets grouped by Link, the Local link always come first -->
+              <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)" ng-if="qc.getDatasetsInLink(dataverse,link).length > 0 || qc.showEmptyScopes()">
+                <div class="row margin-left-half margin-right-half margin-top-half">
+                  <span class="row flex-left ellipsis">
+                    <h6 class="ellipsis margin-right-quarter"
+                        ng-class="{'cursor-pointer' : link.LinkName != 'Local'}"
+                        ng-click="link.LinkName != 'Local' && qc.editLink(link,dataverse)">
+                      <span class="ellipsis" ng-if="link.DVName != dataverse.DataverseName">
+                        {{link.DVName}}.
+                      </span>{{link.LinkName}}
+                    </h6>
+  
+                    <span ng-if="link.LinkName == 'Local'" class="label neutral margin-right-quarter">
+                      cb local
+                    </span>
+                    <span ng-if="link.LinkName != 'Local' && link.LinkType == 'INTERNAL'" class="label neutral margin-right-quarter">
+                      cb remote
+                    </span>
+                    <span ng-if="link.LinkType == 'EXTERNAL'" class="label neutral margin-right-quarter">
+                      {{link.extLinkType}}
+                    </span>
+  
+                    <span
+                       ng-if="link.IsActive === qc.datasetUnknownState"
+                       title="fetching link state..."
+                       class="icon fa-spinner fa-pulse grayblack-3">
+                    </span>
+                    <span ng-if="link.LinkType == 'INTERNAL' && qc.atLeast70">
+                      <span
+                         ng-if="!link.IsActive && qc.atLeast70"
+                         class="icon fa-unlink orange-1 cursor-pointer"
+                         ng-click="qc.connectLink(link,dataverse)"
+                         uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'"
+                         tooltip-placement="auto top"
+                         tooltip-append-to-body="true"
+                         tooltip-trigger="mouseenter">
+                      </span>
+                      <span
+                         ng-if="link.IsActive === true"
+                         class="icon fa-link cursor-pointer grayblue-1"
+                         ng-click="qc.disconnectLink(link,dataverse)"
+                         uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'"
+                         tooltip-placement="auto top"
+                         tooltip-append-to-body="true"
+                         tooltip-trigger="mouseenter">
+                      </span>
+                    </span>
+  
+                  </span>
+                  <a ng-show="qc.validated.canAccessLinks()"
+                     title="Add new collection to link"
+                     ng-click="qc.createNewDataset(link)"
+                     class="text-fine nowrap margin-left-1">
+                    + collection
                   </a>
                 </div>
-                <a ng-click="qc.createNewLink(dataverse)" ng-if="qc.validated.canAccessLinks() && !qc.isGlobalLinks()" class="text-fine nowrap">
-                  + remote link
-                </a><br>
+                <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
+                  <div ng-init="shadow.expanded = false">
+                    <div class="row margin-left-half margin-top-half">
+  
+                      <div
+                         class="disclosure padding-left-1 ellipsis"
+                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                         ng-click="shadow.expanded = !shadow.expanded">
+                        <span
+                           class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
+                           ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                        {{shadow.id}}
+                      </div>
+  
+                    </div>
+  <!-- expando section for details on each dataset -------------------------- -->
+                    <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
+                       <p ng-show="!shadow.external" class="margin-bottom-half" title="source collection and filter">
+                        {{shadow.bucketName}}<span ng-if="shadow.scopeName && shadow.collectionName">.{{shadow.scopeName}}.{{shadow.collectionName}}</span>
+                        <span ng-show="shadow.filter">|</span> {{shadow.filter}}
+                      </p>
+                      <p ng-show="shadow.external" class="margin-bottom-half">
+                        Container:<br>
+                        {{shadow.container}}.{{shadow.bucketName}}
+                        <span ng-show="shadow.definition">|</span> {{shadow.definition}}
+                        <span ng-show="shadow.format">({{shadow.format}})</span>
+                      </p>
+                      <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
+                      <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
+                        Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
+                        <span ng-repeat="idx in shadow.indexes">
+                          {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
+                        </span>
+                      </p>
+                      <p ng-if="link.LinkType == 'EXTERNAL' && shadow.format != 'json'">
+                        {{shadow.TypeString}}
+                      </p>
+                      <p>
+                        <a ng-click="qc.dropDataset(link,shadow)"
+                           class="inline margin-bottom-half margin-top-half">
+                          drop Columnar collection
+                        </a>
+                      </p>
+                    </div>
+                    <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
+                      <em class="text-smaller">
+                        progress {{shadow.progress}}%<span ng-show="shadow.timeLag">| {{shadow.timeLag}} est. time remaining</span>
+                      </em>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <!-- Show datasets grouped by Link, the Local link always come first -->
-            <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)" ng-if="qc.getDatasetsInLink(dataverse,link).length > 0 || qc.showEmptyScopes()">
-              <div class="row margin-left-half margin-right-half margin-top-half">
-                <span class="row flex-left ellipsis">
-                  <h6 class="ellipsis margin-right-quarter"
-                      ng-class="{'cursor-pointer' : link.LinkName != 'Local'}"
-                      ng-click="link.LinkName != 'Local' && qc.editLink(link,dataverse)">
-                    <span class="ellipsis" ng-if="link.DVName != dataverse.DataverseName">
-                      {{link.DVName}}.
-                    </span>{{link.LinkName}}
-                  </h6>
-
-                  <span ng-if="link.LinkName == 'Local'" class="label neutral margin-right-quarter">
-                    cb local
-                  </span>
-                  <span ng-if="link.LinkName != 'Local' && link.LinkType == 'INTERNAL'" class="label neutral margin-right-quarter">
-                    cb remote
-                  </span>
-                  <span ng-if="link.LinkType == 'EXTERNAL'" class="label neutral margin-right-quarter">
-                    {{link.extLinkType}}
-                  </span>
-
-                  <span
-                     ng-if="link.IsActive === qc.datasetUnknownState"
-                     title="fetching link state..."
-                     class="icon fa-spinner fa-pulse grayblack-3">
-                  </span>
-                  <span ng-if="link.LinkType == 'INTERNAL' && qc.atLeast70">
-                    <span
-                       ng-if="!link.IsActive && qc.atLeast70"
-                       class="icon fa-unlink orange-1 cursor-pointer"
-                       ng-click="qc.connectLink(link,dataverse)"
-                       uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'"
-                       tooltip-placement="auto top"
-                       tooltip-append-to-body="true"
-                       tooltip-trigger="mouseenter">
-                    </span>
-                    <span
-                       ng-if="link.IsActive === true"
-                       class="icon fa-link cursor-pointer grayblue-1"
-                       ng-click="qc.disconnectLink(link,dataverse)"
-                       uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'"
-                       tooltip-placement="auto top"
-                       tooltip-append-to-body="true"
-                       tooltip-trigger="mouseenter">
-                    </span>
-                  </span>
-
-                </span>
-                <a ng-show="qc.validated.canAccessLinks()"
-                   title="Add new collection to link"
-                   ng-click="qc.createNewDataset(link)"
-                   class="text-fine nowrap margin-left-1">
-                  + collection
-                </a>
-              </div>
-              <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
+              <div ng-if="qc.isGlobalLinks()" ng-repeat="shadow in qc.getDatasetsInLink(dataverse)">
                 <div ng-init="shadow.expanded = false">
                   <div class="row margin-left-half margin-top-half">
-
                     <div
-                       class="disclosure padding-left-1 ellipsis"
-                       ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
-                       ng-click="shadow.expanded = !shadow.expanded">
+                            class="disclosure padding-left-1 ellipsis"
+                            ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                            ng-click="shadow.expanded = !shadow.expanded">
                       <span
-                         class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                              class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
+                              ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
                       {{shadow.id}}
                     </div>
-
                   </div>
-<!-- expando section for details on each dataset -------------------------- -->
+                  <!-- expando section for details on each dataset -------------------------- -->
                   <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
-                     <p ng-show="!shadow.external" class="margin-bottom-half" title="source collection and filter">
+                    <p ng-show="!shadow.external" class="margin-bottom-half" title="source collection and filter">
                       {{shadow.bucketName}}<span ng-if="shadow.scopeName && shadow.collectionName">.{{shadow.scopeName}}.{{shadow.collectionName}}</span>
                       <span ng-show="shadow.filter">|</span> {{shadow.filter}}
                     </p>
@@ -433,108 +589,60 @@ licenses/APL2.txt.
                   </div>
                 </div>
               </div>
-            </div>
-            <div ng-if="qc.isGlobalLinks()" ng-repeat="shadow in qc.getDatasetsInLink(dataverse)">
-              <div ng-init="shadow.expanded = false">
-                <div class="row margin-left-half margin-top-half">
-                  <div
-                          class="disclosure padding-left-1 ellipsis"
-                          ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
-                          ng-click="shadow.expanded = !shadow.expanded">
-                    <span
-                            class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                            ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
-                    {{shadow.id}}
-                  </div>
+              <!-- Do we have any views? -->
+              <div ng-if="dataverse.views && dataverse.views.length">
+                <div class="row margin-left-half margin-right-half margin-top-half">
+                  <span class="row flex-left ellipsis">
+                    <h6 class="ellipsis margin-right-quarter">
+                      <span class="ellipsis">
+                        Analytics Views
+                      </span>
+                    </h6>
+                  </span>
                 </div>
-                <!-- expando section for details on each dataset -------------------------- -->
-                <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
-                  <p ng-show="!shadow.external" class="margin-bottom-half" title="source collection and filter">
-                    {{shadow.bucketName}}<span ng-if="shadow.scopeName && shadow.collectionName">.{{shadow.scopeName}}.{{shadow.collectionName}}</span>
-                    <span ng-show="shadow.filter">|</span> {{shadow.filter}}
-                  </p>
-                  <p ng-show="shadow.external" class="margin-bottom-half">
-                    Container:<br>
-                    {{shadow.container}}.{{shadow.bucketName}}
-                    <span ng-show="shadow.definition">|</span> {{shadow.definition}}
-                    <span ng-show="shadow.format">({{shadow.format}})</span>
-                  </p>
-                  <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
-                  <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
-                    Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
-                    <span ng-repeat="idx in shadow.indexes">
-                      {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
-                    </span>
-                  </p>
-                  <p ng-if="link.LinkType == 'EXTERNAL' && shadow.format != 'json'">
-                    {{shadow.TypeString}}
-                  </p>
-                  <p>
-                    <a ng-click="qc.dropDataset(link,shadow)"
-                       class="inline margin-bottom-half margin-top-half">
-                      drop analytics collection
-                    </a>
-                  </p>
-                </div>
-                <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
-                  <em class="text-smaller">
-                    progress {{shadow.progress}}%<span ng-show="shadow.timeLag">| {{shadow.timeLag}} est. time remaining</span>
-                  </em>
-                </div>
-              </div>
-            </div>
-            <!-- Do we have any views? -->
-            <div ng-if="dataverse.views && dataverse.views.length">
-              <div class="row margin-left-half margin-right-half margin-top-half">
-                <span class="row flex-left ellipsis">
-                  <h6 class="ellipsis margin-right-quarter">
-                    <span class="ellipsis">
-                      Analytics Views
-                    </span>
-                  </h6>
-                </span>
-              </div>
-
-              <div ng-repeat="view in dataverse.views">
-                <div ng-init="view.expanded = false">
-                  <div class="row margin-left-half margin-top-half">
-
-                    <div
-                       class="disclosure padding-left-1 ellipsis"
-                       ng-click="shadow.expanded = !shadow.expanded"
-                       ng-class="{disclosed : shadow.expanded}">
-                      <span class="icon fa-eye text-smaller grayblue-2 margin-right-quarter"></span>
-                      {{view.id}}
+  
+                <div ng-repeat="view in dataverse.views">
+                  <div ng-init="view.expanded = false">
+                    <div class="row margin-left-half margin-top-half">
+  
+                      <div
+                         class="disclosure padding-left-1 ellipsis"
+                         ng-click="shadow.expanded = !shadow.expanded"
+                         ng-class="{disclosed : shadow.expanded}">
+                        <span class="icon fa-eye text-smaller grayblue-2 margin-right-quarter"></span>
+                        {{view.id}}
+                      </div>
+  
                     </div>
-
+                    <!-- expand section for view details -------------------------- -->
+                    <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
+                      <p ng-show="view.TypeString" class="margin-bottom-half" title="Fields">
+                        {{view.TypeString}}
+                      </p>
+                      <p ng-show="view.ViewDetails && view.ViewDetails.Definition" class="margin-bottom-half" title="Definition">
+                        {{view.ViewDetails.Definition}}
+                      </p>
+                      <p>
+                        <a ng-click="qc.dropView(dataverse,view)"
+                           class="inline margin-bottom-half margin-top-half">
+                          drop analytics view
+                        </a>
+                      </p>
+                    </div>
                   </div>
-                  <!-- expand section for view details -------------------------- -->
-                  <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
-                    <p ng-show="view.TypeString" class="margin-bottom-half" title="Fields">
-                      {{view.TypeString}}
-                    </p>
-                    <p ng-show="view.ViewDetails && view.ViewDetails.Definition" class="margin-bottom-half" title="Definition">
-                      {{view.ViewDetails.Definition}}
-                    </p>
-                    <p>
-                      <a ng-click="qc.dropView(dataverse,view)"
-                         class="inline margin-bottom-half margin-top-half">
-                        drop analytics view
-                      </a>
-                    </p>
-                  </div>
+  
                 </div>
-
+  
               </div>
-
+  
+            </section>
             </div>
-
-          </section>
+        </section>
           <a ng-click="qc.toggleEmptyScopes()" class="text-smallish block width-12 text-center margin-right-half"
              title="Show/hide analytics scopes & links that have no collections"
           ng-if="qc.atLeast70">
-            <span ng-hide="qc.showEmptyScopes()">Show empty analytics scopes</span>
-            <span ng-show="qc.showEmptyScopes()">Hide empty analytics scopes</span>
+            <span ng-hide="qc.showEmptyScopes()">Show empty Columnar scopes</span>
+            <span ng-show="qc.showEmptyScopes()">Hide empty Columnar scopes</span>
           </a>
         </div>
 

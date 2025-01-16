@@ -10,7 +10,7 @@ licenses/APL2.txt.
 
 <div class="dialog-med">
   <div class="panel-header">
-    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Analytics Collection</h2>
+    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Columnar Collection</h2>
     <h2 ng-show="!options.is_new">Collection Details</h2>
   </div>
   <form class="forms" name="datasetForm">
@@ -39,7 +39,7 @@ licenses/APL2.txt.
            [callback]="options.collectionMenuCallback"
            [disabled]="!options.is_new"
            (onSelection)="options.collectionMenuCallback($event)"
-           [proxy]="options.proxy"
+           [proxy]="options.proxy">
         </qw-collection-menu>
       </div>
 
@@ -63,7 +63,7 @@ licenses/APL2.txt.
            autocapitalize="off" required>
       </div>
 
-      <div class="formrow" ng-if="!isExternalCollection(options.link_details.type)">
+      <div class="formrow" ng-if="false">
         <label>Where (optional)</label>
         <textarea
            ng-disabled="!options.is_new"

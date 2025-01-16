@@ -21,6 +21,11 @@ import cwHistoryDialogTemplate from "./cw_history_dialog.html";
 import cwCbasLinkDialogTemplate from "./cw_cbas_link_dialog.html";
 import cwCbasMapCollectionsDialogTemplate from "./cw_cbas_map_collections_dialog.html";
 import cwCbasDatasetDialogTemplate from "./cw_cbas_dataset_dialog.html";
+import cwCbasDatabaseDialogTemplate from "./cw_cbas_database_dialog.html";
+import cwCbasScopeDialogTemplate from "./cw_cbas_scope_dialog.html";
+import cwCbasCollectionDialogTemplate from "./cw_cbas_collections_dialog.html";
+
+import { FormControl, FormGroup }         from '@angular/forms';
 
 export default cbasController;
 cbasController.$inject = ["$rootScope", "$stateParams", "$uibModal", "$timeout", "cwQueryService", "validateCbasService", "mnPools", "$scope", "cwConstantsService", "mnPoolDefault", "mnAlertsService", "mnServersService", "$interval", "qwJsonCsvService", "qwCollectionsService", "qwDialogService"];
@@ -52,7 +57,9 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // alot of state is provided by the cwQueryService
     //
 
-    qc.dataverses = cwQueryService.dataverses;          // dataverses
+    qc.dataverses = cwQueryService.dataverses;    // dataverses
+    qc.databases =  cwQueryService.databases;     // databases
+    
     qc.shadows = cwQueryService.shadows;                // shadow datasets on cluster
     qc.clusterBuckets = cwQueryService.clusterBuckets; // all cluster buckets
     qc.gettingBuckets = cwQueryService.gettingBuckets;  // busy retrieving?
@@ -149,6 +156,9 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.disconnectLink = disconnectLink;
 
     qc.createNewLink = createNewLink;
+    qc.createNewDatabase = createNewDatabase;
+    qc.createNewScope = createNewScope;
+    qc.createNewCollection = createNewCollection;
     qc.editLink = editLink;
 
     qc.mapCollections = mapCollections;
@@ -157,6 +167,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.dropDataset = dropDataset;
     qc.dropView = dropView;
     qc.dropScope = dropScope;
+    qc.dropDatabase = dropDatabase;
+    qc.getDataverseInDatabase = getDataverseInDatabase;
 
     //
     // options for the two Ace editors, the input and the output
@@ -1321,19 +1333,19 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     function getDatasetsInLink(dataverse,link = null) {
       var result = [];
       qc.shadows.forEach(function(shadow) {
-        if (shadow.DataverseName === dataverse.DataverseName) {
-          if (!link && (shadow.LinkName || shadow.name)) {
-              result.push(shadow);
-          } else if (link && shadow.linkDataverseName == link.DVName && shadow.LinkName == link.LinkName) {
-              // internal datasets
-              result.push(shadow);
-          } else if (link && shadow.dataverse == link.DVName && shadow.name == link.LinkName)
-              // external datasets
-              result.push(shadow);
-          }
+        if (shadow?.DataverseName === dataverse?.DataverseName) {
+          result.push(shadow);
+        }
       });
+      console.log(result);
+      
       return result;
     }
+
+    function getDataverseInDatabase(database) {
+      return qc.dataverses.filter(element => element.DatabaseName == database.DatabaseName);
+    }
+
     function disconnectLink(link) {
       var queryText;
       if (link.dataverse) {
@@ -1464,6 +1476,155 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       });
     }
 
+    var createNewDatasetDialogScope = $rootScope.$new(true);
+
+    function createNewDatabase() {
+      createNewDatasetDialogScope.options = {
+        databaseName: "",
+        scopeName: "",
+        is_new: true
+      }
+      createNewDatasetDialogScope.model = $uibModal
+        .open({
+          template: cwCbasDatabaseDialogTemplate,
+          scope: createNewDatasetDialogScope
+        }).result.then(function success(resp) {
+          if (resp == "ok") {
+            var queryText = "CREATE DATABASE `" + createNewDatasetDialogScope.options.databaseName + "`";
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
+              .then(function success() {
+                  if (createNewDatasetDialogScope.options.scopeName.length > 0) {
+                    queryText = "CREATE SCOPE `" + createNewDatasetDialogScope.options.databaseName + "`.`" + createNewDatasetDialogScope.options.scopeName + "`";
+                    cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
+                      .then(function success() {
+                          qc.updateBuckets();
+                        },
+                        function error(resp) {
+                          var errorStr = "Error creating scope: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                          cwQueryService.showErrorDialog(errorStr);
+                        });
+                  } else {
+                    qc.updateBuckets();
+                  }
+                },
+                function error(resp) {
+                  var errorStr = "Error creating database: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                  cwQueryService.showErrorDialog(errorStr);
+                });
+          }
+        }
+      );
+    }
+
+
+    var createNewScopeDialogScope = $rootScope.$new(true);
+
+    function createNewScope() {
+      createNewScopeDialogScope.options = {
+        databaseName: qc.databases[0].DatabaseName,
+        scopeName: "",
+        is_new: true,
+        databases: qc.databases.map(database => database.DatabaseName)
+      }
+      createNewScopeDialogScope.model = $uibModal
+        .open({
+          template: cwCbasScopeDialogTemplate,
+          scope: createNewScopeDialogScope
+        }).result.then(function success(resp) {
+          if (resp == "ok") {
+            var queryText = "CREATE SCOPE `" + createNewScopeDialogScope.options.databaseName + "`.`" + createNewScopeDialogScope.options.scopeName + "`";
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
+              .then(function success() {
+                  qc.updateBuckets();
+                },
+                function error(resp) {
+                  var errorStr = "Error creating scope: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                  cwQueryService.showErrorDialog(errorStr);
+                });
+          }
+        }
+      );
+    }
+
+
+    var createNewCollectionDialogScope = $rootScope.$new(true);
+
+function createNewCollection() {
+  // Initialize the options with default values
+  createNewCollectionDialogScope.options = {
+    databaseName: qc.databases[0]?.DatabaseName || "",
+    scopeName: "",
+    collectionName: "",
+    is_new: true,
+    databases: qc.databases.map(database => database.DatabaseName),
+    dataverses: filterDataversesByDatabase(qc.dataverses, qc.databases[0]?.DatabaseName || ""),
+    isAutoGenerated: true,
+    fields: [{ name: "", type: "int" }], // Initial field
+  };
+
+  // Function to filter dataverses based on the selected database
+  function filterDataversesByDatabase(dataverses, databaseName) {
+    return dataverses
+      .filter(dataverse => dataverse.DatabaseName === databaseName)
+      .map(dataverse => dataverse.DataverseName);
+  }
+
+  // Watch for changes to `databaseName` and update `dataverses`
+  createNewCollectionDialogScope.$watch(
+    () => createNewCollectionDialogScope.options.databaseName,
+    (newDatabaseName) => {
+      createNewCollectionDialogScope.options.dataverses = filterDataversesByDatabase(qc.dataverses, newDatabaseName);
+      createNewCollectionDialogScope.options.scopeName = createNewCollectionDialogScope.options.dataverses[0] || ""; // Reset `scopeName` to the first available dataverse
+    }
+  );
+
+  // watch on the isAutoGenerated field and clear the fields if it is true
+  createNewCollectionDialogScope.$watch(
+    () => createNewCollectionDialogScope.options.isAutoGenerated,
+    (isAutoGenerated) => {
+      if (isAutoGenerated) {
+        createNewCollectionDialogScope.options.fields = [{ name: "", type: "int" }];
+      }
+    }
+  );
+
+  // Function to add a new field
+  createNewCollectionDialogScope.addField = function () {
+    createNewCollectionDialogScope.options.fields.push({ name: "", type: "int" });
+  };
+
+  // Function to delete a field
+  createNewCollectionDialogScope.deleteField = function (index) {
+    createNewCollectionDialogScope.options.fields.splice(index, 1);
+  };
+
+  // Open the dialog
+  createNewCollectionDialogScope.model = $uibModal
+    .open({
+      template: cwCbasCollectionDialogTemplate,
+      scope: createNewCollectionDialogScope
+    }).result.then(function success(resp) {
+      if (resp === "ok") {
+        const { databaseName, scopeName, collectionName } = createNewCollectionDialogScope.options;
+        const queryText = `CREATE COLLECTION \`${databaseName}\`.\`${scopeName}\`.\`${collectionName}\` PRIMARY KEY (\`_columnar_ID\` : uuid) AUTOGENERATED;`;
+
+        cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
+          .then(
+            function success() {
+              qc.updateBuckets();
+            },
+            function error(resp) {
+              const errorStr = `Error creating collection: ${resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data)}`;
+              cwQueryService.showErrorDialog(errorStr);
+            }
+          );
+      }
+    });
+}
+
+
+
+
     // make a user-visible error message based on the many possible ways that errors can exist in an HTTP response
     function errorRespToString(resp, initialMessage) {
       var errorStr = initialMessage || '';
@@ -1531,18 +1692,22 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         linkDialogScope.modal.result.then(function success(resp) {
             if (resp == "drop") {
               cwQueryService.showConfirmationDialog("Confirm Drop Link",
-                "Warning: this will drop the link: ",[dataverse.dataverseDisplayName + '.' + link.LinkName])
+                "Warning: this will drop the link: ",[link.LinkName])
                 .then(function yes(resp) {
                   if (resp == "ok") {
-                    cwQueryService.deleteLink(link.DVName, link.LinkName)
-                      .then(function success(resp) {
-                          qc.updateBuckets()
-                        },
-                        function error(resp) {
-                          //console.log("Got drop link error: " + JSON.stringify(resp));
-                          //var errorStr = "Error dropping link: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                          cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping link: "));
-                        });
+                    // "DROP LINK `amazonlinkj`;"
+                    const queryText = "DROP LINK `" + link.LinkName + "`";
+
+        cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
+          .then(
+            function success() {
+              qc.updateBuckets();
+            },
+            function error(resp) {
+              const errorStr = `Error creating collection: ${resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data)}`;
+              cwQueryService.showErrorDialog(errorStr);
+            }
+          );
                   }
                 }, function no() {return Promise.resolve("no")});
             }
@@ -1757,20 +1922,20 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     // create a custom dataset on a given link
     function createNewDataset(link) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
-      dataset_options.clusterBuckets = qc.clusterBuckets;
-      if (link.LinkName == "Local") {
+      dataset_options.clusterBuckets =  qc.databases.map(database => database.DatabaseName);
+      if (link?.LinkName == "Local") {
         dataset_options.proxy = null;
       }
       else if (cwQueryService.globalLinks) {
-        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link.LinkName);
+        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link?.LinkName);
       }
       else {
-        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link.DVName) + "/" + encodeURIComponent(link.LinkName);
+        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link?.DVName) + "/" + encodeURIComponent(link?.LinkName);
       }
       dataset_options.is_new = true;
       dataset_options.dataset_name = "";
-      dataset_options.link_name = link.LinkName;
-      dataset_options.link_details = cwQueryService.getCachedLinkInfo(link.DVName,link.LinkName);
+      dataset_options.link_name = link?.LinkName;
+      dataset_options.link_details = cwQueryService.getCachedLinkInfo(link?.DVName,link?.LinkName);
       dataset_options.external_dataset.radio_null_value = "empty_string";
       datasetDialogScope.isDeveloperPreview = qc.isDeveloperPreview;
       datasetDialogScope.options = dataset_options;
@@ -1879,7 +2044,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         "Warning, this will drop the analytics collection: ",[dataset.dataverseDisplayName + "." + dataset.id])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop dataset " + dataset.dataverseQueryName + '.`' + dataset.id + '`';
+            // DROP ANALYTICS COLLECTION `Default`.`Default`.`coll1`;"
+            var queryText = "DROP ANALYTICS COLLECTION " + dataset.DatabaseName + '.`' + dataset.DataverseName + '`.`' + dataset.id + '`';
 
             cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
@@ -1936,7 +2102,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           //console.log("showed dataset, got resp: " + resp);
           if (resp == "drop") {
             cwQueryService.showConfirmationDialog("Confirm Drop Analytics Collection",
-              "Warning, this will drop the analytics collection ", [link.DVName + "." + dataset.id])
+              "Warning, this will drop the columnar collection ", [link.DVName + "." + dataset.id])
               .then(function yes(resp) {
                 if (resp == "ok") {
                   var queryText = "drop dataset " + dataset.dataverseQueryName + ".`" + dataset_options.dataset_name + "`";
@@ -1958,13 +2124,35 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         });
     }
 
+    function dropDatabase(database) {
+      cwQueryService.showConfirmationDialog("Confirm Drop Columnar Database",
+        "Warning, this will drop the Columnar database ",[database.databaseDisplayName])
+        .then(function yes(resp) {
+          if (resp == "ok") {
+            var queryText = "drop database " + database.databaseDisplayName;
+
+            cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
+              .then(function success() {
+                  qc.updateBuckets();
+                },
+                function error(resp) {
+                  //console.log("Got drop database error: " + JSON.stringify(resp));
+                  var errorStr = "Error dropping database: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
+                  cwQueryService.showErrorDialog(errorStr);
+                });
+          }
+        });
+    }
+
+
     function dropScope(scope) {
+      console.log(scope, 'this is scope');
+      
       cwQueryService.showConfirmationDialog("Confirm Drop Analytics Scope",
         "Warning, this will drop the analytics scope ",[scope.dataverseDisplayName])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop dataverse " + scope.dataverseQueryName;
-
+            var queryText = "drop analytics scope " + "`" + scope.DatabaseName + "`" +  ".`" + scope.DataverseName + "`";
             cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
