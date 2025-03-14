@@ -2242,7 +2242,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (!rawBytes)
         return rawBytes;
 
-      var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|([:\s]\-?[0-9]{16,})[,\s}]|([:\s]\-?[0-9\.]{17,})[,\s}]/ig;
+      var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[:\s\[,](\-?[0-9]{16,})[,\s\]}]|[:\s\[,](\-?[0-9\.]{17,})[,\s\]}]/ig;
       var longIntCount = 0;
       var matchArray = matchNonQuotedLongInts.exec(rawBytes);
       while (matchArray != null) {
