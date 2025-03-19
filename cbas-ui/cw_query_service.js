@@ -1812,11 +1812,50 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         var idx = dataset.indexes[i];
         idx.keys = [];
         for (var j = 0; j < idx.SearchKey.length; j++) {
+          let searchPath = idx.SearchKey[j].join('.'); // each SearchKey element is array of path elements
           if (idx.SearchKeyType) {
-            idx.keys.push(idx.SearchKey[j] + ":" + idx.SearchKeyType[j]);
+            idx.keys.push(searchPath + ":" + idx.SearchKeyType[j]);
           } else {
-            idx.keys.push(idx.SearchKey[j]);
+            idx.keys.push(searchPath);
           }
+        }
+        // alternately, array indexes are described in SearchKeyElements, an array of either:
+        // - an array of path elements, or,
+        // - an object containing UnnestList and ProjectList
+         for (let i = 0; i < idx.SearchKeyElements?.length || 0; i++) {
+           let ske = idx.SearchKeyElements[i];
+           // regular field
+           if (Array.isArray(ske)) {
+             let searchPath = ske.join('.');
+             if (idx.SearchKeyType?.[i]) {
+               searchPath += ":" + idx.SearchKeyType[i];
+             }
+             idx.keys.push(searchPath);
+           }
+           // array indexes
+           else if (ske.UnnestList) {
+             // unnestList is an array of search paths, because unnest can be nested
+             let innerElements = [];
+             ske.UnnestList.forEach(inner => {innerElements.push(inner.join('.'))});
+             let unnestList = innerElements.join('; '); // separate nested paths with ;
+
+             // if we have projectList, it is an array of path expressions, each an array of arrays of strings
+             if (ske.ProjectList) {
+               let projectListFields = [];
+               for (let pi = 0; pi < ske.ProjectList.length; pi++) {
+                 let arrayFieldName = ske.ProjectList[pi].join('.');
+                 if (idx.SearchKeyType?.[i]?.[pi]) {
+                   arrayFieldName += ":" + idx.SearchKeyType[i][pi];
+                 }
+                 projectListFields.push(arrayFieldName);
+               }
+               idx.keys.push(`unnest(${unnestList}[${projectListFields.join(', ')}])`);
+             }
+             // if no projectList, get the single type from the SearchKeyType
+             else {
+               idx.keys.push(`unnest(${unnestList}:${idx.SearchKeyType[i]})`);
+             }
+           }
         }
       }
     }
@@ -2226,7 +2265,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (!rawBytes)
         return rawBytes;
 
-      var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|([:\s]\-?[0-9]{16,})[,\s}]|([:\s]\-?[0-9\.]{17,})[,\s}]/ig;
+      var matchNonQuotedLongInts = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[:\s\[,](\-?[0-9]{16,})[,\s\]}]|[:\s\[,](\-?[0-9\.]{17,})[,\s\]}]/ig;
       var longIntCount = 0;
       var matchArray = matchNonQuotedLongInts.exec(rawBytes);
       while (matchArray != null) {

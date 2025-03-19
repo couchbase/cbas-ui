@@ -112,6 +112,7 @@ FROM t.Derived.Record.Fields)) AS TypeString,
   (
     SELECT idx.IndexName,
   idx.SearchKey,
+  idx.SearchKeyElements,
   idx.SearchKeyType
 FROM Metadata.\`Index\` AS idx
 WHERE idx.IsPrimary = FALSE
