@@ -1699,8 +1699,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       for (var i = 0; i < data.results.length; i++) {
         var record = data.results[i];
         if (record.isDatabase) {
-          record.multiPartName = record.DatabaseName.indexOf('/') >= 0;
-          record.databaseDisplayName = record.DatabaseName;
           record.databaseDisplayName = record.DatabaseName;
           cwQueryService.databases.push(record);
         }
@@ -1759,6 +1757,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             addToken(record.id, "view");
           }
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;
+          record.databaseDisplayName = record.DatabaseName;
           record.dataverseDisplayName = record.DataverseName.split('/').join('.');
           record.dataverseQueryName = '`' + record.DataverseName.split('/').join('`.`') + '`';
           cwQueryService.shadows.push(record);

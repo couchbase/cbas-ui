@@ -38,9 +38,9 @@ licenses/APL2.txt.
         <select id="link_type" ng-model="options.link_type" ng-disabled="!options.is_new" required>
           <option value="couchbase">Couchbase</option>
           <option value="s3">S3</option>
-          <option value="azureblob">Azure Blob</option>
+          <option value="azureblob" ng-if="isDeveloperPreview()">Azure Blob</option>
           <option value="azuredatalake" ng-if="isDeveloperPreview()">Azure Datalake</option>
-          <option value="gcs">Google Cloud Storage</option>
+          <option value="gcs" ng-if="isDeveloperPreview()">Google Cloud Storage</option>
         </select>
       </div>
 

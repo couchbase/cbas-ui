@@ -173,7 +173,8 @@ ORDER BY
                                                      "DROP INDEX", "CREATE ANALYTICS COLLECTION", "DROP ANALYTICS COLLECTION",
                                                      "CREATE ANALYTICS SCOPE", "DROP ANALYTICS SCOPE", "ALTER COLLECTION",
                                                      "CREATE ANALYTICS VIEW", "DROP ANALYTICS VIEW", "DROP LINK",
-                                                     "CREATE OR REPLACE ANALYTICS VIEW"];
+                                                     "CREATE OR REPLACE ANALYTICS VIEW", "CREATE DATABASE", "CREATE SCOPE",
+                                                     "CREATE COLLECTION", "DROP DATABASE", "DROP SCOPE", "DROP COLLECTION"];
 
   cwConstantsService.healthCheckURL = "../_p/cbas/admin/ping";
 

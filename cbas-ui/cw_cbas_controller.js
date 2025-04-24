@@ -1337,8 +1337,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           result.push(shadow);
         }
       });
-      console.log(result);
-      
       return result;
     }
 
@@ -1748,6 +1746,10 @@ function createNewCollection() {
       kv_buckets: [],
       kv_scopes: {},
       kv_collections: {},
+      databases: {},
+      dataverses: {},
+      targetDatabase: null,
+      targetScope: null
     };
 
     dataset_options.collectionMenuCallback = function(event) {
@@ -1922,11 +1924,33 @@ function createNewCollection() {
     // create a custom dataset on a given link
     function createNewDataset(link) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
-      dataset_options.clusterBuckets =  qc.databases.map(database => database.DatabaseName);
+      dataset_options.clusterBuckets =  qc.clusterBuckets;
+      dataset_options.selected_bucket = '';
+      // Function to filter dataverses based on the selected database
+      function filterDataversesByDatabase(dataverse, databaseName) {
+        return dataverse
+            .filter(dataverse => dataverse.DatabaseName === databaseName)
+            .map(dataverse => dataverse.DataverseName);
+      }
+
+      // Watch for changes to `databaseName` and update `dataverses`
+      datasetDialogScope.$watch(
+          () => datasetDialogScope.options.targetDatabase,
+          (newDatabaseName) => {
+            datasetDialogScope.options.dataverses = filterDataversesByDatabase(qc.dataverses, newDatabaseName);
+            datasetDialogScope.options.targetScope = datasetDialogScope.options.dataverses[0] || ""; // Reset `scopeName` to the first available dataverse
+          }
+      );
+
+
+      dataset_options.databases =  qc.databases.map(database => database.DatabaseName);
+      dataset_options.targetDatabase = qc.databases[0]?.DatabaseName || "";
+      dataset_options.dataverses =  filterDataversesByDatabase(qc.dataverses, qc.databases[0]?.DatabaseName || "");
+
       if (link?.LinkName == "Local") {
         dataset_options.proxy = null;
       }
-      else if (cwQueryService.globalLinks) {
+      else if (!cwQueryService.globalLinks) {
         dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link?.LinkName);
       }
       else {
@@ -1964,11 +1988,11 @@ function createNewCollection() {
         scope: datasetDialogScope
       }).result
         .then(function success(resp) {
-          var dv = cwQueryService.dataverses.find(dv => dv.DataverseName == link.DVName);
-          var dvName = dv.dataverseQueryName || link.DVName;
+          let dbName = dataset_options.targetDatabase;
+          var dvName = dataset_options.targetScope;
           var isExternalLink = dataset_options.link_details && cwConstantsService.isExternalCollection(dataset_options.link_details.type);
           var external = isExternalLink ? " EXTERNAL " : "";
-          var queryText = "CREATE " + external + " DATASET " + dvName + '.`' + dataset_options.dataset_name + '`';
+          var queryText = "CREATE " + external + " DATASET `" + dbName + '`.`' + dvName + '`.`' + dataset_options.dataset_name + '`';
 
           // for external links, csv and tsv files should have an inline type def
           if (isExternalLink && dataset_options.external_dataset && cwConstantsService.requireTypeDefinition(dataset_options.external_dataset.format))
@@ -1980,7 +2004,7 @@ function createNewCollection() {
           if (!isExternalLink && dataset_options.selected_scope && dataset_options.selected_collection)
             queryText += "`.`" + dataset_options.selected_scope + "`.`" +  dataset_options.selected_collection;
 
-          queryText += "` at " + dvName + ".`" + link.LinkName + "`";
+          queryText += "` at `" + link.LinkName + "`";
 
           // no where for external datasets
           if (dataset_options.where && !isExternalLink)
@@ -2040,8 +2064,8 @@ function createNewCollection() {
     }
 
     function dropDataset(link, dataset) {
-      cwQueryService.showConfirmationDialog("Confirm Drop Analytics Collection",
-        "Warning, this will drop the analytics collection: ",[dataset.dataverseDisplayName + "." + dataset.id])
+      cwQueryService.showConfirmationDialog("Confirm Drop Columnar Collection",
+        "Warning, this will drop the columnar collection: ",[dataset.databaseDisplayName + "." + dataset.dataverseDisplayName + "." + dataset.id])
         .then(function yes(resp) {
           if (resp == "ok") {
             // DROP ANALYTICS COLLECTION `Default`.`Default`.`coll1`;"
@@ -2054,7 +2078,7 @@ function createNewCollection() {
                 function error(resp) {
                   console.log("Got drop collection error: " + JSON.stringify(resp));
                   //var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping analytics collection: "));
+                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping columnar collection: "));
                 });
           }
         }, function no() {return Promise.resolve("no")});
@@ -2146,8 +2170,6 @@ function createNewCollection() {
 
 
     function dropScope(scope) {
-      console.log(scope, 'this is scope');
-      
       cwQueryService.showConfirmationDialog("Confirm Drop Analytics Scope",
         "Warning, this will drop the analytics scope ",[scope.dataverseDisplayName])
         .then(function yes(resp) {
