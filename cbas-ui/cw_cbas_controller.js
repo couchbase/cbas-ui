@@ -81,6 +81,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.fullscreen = false;
     qc.toggleFullscreen = toggleFullscreen;
     qc.scopeNames = cwQueryService.scopeNames;
+    qc.databaseNames = cwQueryService.databaseNames;
 
     qc.atLeast70 = cwQueryService.atLeast70;
     qc.atLeast71 = cwQueryService.atLeast71;
@@ -268,6 +269,22 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     //
     // call the activate method for initialization
     //
+
+  $scope.$watch('qc.queryContextDatabase', function (newValue) {
+    if (newValue) {
+      // Filter scopes based on the selected database
+      $scope.qc.filteredScopes = $scope.qc.dataverses.filter(function (scope) {
+        return scope.DatabaseName === newValue;
+      });
+
+      // Set the first scope as the default selection
+      $scope.qc.queryContextScope = $scope.qc.filteredScopes.length > 0 ? $scope.qc.filteredScopes[0].DataverseName : null;
+    } else {
+      // Clear the filtered scopes if no database is selected
+      $scope.qc.filteredScopes = [];
+      $scope.qc.queryContextScope = null;
+    }
+  });
 
     activate();
 
@@ -723,6 +740,11 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       //console.log("Running query: " + queryStr);
       // run the query and show a spinner
 
+      if (qc.queryContextDatabase != null && qc.queryContextScope != null) {
+        qc.lastResult.queryContext = qc.queryContextDatabase + "." + qc.queryContextScope;
+      } else {
+        qc.lastResult.queryContext = null;
+      }
       var promise = cwQueryService.executeQuery(queryStr, qc.lastResult.query, cwQueryService.options, explainOnly, qc.lastResult.queryContext);
 
       if (promise) {

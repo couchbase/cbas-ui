@@ -187,6 +187,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.databases = [];
   
   cwQueryService.scopeNames = [];
+  cwQueryService.databaseNames = [];
   cwQueryService.dataverse_links = {};
   cwQueryService.global_links = [];
   cwQueryService.links = [];
@@ -942,10 +943,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       queryData["max-warnings"] = cwConstantsService.maxWarnings;
 
       if (queryContext) { // query context has display name
-        var dv = cwQueryService.dataverses.find(dv => dv.dataverseDisplayName == queryContext)
-        if (dv)
-          // "default:`Default`.`Default`"
-          queryData["query_context"] = 'default:' + dv.DatabaseName + '.' + dv.dataverseQueryName;
+        queryData["query_context"] = 'default:' + queryContext;
       }
     }
     // set the source if one has been provided, and we are >= 7.2 compat
@@ -1657,6 +1655,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         cwQueryService.shadows.length = 0;
         cwQueryService.clusterBuckets.length = 0;
         cwQueryService.dataverses.length = 0;
+        cwQueryService.databaseNames.length = 0;
         cwQueryService.scopeNames.length = 0;
         cwQueryService.dataverse_links = {};
         cwQueryService.autoCompleteTokens = {};
@@ -1688,6 +1687,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.shadows.length = 0;
     cwQueryService.dataverses.length = 0;
     cwQueryService.databases.length = 0;
+    cwQueryService.databaseNames.length = 0;
     cwQueryService.scopeNames.length = 0;
     cwQueryService.clusterBuckets.length = 0;
     cwQueryService.bucket_errors = null;
@@ -1701,6 +1701,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         if (record.isDatabase) {
           record.databaseDisplayName = record.DatabaseName;
           cwQueryService.databases.push(record);
+          cwQueryService.databaseNames.push(record.databaseDisplayName);
         }
         if (record.isDataverse) {
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;

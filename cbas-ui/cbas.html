@@ -61,14 +61,31 @@ licenses/APL2.txt.
         </span>
 
         <span class="query-context">
-          <select ng-model="qc.lastResult.queryContext"
-            uib-tooltip-html="'Set a default scope, so you may write queries with only the collection name.'"
-            tooltip-placement="auto top"
-            tooltip-append-to-body="true"
-            tooltip-trigger="mouseenter"
-            class="fix-width-3">
-            <option value>query context</option>
-            <option ng-repeat="scope in qc.scopeNames">{{scope}}</option>
+          <select
+                  id="query-context-db"
+                  ng-model="qc.queryContextDatabase"
+                  uib-tooltip-html="'Set a default database for  entities.'"
+                  tooltip-placement="auto top"
+                  tooltip-append-to-body="true"
+                  tooltip-trigger="mouseenter"
+                  class="fix-width-3">
+            <option ng-repeat="database in qc.databaseNames" value="{{database}}">
+              {{database}}
+            </option>
+          </select>
+          <select
+                  id="query-context-scope"
+                  ng-model="qc.queryContextScope"
+                  uib-tooltip-html="'Set a default scope, so you may write queries without fully qualifying entities'"
+                  tooltip-placement="auto top"
+                  tooltip-append-to-body="true"
+                  tooltip-trigger="mouseenter"
+                  class="fix-width-3">
+            <option
+                    ng-repeat="scope in qc.filteredScopes"
+                    value="{{scope.DataverseName}}">
+              {{scope.DataverseName}}
+            </option>
           </select>
         </span>
       </div>
