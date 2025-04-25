@@ -1634,7 +1634,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.loadingBuckets = true;
     var queryText = cwConstantsService.keyspaceQuery;
     // MDB doesn't like the ugly whitespace in the metadata query, normalize it now
-    queryText = queryText.replace(/ +/g,' ');
+    queryText = queryText.replace(/[ \n]+/g,' ');
     // run a query to get the dataverse, link, and dataset info from Metadata
     executeQueryUtil(queryText, uiInsightsSource, null, false, true)
         .then(function (resp) {
