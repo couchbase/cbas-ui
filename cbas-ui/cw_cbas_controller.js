@@ -256,7 +256,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.showEmptyScopes = function() {return cwQueryService.showEmptyScopes;};
     qc.toggleEmptyScopes = function() {cwQueryService.showEmptyScopes = !cwQueryService.showEmptyScopes;};
     qc.scopeEmpty = function(dataverse) {
-      if (cwQueryService.globalLinks) {
+      if (!cwQueryService.globalLinks) {
         return !cwQueryService.shadows.some(shadow => shadow.DataverseName == dataverse.DataverseName);
       }
       return !cwQueryService.shadows.some(shadow => shadow.linkDataverseName == dataverse.DataverseName) &&
@@ -1948,6 +1948,7 @@ function createNewCollection() {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
       dataset_options.clusterBuckets =  qc.clusterBuckets;
       dataset_options.selected_bucket = '';
+      dataset_options.where = null;
       // Function to filter dataverses based on the selected database
       function filterDataversesByDatabase(dataverse, databaseName) {
         return dataverse

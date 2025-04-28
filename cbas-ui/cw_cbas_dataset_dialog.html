@@ -89,7 +89,7 @@ licenses/APL2.txt.
            autocapitalize="off" required>
       </div>
 
-      <div class="formrow" ng-if="false">
+      <div class="formrow" ng-if="!isExternalCollection(options.link_details.type)">
         <label>Where (optional)</label>
         <textarea
            ng-disabled="!options.is_new"

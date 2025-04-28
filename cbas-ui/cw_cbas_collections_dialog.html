@@ -10,7 +10,7 @@ licenses/APL2.txt.
 
 <div class="dialog-med">
   <div class="panel-header">
-    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Analytics Collection</h2>
+    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Collection</h2>
     <h2 ng-show="!options.is_new">Collection Details</h2>
   </div>
   <form class="forms" name="datasetForm">
@@ -27,7 +27,7 @@ licenses/APL2.txt.
         <input ng-model="options.collectionName" type="text" autocorrect="off"
            spellcheck="false" autocapitalize="off" required>
       </div>
-        <label class="margin-bottom-0">{{label}}&nbsp;<small *ngIf="compat.atLeast70">bucket.scope<span *ngIf="!hideCollections">.collection</span></small></label>
+        <label class="margin-bottom-0">{{label}}&nbsp;<small *ngIf="compat.atLeast70">database.scope</small></label>
           <select id="link_type" ng-model="options.databaseName" ng-disabled="!options.is_new" required class="inline fix-width-2 margin-right-quarter">
             <!-- ng for loop for option -->
          <option ng-repeat="item in options.databases" value="{{item}}">{{item}}</option>
