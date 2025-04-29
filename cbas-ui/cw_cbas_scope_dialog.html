@@ -15,14 +15,14 @@ licenses/APL2.txt.
   <form class="forms" name="datasetForm">
     <div class="panel-content">
       <div class="formrow">
-        <label for="cluster_reference_name">Database Name*</label>
+        <label for="cluster_reference_name">Database Name</label>
           <select id="link_type" ng-model="options.databaseName" ng-disabled="!options.is_new" required>
             <!-- ng for loop for option -->
          <option ng-repeat="item in options.databases" value="{{item}}">{{item}}</option>
         </select>
-    </mn-select>
+      </div>
       <div class="formrow">
-        <label for="cluster_reference_name">Scope Name*</label>
+        <label for="cluster_reference_name">Scope Name</label>
         <input
            ng-disabled="!options.is_new"
            ng-model="options.scopeName"

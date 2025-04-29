@@ -14,8 +14,11 @@ licenses/APL2.txt.
       <a ui-sref="app.admin.cbas.workbench" ui-sref-active="selected">
         Workbench</a>
       <a ui-sref="app.admin.cbas.monitoring" ng-if="qc.isEnterprise"
-       ng-class="{selected: ('app.admin.cbas.monitoring' | includedByState)}">
+         ng-class="{selected: ('app.admin.cbas.monitoring' | includedByState)}">
         Monitor</a>
+      <a ui-sref="app.admin.cbas.samples"
+         ng-class="{selected: ('app.admin.cbas.samples' | includedByState)}">
+        Samples</a>
         <!--
       <a ui-sref="app.admin.query.doc_editor" ui-sref-active="selected">
         Document Editor</a> -->
@@ -23,21 +26,23 @@ licenses/APL2.txt.
   </mn-element-cargo>
 
   <div class="margin-top-1" ng-if="qc.validated.inProgress() && !qc.validated.valid()">
-    <p>Contacting analytics node...</p>
+    <p>Contacting Columnar node...</p>
   </div>
 
   <div ng-if="!qc.validated.inProgress() && !qc.validated.valid()" class="margin-top-half">
     <div ng-if="qc.validNodes.length">
       <span ng-if="qc.validated.otherStatus() != 404">
         <p class="error">Received error {{qc.validated.otherStatus()}} when contacting the
-        analytics service. Try refreshing the browser, as errors may occur if the analytics service
+        Columnar service. Try refreshing the browser, as errors may occur if the Columnar service
         is still warming up or suffering a transient error.</p>
       </span>
     </div>
+<!--
     <div ng-if="qc.validNodes.length == 0">
       <p class="error">The analytics interface is only available on Couchbase clusters running the analytics service.
       No analytics nodes were found on this cluster.</p>
     </div>
+-->
   </div>
 
   <div ui-view=""></div>

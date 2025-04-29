@@ -536,6 +536,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //
 
   function addToken(token, type) {
+    //console.log("Adding token: " + token + " type: " + type);
     // see if the token needs to be quoted
     if (token.indexOf('`') == -1 &&
       (token.indexOf(' ') >= 0 || token.indexOf('-') >= 0))
@@ -1700,8 +1701,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         var record = data.results[i];
         if (record.isDatabase) {
           record.databaseDisplayName = record.DatabaseName;
+          record.databaseQueryName = '`' + record.DatabaseName + '`';
           cwQueryService.databases.push(record);
           cwQueryService.databaseNames.push(record.databaseDisplayName);
+          addToken(record.databaseQueryName, "database");
         }
         if (record.isDataverse) {
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;
@@ -1710,7 +1713,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           cwQueryService.dataverses.push(record);
           cwQueryService.scopeNames.push(record.dataverseDisplayName);
           cwQueryService.dataverse_links[record.DataverseName] = []; // list of links
-          addToken(record.dataverseQueryName, "scope");
+          //addToken(record.dataverseQueryName, "scope");
         }
 
         // links
@@ -1759,6 +1762,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           }
           record.multiPartName = record.DataverseName.indexOf('/') >= 0;
           record.databaseDisplayName = record.DatabaseName;
+          record.databaseQueryName = '`' + record.DatabaseName + '`';
           record.dataverseDisplayName = record.DataverseName.split('/').join('.');
           record.dataverseQueryName = '`' + record.DataverseName.split('/').join('`.`') + '`';
           cwQueryService.shadows.push(record);
@@ -1786,7 +1790,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       }
     }
     // put the fully qualified datasets in as auto-completion
-    cwQueryService.shadows.forEach(shadow => addToken(shadow.dataverseQueryName + '.`' + shadow.id + '`',"path"));
+    cwQueryService.shadows.forEach(shadow => addToken(shadow.databaseQueryName + '.' + shadow.dataverseQueryName + '.`' + shadow.id + '`',"path"));
     // we want the Local scope to always come first in each scope
     for (var dataverseName in cwQueryService.dataverse_links) {
       var links = cwQueryService.dataverse_links[dataverseName];

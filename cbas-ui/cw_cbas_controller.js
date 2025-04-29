@@ -741,7 +741,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       // run the query and show a spinner
 
       if (qc.queryContextDatabase != null && qc.queryContextScope != null) {
-        qc.lastResult.queryContext = qc.queryContextDatabase + "." + qc.queryContextScope;
+        qc.lastResult.queryContext = "`" + qc.queryContextDatabase + "`.`" + qc.queryContextScope + "`";
       } else {
         qc.lastResult.queryContext = null;
       }
@@ -1539,9 +1539,9 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     var createNewScopeDialogScope = $rootScope.$new(true);
 
-    function createNewScope() {
+  function createNewScope(databaseName) {
       createNewScopeDialogScope.options = {
-        databaseName: qc.databases[0].DatabaseName,
+        databaseName: databaseName?.DatabaseName || (qc.databases[0]?.DatabaseName || ""),
         scopeName: "",
         is_new: true,
         databases: qc.databases.map(database => database.DatabaseName)
@@ -2172,11 +2172,11 @@ function createNewCollection() {
     }
 
     function dropDatabase(database) {
-      cwQueryService.showConfirmationDialog("Confirm Drop Columnar Database",
-        "Warning, this will drop the Columnar database ",[database.databaseDisplayName])
+      cwQueryService.showConfirmationDialog("Confirm Drop Database",
+        "Warning, this will drop the database ",[database.databaseDisplayName])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop database " + database.databaseDisplayName;
+            var queryText = "DROP DATABASE `" + database.databaseDisplayName + "`";
 
             cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
@@ -2193,11 +2193,11 @@ function createNewCollection() {
 
 
     function dropScope(scope) {
-      cwQueryService.showConfirmationDialog("Confirm Drop Analytics Scope",
-        "Warning, this will drop the analytics scope ",[scope.dataverseDisplayName])
+      cwQueryService.showConfirmationDialog("Confirm Drop Scope",
+        "Warning, this will drop the scope ",[scope.dataverseDisplayName])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "drop analytics scope " + "`" + scope.DatabaseName + "`" +  ".`" + scope.DataverseName + "`";
+            var queryText = "DROP SCOPE `" + scope.DatabaseName + "`" +  ".`" + scope.DataverseName + "`";
             cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();

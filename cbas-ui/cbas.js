@@ -25,6 +25,7 @@ import mnStatisticsNewService from "mn_admin/mn_statistics_service";
 
 import cwCbasMonitorController from "./cw_cbas_monitor_controller.js";
 import cbasController from "./cw_cbas_controller.js";
+import cbasSamplesController from "./cw_cbas_samples_controller.js";
 
 import cwQueryService from "./cw_query_service.js";
 import cwConstantsService from "./cw_constants_service.js";
@@ -47,6 +48,7 @@ import {downgradeInjectable}    from '@angular/upgrade/static';
 import cbasToplevelTemplate     from "./cbas_toplevel.html";
 import cbasMonitoringTemplate   from "./cbas_monitoring.html";
 import cbasTemplate             from "./cbas.html";
+import cbasSamplesTemplate      from "./cbas_samples.html";
 
 
 export default "cwCbas";
@@ -104,6 +106,11 @@ angular.module('cwCbas', [
         url: '/workbench?query',
         controller: 'cwCbasController as qc',
         template: cbasTemplate
+      })
+      .state('app.admin.cbas.samples', {
+        url: '/samples',
+        controller: 'cwCbasSamplesController as qsc',
+        template: cbasSamplesTemplate
       });
 
     //
@@ -129,4 +136,5 @@ angular.module('cwCbas', [
 
   }])
   .controller('cwCbasController', cbasController)
-  .controller('cwCbasMonitorController', cwCbasMonitorController);
+  .controller('cwCbasMonitorController', cwCbasMonitorController)
+  .controller('cwCbasSamplesController', cbasSamplesController);

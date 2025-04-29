@@ -64,7 +64,7 @@ licenses/APL2.txt.
           <select
                   id="query-context-db"
                   ng-model="qc.queryContextDatabase"
-                  uib-tooltip-html="'Set a default database for  entities.'"
+                  uib-tooltip-html="'Set a default database for entities.'"
                   tooltip-placement="auto top"
                   tooltip-append-to-body="true"
                   tooltip-trigger="mouseenter"
@@ -237,45 +237,20 @@ licenses/APL2.txt.
    <div
       class="insights-sidebar width-3 resp-hide-sml"
       ng-class="{'width-6': qc.analysisExpanded, 'width-3': !qc.analysisExpanded || !qc.fullscreen, 'fix-width-0': qc.fullscreen}">
-                <div class="flex-left row" >
-            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
-                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
-                    ng-click="qc.createNewLink()"
-                    class="outline tight ellipsis width-12 margin-bottom-1"
-                    title="Map analytics collections from existing data service collections">
-              Create Link
-            </button></div>
-            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
-                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
-                    ng-click="qc.createNewDatabase()"
-                    class="outline tight ellipsis width-12 margin-bottom-1"
-                    title="Map analytics collections from existing data service collections">
-              Create Database
-            </button></div>
-          </div>
-          <div class="flex-left row" >
-            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
-                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
-                    ng-click="qc.createNewScope()"
-                    class="outline tight ellipsis width-12 margin-bottom-1"
-                    title="Map analytics collections from existing data service collections">
-              Create Scope
-            </button></div>
-            <div ng-if="!qc.isGlobalLinks()" class="padding-right-1"><button
-                    ng-show="qc.validated.canAccessLinks() && qc.atLeast70"
-                    ng-click="qc.createNewCollection()"
-                    class="outline tight ellipsis width-12 margin-bottom-1"
-                    title="Map analytics collections from existing data service collections">
-              Create Standalone Collection
-            </button></div>
+                <div class="flex-right row" >
+            <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
+              <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
+              <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
+            </div>
           </div>
     <div ng-if="!qc.isGlobalLinks()" class="row margin-bottom-half">
-      <h4>Columnar Links:</h4>
-     
-      <div class="insights-sidebar-expand" ng-click="qc.toggleAnalysisSize()">
-        <span ng-if="!qc.analysisExpanded" class="icon fa-expand" title="expand"></span>
-        <span ng-if="qc.analysisExpanded" class="icon fa-compress" title="contract"></span>
-      </div>
+      <h4>Links:</h4>
+      <a ng-show="qc.validated.canAccessLinks()"
+         title="Create new link"
+         ng-click="qc.createNewLink()"
+         class="text-fine nowrap margin-right-1">
+        + new link
+      </a>
     </div>
     <div mn-spinner="qc.qqs.loadingBuckets">
       <div ng-if="qc.qqs.bucket_errors">
@@ -343,61 +318,86 @@ licenses/APL2.txt.
             </div>
           </section>
           <br>
-
-          <h4 ng-if="qc.isGlobalLinks()">DATA</h4>
-          <h4 ng-if="!qc.isGlobalLinks()">DATA</h4>
+          <div ng-if="!qc.isGlobalLinks()" class="row margin-bottom-half">
+            <h4>Databases:</h4>
+            <a ng-show="qc.validated.canAccessLinks()"
+               title="Create new database"
+               ng-click="qc.createNewDatabase()"
+               class="text-fine nowrap margin-right-1">
+              + database
+            </a>
+          </div>
+          <div class="row margin-bottom-half" style="justify-content: flex-end; display: flex;">
+            <a ng-show="qc.validated.canAccessLinks()"
+               title="Create standalone collection"
+               ng-click="qc.createNewCollection()"
+               class="text-fine nowrap margin-right-1">
+              + standalone collection
+            </a>
+          </div>
           <section
           class="text-small margin-bottom-1-5"
           ng-repeat="database in qc.databases"
           >
-          <div class="analytics-scope-box" ng-init="database.expanded = false" style="display: block;"  >
-                 <div
-                       class="disclosure padding-left-1 ellipsis flex-left row"
-                    style="justify-content: start; align-items: center; gap: 4px;"
-                       ng-click="database.expanded = !database.expanded">
-                       <span
-                                class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                                ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}">
-                               </span>
-                       <h6 class="ellipsis">{{database.databaseDisplayName}}</h6>
-                       <div>
-                         <div class="text-fine row" ng-if="database.databaseDisplayName != 'Default'">
-                           <a ng-click="qc.dropDatabase(database)"
-                              title="drop analytics scope">
-                             <span class="icon fa-trash"></span>
-                           </a>
-                         </div>
-                       </div>
+            <div class="analytics-scope-box" ng-init="database.expanded = false" style="display: block;">
+              <div class="disclosure padding-left-1 ellipsis row"
+                   style="justify-content: space-between; align-items: center; gap: 4px;"
+                   ng-click="database.expanded = !database.expanded">
+
+                <!-- Left Side: Icon and Database Name -->
+                <div class="flex-left row" style="gap: 4px; align-items: center;">
+                  <span class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
+                        ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}">
+                  </span>
+                  <h6 class="ellipsis">{{database.databaseDisplayName}}</h6>
+                  <div class="text-fine row" ng-if="database.databaseDisplayName != 'Default'">
+                    <a ng-click="qc.dropDatabase(database)" title="drop database">
+                      <span class="icon fa-trash"></span>
+                    </a>
                   </div>
+                </div>
+
+                <!-- Right Side: "+ scope" -->
+                <a title="Add new scope to database"
+                   ng-click="qc.createNewScope(database)"
+                   class="text-fine nowrap">
+                  + scope
+                </a>
+
+              </div>
+            </div>
             <section
                class="text-small margin-bottom-1-5 margin-left-3"
                ng-show="database.expanded"
                ng-repeat="dataverse in qc.getDataverseInDatabase(database)"
                ng-if="!qc.scopeEmpty(dataverse) || qc.showEmptyScopes()">
+
               <div ng-init="dataverse.expanded = false">
                 <div
-                       class="disclosure padding-left-1 ellipsis flex-left row"
-                    style="justify-content: start; align-items: center; gap: 4px;"
-                       ng-click="dataverse.expanded = !dataverse.expanded">
-                       <span
-                                class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                                ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}">
-                               </span>
-                <span style="display: flex; gap: 4px;" >
-                  <h6>{{dataverse.dataverseDisplayName}}</h6>
-                  <div class="text-fine row" ng-if="dataverse.dataverseDisplayName != 'Default'">
-                    <a ng-click="qc.dropScope(dataverse)"
-                       title="drop analytics scope">
-                      <span class="icon fa-trash"></span>
-                    </a>
+                    class="disclosure padding-left-1 ellipsis row"
+                    style="align-items: center; gap: 4px; display: flex; justify-content: space-between;"
+                    ng-click="dataverse.expanded = !dataverse.expanded"
+                >
+                  <div class="flex-left row" style="display: flex; align-items: center; gap: 4px;">
+                    <span
+                        class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
+                        ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}">
+                    </span>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                      <h6 style="margin: 0;">{{dataverse.dataverseDisplayName}}</h6>
+                      <div class="text-fine row" ng-if="dataverse.dataverseDisplayName != 'Default'">
+                        <a ng-click="qc.dropScope(dataverse)" title="drop scope">
+                          <span class="icon fa-trash"></span>
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </span>
                 </div>
               </div>
                 <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)" ng-show="dataverse.expanded">
                   <div ng-init="shadow.expanded = false">
                     <div class="row margin-left-half margin-top-half">
-  
+
                       <div
                          class="disclosure padding-left-1 ellipsis"
                          ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"

@@ -1,0 +1,38 @@
+<!--
+Copyright 2025-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<div>
+  <form
+      class="forms"
+      name="samples">
+    <h4>Sample Data</h4>
+    <p class="text-small">
+      Includes sample datasets tailored to provide a quick-start example of Columnar capabilities.
+    </p>
+    <div class="width-480">
+      <div class="formrow checkbox-list">
+        <input
+            type="checkbox"
+            id="travelSample"
+            ng-model="qsc.form.travelSample"
+            ng-checked="!qsc.samples.includes('travel-sample')"
+            ng-disabled="!qsc.samples.includes('travel-sample')">
+        <label for="travelSample">travel-sample</label>
+      </div>
+    </div>
+    <button
+        type="submit"
+        ng-click="qsc.loadSampleData()"
+        ng-disabled="!qsc.samples.includes('travel-sample') || !qsc.form.travelSample">
+      Load Sample Data
+    </button>
+  </form>
+</div>
+
