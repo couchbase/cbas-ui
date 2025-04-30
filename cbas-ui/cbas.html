@@ -69,7 +69,7 @@ licenses/APL2.txt.
                   tooltip-append-to-body="true"
                   tooltip-trigger="mouseenter"
                   class="fix-width-3">
-            <option ng-repeat="database in qc.databaseNames" value="{{database}}">
+            <option ng-repeat="database in qc.filteredDatabaseNames" value="{{database}}">
               {{database}}
             </option>
           </select>
@@ -81,10 +81,8 @@ licenses/APL2.txt.
                   tooltip-append-to-body="true"
                   tooltip-trigger="mouseenter"
                   class="fix-width-3">
-            <option
-                    ng-repeat="scope in qc.filteredScopes"
-                    value="{{scope.DataverseName}}">
-              {{scope.DataverseName}}
+            <option ng-repeat="scope in qc.filteredScopes[qc.queryContextDatabase]" value="{{scope}}">
+              {{scope}}
             </option>
           </select>
         </span>
@@ -436,7 +434,7 @@ licenses/APL2.txt.
                       <p>
                         <a ng-click="qc.dropDataset(link,shadow)"
                            class="inline margin-bottom-half margin-top-half">
-                          drop Columnar collection
+                          drop collection
                         </a>
                       </p>
                     </div>
@@ -545,7 +543,7 @@ licenses/APL2.txt.
                       <p>
                         <a ng-click="qc.dropDataset(link,shadow)"
                            class="inline margin-bottom-half margin-top-half">
-                          drop Columnar collection
+                          drop collection
                         </a>
                       </p>
                     </div>
@@ -658,8 +656,8 @@ licenses/APL2.txt.
           <a ng-click="qc.toggleEmptyScopes()" class="text-smallish block width-12 text-center margin-right-half"
              title="Show/hide scopes that have no collections"
           ng-if="qc.atLeast70">
-            <span ng-hide="qc.showEmptyScopes()">Show empty Columnar scopes</span>
-            <span ng-show="qc.showEmptyScopes()">Hide empty Columnar scopes</span>
+            <span ng-hide="qc.showEmptyScopes()">Show empty scopes</span>
+            <span ng-show="qc.showEmptyScopes()">Hide empty scopes</span>
           </a>
         </div>
 

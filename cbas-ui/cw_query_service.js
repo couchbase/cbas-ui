@@ -188,6 +188,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   
   cwQueryService.scopeNames = [];
   cwQueryService.databaseNames = [];
+  cwQueryService.filteredDatabaseNames = [];
+  cwQueryService.filteredScopes = {};
   cwQueryService.dataverse_links = {};
   cwQueryService.global_links = [];
   cwQueryService.links = [];
@@ -1649,9 +1651,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         return getAnalyticsShadowingStats(true);
       })
       .catch(function (err) {
-        console.log("Error: " + JSON.stringify(err));
-        var error = "Failed to get bucket insights.";
-        error = error + "\nTry refreshing the bucket insights.";
+        console.error("Error: ", err);
+        var error = "Failed to fetch server metadata.";
+        error = error + "\nTry refreshing to fetch the metadata.";
         cwQueryService.buckets.length = 0;
         cwQueryService.shadows.length = 0;
         cwQueryService.clusterBuckets.length = 0;
@@ -1679,7 +1681,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
        } else
          cwQueryService.links = [];
      });
-
   }
 
   function processMetadataQueryResult(data) {
@@ -1689,11 +1690,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.dataverses.length = 0;
     cwQueryService.databases.length = 0;
     cwQueryService.databaseNames.length = 0;
+    cwQueryService.filteredDatabaseNames.length = 0;
     cwQueryService.scopeNames.length = 0;
     cwQueryService.clusterBuckets.length = 0;
     cwQueryService.bucket_errors = null;
     cwQueryService.bucket_names.length = 0;
     cwQueryService.dataverse_links = {};
+    Object.keys(cwQueryService.filteredScopes).forEach(key => delete cwQueryService.filteredScopes[key]);
     cwQueryService.global_links = [];
     // thanks to an 'order by' clause, we can count on the dataverses to show up first, then links, then datasets
     if (data && data.results) {
@@ -1704,6 +1707,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           record.databaseQueryName = '`' + record.DatabaseName + '`';
           cwQueryService.databases.push(record);
           cwQueryService.databaseNames.push(record.databaseDisplayName);
+          if (cwQueryService.filteredScopes[record.DatabaseName]) {
+            cwQueryService.filteredScopes[record.DatabaseName].length = 0; // Clear the array if it exists
+          } else {
+            cwQueryService.filteredScopes[record.DatabaseName] = []; // Initialize the array if not allocated
+          }
           addToken(record.databaseQueryName, "database");
         }
         if (record.isDataverse) {
@@ -1713,7 +1721,22 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           cwQueryService.dataverses.push(record);
           cwQueryService.scopeNames.push(record.dataverseDisplayName);
           cwQueryService.dataverse_links[record.DataverseName] = []; // list of links
-          //addToken(record.dataverseQueryName, "scope");
+          if (!cwQueryService.filteredDatabaseNames.includes(record.DatabaseName)) {
+            if (record.DatabaseName === cwConstantsService.defaultQueryContextDatabase) {
+              // treat Default specially, since it is the default query context, we want it to be first
+              cwQueryService.filteredDatabaseNames.unshift(record.DatabaseName);
+            } else {
+              cwQueryService.filteredDatabaseNames.push(record.DatabaseName);
+            }
+          }
+          // Filter scopes based on the selected database
+          if (record.DatabaseName === cwConstantsService.defaultQueryContextDatabase
+              && record.DataverseName === cwConstantsService.defaultQueryContextScope) {
+            // treat Default specially, since it is the default query context, we want it to be first
+            cwQueryService.filteredScopes[record.DatabaseName].unshift(record.DataverseName);
+          } else {
+            cwQueryService.filteredScopes[record.DatabaseName].push(record.DataverseName);
+          }
         }
 
         // links
@@ -1789,6 +1812,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     }
+
     // put the fully qualified datasets in as auto-completion
     cwQueryService.shadows.forEach(shadow => addToken(shadow.databaseQueryName + '.' + shadow.dataverseQueryName + '.`' + shadow.id + '`',"path"));
     // we want the Local scope to always come first in each scope

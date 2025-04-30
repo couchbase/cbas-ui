@@ -198,6 +198,9 @@ ORDER BY
   // types that required developer preview, once all types are GAed, this field can be removed
   cwConstantsService.linkTypeParquetRequiresDeveloperPreview = ['azureblob', 'azuredatalake'];
 
+  cwConstantsService.defaultQueryContextDatabase = "Default";
+  cwConstantsService.defaultQueryContextScope = "Default";
+
   cwConstantsService.isExternalCollection = function (type) {
     return cwConstantsService.externalCollectionTypes.includes(type)
   };
