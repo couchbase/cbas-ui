@@ -149,9 +149,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   cwQueryService.awsRegions = [];
   cwQueryService.createLink = createLink;
-  cwQueryService.deleteLink = deleteLink;
   cwQueryService.editLink = editLink;
-  cwQueryService.getLink = getLink;
   cwQueryService.getAwsSupportedRegions = getAwsSupportedRegions;
   cwQueryService.getCachedLinkInfo = getCachedLinkInfo;
   cwQueryService.convertAPIdataToDialogScope = convertAPIdataToDialogScope;
@@ -2591,34 +2589,16 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     return (null);
   }
 
-  function getLink(dataverse, linkName) {
-    return $http({
-      url: "/_p/cbas/analytics/link/" + encodeURIComponent(dataverse) + "/" + encodeURIComponent(linkName),
-      method: "GET",
-    });
-  }
-
-  function deleteLink(dataverse, linkName) {
-    return $http({
-      url: "/_p/cbas/analytics/link/" + encodeURIComponent(dataverse) + "/" + encodeURIComponent(linkName),
-      method: "DELETE",
-    });
-  }
-
   function editLink(linkDialogScope) {
     return $http({
-      url: "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.dataverse) + "/" + encodeURIComponent(linkDialogScope.link_name),
+      url: "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.link_name),
       method: "PUT",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     });
   }
 
   function createLink(linkDialogScope, dataverse) {
-    var url = "/_p/cbas/analytics/link/";
-    if (dataverse) {
-      url += encodeURIComponent(dataverse.DataverseName) + "/";
-    }
-    url += encodeURIComponent(linkDialogScope.link_name);
+    var url = "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.link_name);
     var request = {
       url: url,
       method: "POST",
