@@ -94,6 +94,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.getLinksInDataverse = getLinksInDataverse;
     qc.getLocalLink = getLocalLink;
     qc.getDatasetsInLink = getDatasetsInLink;
+    qc.getDatasetsInScope = getDatasetsInScope;
     qc.isGlobalLinks = isGlobalLinks;
 
     // some functions for handling query history, going backward and forward
@@ -1358,6 +1359,19 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       qc.shadows.forEach(function(shadow) {
         if (shadow?.DataverseName === dataverse?.DataverseName) {
           result.push(shadow);
+        }
+      });
+      return result;
+    }
+
+    function getDatasetsInScope(database,scope,non_views = true, views = false) {
+      var result = [];
+      qc.shadows.forEach(function(shadow) {
+        if (shadow?.DataverseName === scope?.DataverseName &&
+            shadow?.DatabaseName === database?.DatabaseName) {
+          if (views && shadow?.view || !views && !shadow?.view) {
+            result.push(shadow);
+          }
         }
       });
       return result;

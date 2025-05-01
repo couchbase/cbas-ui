@@ -392,17 +392,24 @@ licenses/APL2.txt.
                   </div>
                 </div>
               </div>
-                <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)" ng-show="dataverse.expanded">
+                <div ng-repeat="shadow in qc.getDatasetsInScope(database,dataverse)" ng-show="dataverse.expanded">
                   <div ng-init="shadow.expanded = false">
                     <div class="row margin-left-half margin-top-half">
-
                       <div
                          class="disclosure padding-left-1 ellipsis"
-                         ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
+                         ng-class="{warning : shadow.LinkName && shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
                          ng-click="shadow.expanded = !shadow.expanded">
                         <span
                            class="icon fa-database text-smaller grayblue-2 margin-right-quarter"
-                           ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
+                           ng-if="shadow.LinkName && !shadow.external"
+                           ng-class="{warning : shadow.LinkName && shadow.remaining === qc.datasetDisconnectedState}"></span>
+                        <span
+                            class="icon fa-external-link text-smaller grayblue-2 margin-right-quarter"
+                            ng-if="shadow.LinkName && shadow.external"></span>
+                        <span
+                            class="icon fa-folder-o text-smaller grayblue-2 margin-right-quarter"
+                            ng-if="!shadow.LinkName"
+                            ng-class="{fa-folder-o: !shadow.LinkName}"></span>
                         {{shadow.id}}
                       </div>
                     </div>
@@ -445,7 +452,38 @@ licenses/APL2.txt.
                     </div>
                   </div>
                 </div>
+              <!-- repeat for views -->
+              <div ng-repeat="view in qc.getDatasetsInScope(database,dataverse,false,true)" ng-show="dataverse.expanded">
+                <div ng-init="view.expanded = false">
+                  <div class="row margin-left-half margin-top-half">
+
+                    <div
+                        class="disclosure padding-left-1 ellipsis"
+                        ng-click="shadow.expanded = !shadow.expanded"
+                        ng-class="{disclosed : shadow.expanded}">
+                      <span class="icon fa-eye text-smaller grayblue-2 margin-right-quarter"></span>
+                      {{view.id}}
+                    </div>
+
+                  </div>
+                  <!-- expand section for view details -------------------------- -->
+                  <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
+                    <p ng-show="view.TypeString" class="margin-bottom-half" title="Fields">
+                      {{view.TypeString}}
+                    </p>
+                    <p ng-show="view.ViewDetails && view.ViewDetails.Definition" class="margin-bottom-half" title="Definition">
+                      {{view.ViewDetails.Definition}}
+                    </p>
+                    <p>
+                      <a ng-click="qc.dropView(dataverse,view)"
+                         class="inline margin-bottom-half margin-top-half">
+                        drop analytics view
+                      </a>
+                    </p>
+                  </div>
+                </div>
               </div>
+        </div>
   
               <!-- Show datasets grouped by Link, the Local link always come first -->
               <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)" ng-if="qc.getDatasetsInLink(dataverse,link).length > 0 || qc.showEmptyScopes()">
