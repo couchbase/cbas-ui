@@ -2163,7 +2163,7 @@ function createNewCollection() {
           //console.log("showed dataset, got resp: " + resp);
           if (resp == "drop") {
             cwQueryService.showConfirmationDialog("Confirm Drop Analytics Collection",
-              "Warning, this will drop the columnar collection ", [link.DVName + "." + dataset.id])
+              "Warning, this will drop the Enterprise Analytics collection ", [link.DVName + "." + dataset.id])
               .then(function yes(resp) {
                 if (resp == "ok") {
                   var queryText = "drop dataset " + dataset.dataverseQueryName + ".`" + dataset_options.dataset_name + "`";

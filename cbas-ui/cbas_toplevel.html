@@ -26,14 +26,14 @@ licenses/APL2.txt.
   </mn-element-cargo>
 
   <div class="margin-top-1" ng-if="qc.validated.inProgress() && !qc.validated.valid()">
-    <p>Contacting Columnar node...</p>
+    <p>Contacting Enterprise Analytics node...</p>
   </div>
 
   <div ng-if="!qc.validated.inProgress() && !qc.validated.valid()" class="margin-top-half">
     <div ng-if="qc.validNodes.length">
       <span ng-if="qc.validated.otherStatus() != 404">
         <p class="error">Received error {{qc.validated.otherStatus()}} when contacting the
-        Columnar service. Try refreshing the browser, as errors may occur if the Columnar service
+        Enterprise Analytics service. Try refreshing the browser, as errors may occur if the Enterprise Analytics service
         is still warming up or suffering a transient error.</p>
       </span>
     </div>
