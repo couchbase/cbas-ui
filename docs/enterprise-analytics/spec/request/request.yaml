@@ -1,0 +1,438 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Analytics Request REST API
+  version: '2.0'
+  description: |
+    This API enables you to run Enterprises Analytics Service requests and set request-level parameters.
+
+servers:
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8095"
+        description: |-
+          The Enteprise Analytics Service REST port.
+          Use `18095` for secure access.
+        enum:
+          - "8095"
+          - "18095"
+
+paths:
+  /api/v1/request:
+    post:
+      operationId: post_service
+      summary: Request
+      description: >
+        Enables you to execute a SQL\+\+ for Enteprise Analytics statement.
+        This method allows you to run queries and modifying statements, and specify query parameters.
+      requestBody:
+       required: true
+       description: An object specifying one or more query parameters.
+       content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Parameters"
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/Parameters"
+      security:
+        - AnalyticsManageAnalyticsSelect: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    get:
+      operationId: get_service
+      summary: Read-Only Request
+      description: >
+        Enables you to execute a SQL\+\+ for Enterprise Analytics statement.
+        This method only allows you to run queries and specify query parameters.
+        It does not allow you to run modifying statements.
+
+
+        This is intended for situations where use of the `POST` method is restricted.
+      parameters:
+        - $ref: "#/components/parameters/ReadOnlyParameters"
+      security:
+        - AnalyticsManageAnalyticsSelect: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+
+ schemas:
+
+  # For the REST API reference
+  Parameters:
+    title: Query Parameters
+    allOf:
+      - $ref: "#/components/schemas/ParametersCommon"
+      - $ref: "#/components/schemas/ParametersLocal"
+
+  # For the Query Parameters page
+  # Use YAML anchors for properties which are also available as query parameters
+  ParametersCommon:
+    title: Common Parameters
+    type: object
+    required:
+      - statement
+    properties:
+      statement:
+        type: string
+        description: Specifies at least one valid SQL\+\+ for Enterprise Analytics statement to run.
+      client_context_id:
+        type: string
+        description: >
+          An identifier passed by the client that is returned verbatim in the query response.
+          Useful for matching a particular query to a specific caller.
+      format:
+        type: string
+        x-has-default: true
+        default: JSON
+        description: |
+          Desired format for the query results.
+          
+          Note that the only possible format is `JSON`.
+        enum:
+          - JSON
+      pretty:
+        type: boolean
+        x-has-default: true
+        default: false
+        description: If `true`, the result is indented.
+      query_context:
+        type: string
+        description: >
+          A scope for the statement.
+          The value of this parameter must start with `default:`, followed by a scope name.
+          The `default:` prefix is a dummy and is ignored when resolving a collection name or synonym name.
+        x-has-default: true
+        default: default:Default
+      readonly:
+        type: boolean
+        x-has-default: true
+        default: false
+        description: If `true`, then DDL statements are not allowed.
+      scan_consistency:
+        type: string
+        x-has-default: true
+        default: not_bounded
+        description: >
+          The consistency guarantee constraint for index scanning.
+          If `not_bounded`, the query is executed immediately.
+          If `request_plus`, the required datasets are updated with data available from the Data service at the time of the request before the query is executed.
+        enum:
+          - not_bounded
+          - request_plus
+      scan_wait:
+        type: string
+        x-has-default: true
+        default: ""
+        description: >
+          The maximum time to wait for datasets to be updated before the query is executed.
+          The format includes an amount and a unit: `ns`, `us`, `ms`, `s`, `m`, or `h`.
+          The default is `""` (no timeout).
+      timeout:
+        type: string
+        x-has-default: true
+        default: ""
+        description: >
+          Maximum time to spend on the request before timing out.
+          The format includes an amount and a unit: `ns`, `us`, `ms`, `s`, `m`, or `h`.
+          The default is `""` (no timeout).
+      args:
+        type: array
+        description: An array of positional parameter values.
+        items: {}
+    additionalProperties:
+        description: A named parameter value.
+
+  # For the Query Parameters page
+  # Use YAML anchors for properties which are also available as query parameters
+  ParametersLocal:
+    title: Analytics Parameters
+    type: object
+    properties:
+      plan-format:
+        type: string
+        description: The plan format.
+        x-has-default: true
+        default: JSON
+        enum:
+          - JSON
+          - STRING
+      logical-plan:
+        type: boolean
+        description: If `true`, the logical plan is included in the query response.
+        x-has-default: true
+        default: false
+      optimized-logical-plan:
+        type: boolean
+        description: If `true`, the optimized logical plan is included in the query response.
+        x-has-default: true
+        default: true
+      expression-tree:
+        type: boolean
+        description: If `true`, the expression tree is included in the query response.
+        x-has-default: true
+        default: false
+      rewritten-expression-tree:
+        type: boolean
+        description: If `true`, the rewritten expression tree is included in the query response.
+        x-has-default: true
+        default: false
+      job:
+        type: boolean
+        description: If `true`, the job details are included in the query response.
+        x-has-default: true
+        default: false
+      max-warnings:
+        type: integer
+        format: int32
+        description: An integer specifying the maximum number of warning messages to be included in the query response.
+        x-has-default: true
+        default: 0
+
+  # For the REST API reference
+  # The odd definition names ensure that the schemas appear in a logical order
+  Responses:
+    title: Query Responses
+    allOf:
+      - $ref: "#/components/schemas/ResponsesCommon"
+      - $ref: "#/components/schemas/ResponsesLocal"
+
+  # For the Query Responses page
+  ResponsesCommon:
+        title: Common Responses
+        type: object
+        properties:
+          requestID:
+            type: string
+            format: UUID
+            description: A unique identifier for the response.
+          clientContextID:
+            type: string
+            description: |-
+              The client context ID of the request, if one was supplied —
+              refer to `client_context_id` in [Query Parameters][1].
+
+              [1]: #Parameters
+            x-desc-refs: |-
+              [1]: query-params.html
+          signature:
+            type: object
+            description: >
+              The schema of the results.
+              Present only when the query completes successfully.
+          results:
+            type: array
+            description: >
+              An array of all the objects returned by the query.
+              An object can be any JSON value.
+            items: {}
+          status:
+            type: string
+            description: The status of the request.
+            enum:
+              - success
+              - running
+              - failed
+              - timeout
+              - fatal
+          errors:
+            type: array
+            description: >
+              An array of error objects.
+              Present only if 1 or more errors are returned during processing of the request.
+              Each error is represented by an object in this list.
+            items:
+              $ref: "#/components/schemas/ResponsesCommonErrors"
+          warnings:
+            type: array
+            description: |-
+              An array of warning objects.
+              Present only if 1 or more warnings are returned during processing of the request.
+              Each warning is represented by an object in this list.
+
+              Note that you can specify the maximum number of warning messages to be returned in the query response —
+              refer to `max-warnings` in [Query Parameters][1].
+              By default, no warnings are returned, even if warnings have occurred during processing.
+
+              [1]: #Parameters
+            x-desc-refs: |-
+              [1]: query-params.html
+            items:
+              $ref: "#/components/schemas/ResponsesCommonWarnings"
+          metrics:
+            $ref: "#/components/schemas/ResponsesCommonYardsticks"
+
+  # For the Query Responses page
+  ResponsesLocal:
+        title: Analytics Responses
+        type: object
+        properties:
+          plans:
+            $ref: "#/components/schemas/ResponsesLocalPlans"
+          metrics:
+            $ref: "#/components/schemas/ResponsesLocalYardsticks"
+
+  # For the Query Responses page
+  ResponsesCommonErrors:
+    title: Errors
+    type: object
+    properties:
+      code:
+        type: integer
+        description: A number that identifies the error.
+      msg:
+        type: string
+        description: >
+          A message describing the error in detail.
+          Refer to [Error Codes](/server/7.6/analytics/error-codes.html).
+
+  # For the Query Responses page
+  ResponsesCommonWarnings:
+    title: Warnings
+    type: object
+    properties:
+      code:
+        type: integer
+        description: A number that identifies the warning.
+      msg:
+        type: string
+        description: A message describing the warning in detail.
+
+  # For the Query Responses page
+  ResponsesLocalPlans:
+    title: Plans
+    type: object
+    description: An object containing the query plans, if requested.
+    properties:
+      logicalPlan:
+        type: object
+        description: The logical plan.
+      optimizedLogicalPlan:
+        type: object
+        description: The optimized logical plan.
+      rewrittenExpressionTree:
+        type: string
+        description: The rewritten expression tree.
+      expressionTree:
+        type: string
+        description: The expression tree.
+      job:
+        type: object
+        description: The job details.
+
+  # For the Query Responses page
+  ResponsesCommonYardsticks:
+    title: Common Metrics
+    type: object
+    description: An object containing metrics about the request.
+    properties:
+      elapsedTime:
+        type: string
+        description: >
+          The total time taken for the request,
+          that is the time from when the request was received until the results were returned.
+      executionTime:
+        type: string
+        description: >
+          The time taken for the execution of the request,
+          that is the time from when query execution started until the results were returned.
+      resultCount:
+        type: integer
+        format: unsigned
+        description: The total number of objects in the results.
+      resultSize:
+        type: integer
+        format: unsigned
+        description: The total number of bytes in the results.
+      errorCount:
+        type: integer
+        format: unsigned
+        description: The number of errors that occurred during the request.
+      warningCount:
+        type: integer
+        format: unsigned
+        description: The number of warnings that occurred during the request.
+
+  # For the Query Responses page
+  ResponsesLocalYardsticks:
+    title: Analytics Metrics
+    type: object
+    description: An object containing metrics about the request.
+    properties:
+      processedObjects:
+        type: integer
+        format: int64
+        description: Number of processed tuples during query execution.
+
+ parameters:
+  ReadOnlyParameters:
+    name: body
+    in: query
+    required: true
+    style: form
+    explode: true
+    description: Specify the parameters in the query URL in URL-encoded format.
+    schema:
+      $ref: "#/components/schemas/Parameters"
+
+ responses:
+  OK:
+    description: The operation was successful.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Responses"
+
+  BadRequest:
+    description: >
+      Bad request.
+      A parameter has an incorrect value.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Responses"
+
+  Unauthorized:
+    description: >
+      Unauthorized.
+      The user name or password may be incorrect.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Responses"
+
+ securitySchemes:
+  AnalyticsManageAnalyticsSelect:
+    type: http
+    scheme: basic
+    description: |-
+      Users must have one of the following RBAC roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Enterprise Analytics Admin
+      * Enterprise Analytics Access

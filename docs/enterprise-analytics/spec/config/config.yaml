@@ -1,0 +1,512 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Analytics Configuration REST API
+  version: '2.0'
+  description: |
+    This API enables you to configure Enterprise Analytics Service.
+
+servers:
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8095"
+        description: |-
+          The Enterprise Analytics Service REST port.
+          Use `18095` for secure access.
+        enum:
+          - "8095"
+          - "18095"
+
+paths:
+  /api/v1/config/service:
+    get:
+      operationId: get_service
+      summary: View Service-Level Parameters
+      description: Views service-level parameters, which apply to all nodes.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an object listing the configurable service-level parameters and their current values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: put_service
+      summary: Modify Service-Level Parameters
+      description: |-
+        Modifies service-level parameters, which apply to all nodes.
+
+        IMPORTANT: For the configuration changes to take effect,
+        you must restart the Enterprise Analytics Service using the [Service Restart API][1].
+
+        [1]: /server/7.6/analytics-rest-admin.html#restart_cluster
+      requestBody:
+        description: An object specifying one or more of the configurable service-level parameters.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Service"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Service"
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/config/node:
+    get:
+      operationId: get_node
+      summary: View Node-Specific Parameters
+      description: Views node-specific parameters, which apply to the node receiving the request.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an object listing the configurable node-level parameters and their current values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: put_node
+      summary: Modify Node-Specific Parameters
+      description: |-
+        Views node-specific parameters, which apply to the node receiving the request.
+
+        IMPORTANT: For the configuration changes to take effect,
+        you must restart the node using the [Node Restart API][1],
+        or restart the Enterprise Analytics Service using the [Service Restart API][2].
+
+        [1]: /server/7.6/analytics-rest-admin.html#restart_node
+        [2]: /server/7.6/analytics-rest-admin.html#restart_service
+      requestBody:
+        description: An object specifying one or more of the configurable node-level parameters on this node.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Node"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Node"
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+ schemas:
+  Service:
+    type: object
+    properties:
+      activeMemoryGlobalBudget:
+        description: The memory budget (in bytes) for the active runtime.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 67108864
+      activeStopTimeout:
+        description: The maximum time (in seconds) to wait for a graceful stop of an active runtime.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3600
+      activeSuspendTimeout:
+        description: The maximum time (in seconds) to wait for a graceful suspend of an active runtime.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3600
+      analyticsBroadcastDcpStateMutationCount:
+        description: The number of processed mutations after which the DCP state is broadcast to storage
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 10000
+      analyticsHttpRequestQueueSize:
+        description: The maximum number of HTTP requests to queue pending ability to execute.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 256
+      analyticsHttpThreadCount:
+        description: The number of threads to service HTTP requests.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 16
+      bindAddress:
+        type: string
+        description: The bind address to use.
+        nullable: true
+        x-has-default: false
+        default: null
+      bindToHost:
+        type: boolean
+        description: Bind to configured hostname instead of wildcard address.
+        x-has-default: true
+        default: false
+      clusterConnectRetries:
+        description: Number of attempts to contact CC before giving up.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 5
+      collectDcpStateFromNodesTimeout:
+        description: The maximum time to wait to collect DCP state from all nodes in seconds.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 600
+      compilerFramesize:
+        description: The page size (in bytes) for computation.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 32768
+      compilerGroupmemory:
+        description: The memory budget (in bytes) for a group by operator instance in a partition.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 33554432
+      compilerJoinmemory:
+        description: The memory budget (in bytes) for a join operator instance in a partition.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 33554432
+      compilerParallelism:
+        description: >
+          The degree of parallelism for query execution.
+          Zero means to use the storage parallelism as the query execution parallelism, while other integer values dictate the number of query execution parallel partitions.
+          The system will fall back to use the number of all available CPU cores in the cluster as the degree of parallelism if the number set by a user is too large or too small.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 0
+      compilerSortParallel:
+        description: Enables or disables full parallel sort.
+        type: boolean
+        x-has-default: true
+        default: false
+      compilerSortmemory:
+        description: The memory budget (in bytes) for a sort operator instance in a partition.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 33554432
+      compilerWindowmemory:
+        description: The memory budget (in bytes) for a window operator instance in a partition.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 33554432
+      coresMultiplier:
+        description: The factor to multiply by the number of cores to determine maximum query concurrent execution level.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3
+      dcpBufferAckWatermark:
+        type: integer
+        description: >
+          The percentage of DCP connection buffer size at which to acknowledge bytes consumed to DCP producer.
+        format: int32
+        minimum: 1
+        maximum: 100
+        x-has-default: true
+        default: 20
+      dcpChannelReconnectRemoteIdleSeconds:
+        type: integer
+        description: >
+          Reconnect remote DCP channels that are idle for the specified number of seconds to ensure permissions have not been lost.
+          A value of 0 disables reconnects on idle.
+        format: int32
+        x-has-default: true
+        default: 120
+      dcpConnectionBufferSize:
+        type: integer
+        description: |-
+          DCP connection buffer size (in bytes).
+
+          If the JVM maximum heap size is less than 8GB, the default for this parameter is 10 MB divided by the number of IO Devices on the node.
+          Otherwise, the default is 1% of the JVM maximum heap size divided by the number of IO Devices on the node.
+        format: int32
+      deadlockWatchdogHaltDelaySeconds:
+        description: The delay (in seconds) to wait for graceful shutdown due to deadlocked threads, before halting.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      deadlockWatchdogPollSeconds:
+        description: The frequency (in seconds) to scan for deadlocked threads.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 300
+      jobHistorySize:
+        description: Limits the number of historical jobs remembered by the system to the specified value.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 10
+      jobQueueCapacity:
+        description: The maximum number of jobs to queue before rejecting new jobs.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 4096
+      jvmArgs:
+        description: |-
+          JVM arguments to pass to the Analytics Driver.
+          The default is undefined (null).
+
+          Note that JVM arguments are generally not secure, and are exposed by [cbcollect_info][1] and the [System Event][2] log.
+          To pass arguments opaquely, you may use [Java command-line argument files][3].
+
+          [1]: /server/7.6/cli/cbcollect-info-tool.html
+          [2]: /server/7.6/learn/clusters-and-availability/system-events.html
+          [3]: https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
+        type: string
+        nullable: true
+        x-has-default: false
+        default: null
+      logLevel:
+        description: The logging level.
+        type: string
+        x-has-default: true
+        default: DEBUG
+      maxWebRequestSize:
+        description: The maximum accepted web request size in bytes.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 52428800
+      netBufferCount:
+        description: Number of network buffers per input/output channel.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1
+      netThreadCount:
+        description: Number of threads to use for Network I/O.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1
+      rebalancePullDatasetSizeFrequency:
+        description: The frequency at which the Analytics collection size is pulled from nodes during rebalance in seconds.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 5
+      remoteLinkConnectTimeoutSeconds:
+        description: >
+          The maximum time (in seconds) to wait for a remote link connection to establish.
+          A value of 0 disables timeout; a value of -1 sets timeout to the system default.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 60
+      remoteLinkSocketTimeoutSeconds:
+        description: >
+          The maximum time (in seconds) to wait after establishing the connection for remote links;
+          the maximum time of inactivity between two data packets.
+          A value of 0 disables timeout; a value of -1 sets timeout to the system default.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 60
+      requestsArchiveSize:
+        description: The maximum number of archived requests to maintain.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 50
+      resultSweepThreshold:
+        description: The duration within which an instance of the result cleanup should be invoked in milliseconds.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 60000
+      resultTtl:
+        description: Limits the amount of time results for asynchronous jobs should be retained by the system in milliseconds.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 86400000
+      storageBuffercacheMaxopenfiles:
+        description: The maximum number of open files in the buffer cache.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 2147483647
+      storageBuffercachePagesize:
+        description: The page size in bytes for pages in the buffer cache.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 131072
+      storageCompressionBlock:
+        description: The default compression scheme for the storage.
+        type: string
+        x-has-default: true
+        default: snappy
+      storageMemorycomponentNumcomponents:
+        description: The number of memory components to be used per LSM index.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 2
+      storageMemorycomponentPagesize:
+        description: The page size in bytes for pages allocated to memory components.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 131072
+      storageWriteRateLimit:
+        description: >
+          The maximum disk write rate for each storage partition in bytes per second.
+          Disabled if the provided value is less than or equal to 0.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 0
+      threaddumpFrequencySeconds:
+        description: The frequency (in seconds) at which to log diagnostic thread dumps.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 300
+      threaddumpLogLevel:
+        description: The log level at which to emit diagnostic thread dumps.
+        type: string
+        x-has-default: true
+        default: DEBUG
+      traceCategories:
+        description: >
+          Categories for tracing.
+          The default is the empty array — no categories.
+        type: array
+        items:
+          type: string
+        x-has-default: true
+        default: []
+      txnDatasetCheckpointInterval:
+        description: The interval (in seconds) after which an Analytics collection is considered idle and persisted to disk.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3600
+  
+  Node:
+    type: object
+    properties:
+      jvmArgs:
+        description: |-
+          JVM arguments to pass to the Analytics Driver.
+          The default is undefined (null).
+
+          Node-specific JVM arguments are appended to service-level JVM arguments.
+          If the same JVM argument appears in both the service-level arguments and the node-specific arguments, the node-specific argument takes priority.
+
+          Note that JVM arguments are generally not secure, and are exposed by [cbcollect_info] and the [System Event] log.
+          To pass arguments opaquely, you may use [Java command-line argument files][1].
+
+          [1]: https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
+        type: string
+        nullable: true
+        x-has-default: false
+        default: null
+      storageBuffercacheSize:
+        description: |-
+          The size of memory allocated to the disk buffer cache.
+          The value should be a multiple of the buffer cache page size.
+
+          The default is 1/4 of the allocated memory.
+        type: integer
+      storageMemorycomponentGlobalbudget:
+        description: |-
+          The size of memory allocated to the memory components.
+          The value should be a multiple of the memory component page size.
+
+          The default is 1/4 of the allocated memory.
+        type: integer
+
+  Errors:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: string
+        description: An error message.
+
+ responses:
+  OK:
+    description: The operation was successful.
+
+  BadRequest:
+    description: >
+      Bad request.
+      Unknown parameter or incorrect value.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Errors"
+
+  Unauthorized:
+    description: |-
+      Unauthorized.
+      The user name or password may be incorrect.
+
+      Returns an object containing an error message.
+      Refer to [Error Codes](/server/7.6/analytics/error-codes.html).
+    content:
+      application/json:
+        schema:
+          type: object
+
+ securitySchemes:
+  AnalyticsManage:
+    type: http
+    scheme: basic
+    description: |-
+      Users must have one of the following RBAC roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Enterprise Analytics Admin

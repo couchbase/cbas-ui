@@ -1,0 +1,1013 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Analytics Links REST API
+  version: '2.0'
+  description: |-
+    This API enables you to manage the links to remote Couchbase clusters and external data sources.
+
+servers:
+
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8095"
+        description: |-
+          The Enteprise Analytics Service REST port.
+          Use `18095` for secure access.
+        enum:
+          - "8095"
+          - "18095"
+
+tags:
+  - name: Single Links
+    description: Operations for single links.
+  - name: Multiple Links
+    description: Operations for multiple links.
+
+# Note that OpenAPI generator does not seem to handle required fields properly
+# in polymorphic Form parameters, so I have fallen back on a composite model.
+
+paths:
+  /api/v1/link:
+    get:
+      operationId: get_all
+      summary: Query All Links
+      description: Returns information about all links
+      tags:
+        - Multiple Links
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an array of objects, each of which contains information about a link.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseAll'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/link/{name}:
+    post:
+      operationId: post_link
+      summary: Create Link
+      description: Creates a link
+      tags:
+        - Single Links
+      parameters:
+        - $ref: "#/components/parameters/CommonLink"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              # oneOf:
+              allOf:
+                - $ref: "#/components/schemas/RequestCreateCouchbase"
+                - $ref: "#/components/schemas/RequestCreateS3"
+              #  - $ref: "#/components/schemas/RequestCreateAzureBlob"
+              #  - $ref: "#/components/schemas/RequestCreateGCS"
+              # discriminator:
+              #   propertyName: type
+              #   mapping:
+              #     couchbase: "#/components/schemas/RequestCreateCouchbase"
+              #     s3: "#/components/schemas/RequestCreateS3"
+              #     azureblob: "#/components/schemas/RequestCreateAzureBlob"
+              #     gcs: "#/components/schemas/RequestCreateGCS"
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      operationId: get_link
+      summary: Query Link
+      description: Returns information about a link.
+      tags:
+        - Single Links
+      parameters:
+        - $ref: "#/components/parameters/CommonLink"
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/CommonTypeEdit"
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an array of objects, each of which contains information about a link.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseAll'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      operationId: put_link
+      summary: Edit Link
+      description: >
+        Edits an existing link.
+        The link name and type cannot be modified.
+      tags:
+        - Single Links
+      parameters:
+        - $ref: "#/components/parameters/CommonLink"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              # oneOf:
+              allOf:
+                - $ref: "#/components/schemas/RequestEditCouchbase"
+                - $ref: "#/components/schemas/RequestEditS3"
+#                 - $ref: "#/components/schemas/RequestEditAzureBlob"
+#                 - $ref: "#/components/schemas/RequestEditGCS"
+              # discriminator:
+              #   propertyName: type
+              #   mapping:
+              #     couchbase: "#/components/schemas/RequestEditCouchbase"
+              #     s3: "#/components/schemas/RequestEditS3"
+              #     azureblob: "#/components/schemas/RequestEditAzureBlob"
+              #     gcs: "#/components/schemas/RequestEditGCS"
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: delete_link
+      summary: Delete Link
+      description: >
+        Deletes a link.
+        The link cannot be deleted if any other entities are using it, such as a collection.
+        The entities using the link need to be disconnected from the link, otherwise, the delete operation fails.
+      tags:
+        - Single Links
+      parameters:
+        - $ref: "#/components/parameters/CommonLink"
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+ parameters:
+  CommonLink:
+    name: name
+    schema:
+      type: string
+    in: path
+    required: true
+    description: The name of the link.
+
+  CommonTypeQuery:
+    name: type
+    schema:
+      type: string
+      enum:
+        - couchbase
+        - s3
+        #- azureblob
+        #- gcs
+    in: query
+    required: false
+    description: >
+      The type of the link.
+      If this parameter is omitted, all link types are retrieved, excluding the `Local` link.
+
+ schemas:
+
+  CommonName:
+    type: string
+    description: The name of the link.
+
+  CommonType:
+    title: Create Request Type
+    type: string
+    description: |-
+      The type of the link.
+
+      * `couchbase`: A link to a remote Couchbase cluster.
+      * `s3`: A link to the Amazon S3 service.
+      #* `azureblob`: A link to Azure Blob Storage.
+      #* `gcs`: A link to Google Cloud Storage.
+    enum:
+      - couchbase
+      - s3
+      #- azureblob
+      #- gcs
+
+  CommonTypeEdit:
+    title: Edit Request Type
+    type: string
+    description: >
+      The type of the link.
+      If this parameter is specified, the value must match the type that was set when the link was created.
+    enum:
+      - couchbase
+      - s3
+      #- azureblob
+      #- gcs
+
+  # Workaround for OpenApi Generator. Should have separate parameters for Couchbase and Azure.
+  CommonClientCertificate:
+    type: string
+    description: |-
+      For Couchbase links, this is the content of the client certificate.
+      Required for links with full encryption if using a client key.
+
+      #For Azure Blob links, this is the client certificate for the registered application.
+      #Used for Azure Active Directory client certificate authentication.
+
+      You should URL-encode this parameter to escape any special characters.
+
+  # Workaround for OpenApi Generator. Should have separate parameters for Couchbase and Azure.
+#   CommonEndpoint:
+#     type: string
+#     description: |-
+#       For Azure Blob links and Google Cloud Storage links.
+#       The endpoint URI.
+
+#       Required for Azure Blob links; optional for Google Cloud Storage links.
+
+  RequestCreateAll:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        $ref: "#/components/schemas/CommonType"
+
+  RequestCreateCouchbase:
+    title: Create Couchbase Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestCreateAll"
+      - $ref: "#/components/schemas/RequestSpecificCouchbase"
+
+  RequestCreateS3:
+    title: Create S3 Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestCreateAll"
+      - $ref: "#/components/schemas/RequestSpecificS3"
+
+#   RequestCreateAzureBlob:
+#     title: Create Azure Blob Link Request
+#     allOf:
+#       - $ref: "#/components/schemas/RequestCreateAll"
+#       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
+
+#   RequestCreateGCS:
+#     title: Create GCS Link Request
+#     allOf:
+#       - $ref: "#/components/schemas/RequestCreateAll"
+#       - $ref: "#/components/schemas/RequestSpecificGCS"
+
+  RequestEditAll:
+    type: object
+    properties:
+      type:
+        $ref: "#/components/schemas/CommonTypeEdit"
+
+  RequestEditCouchbase:
+    title: Edit Couchbase Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestEditAll"
+      - $ref: "#/components/schemas/RequestSpecificCouchbase"
+
+  RequestEditS3:
+    title: Edit S3 Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestEditAll"
+      - $ref: "#/components/schemas/RequestSpecificS3"
+
+#   RequestEditAzureBlob:
+#     title: Edit Azure Blob Link Request
+#     allOf:
+#       - $ref: "#/components/schemas/RequestEditAll"
+#       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
+
+#   RequestEditGCS:
+#     title: Edit GCS Link Request
+#     allOf:
+#       - $ref: "#/components/schemas/RequestEditAll"
+#       - $ref: "#/components/schemas/RequestSpecificGCS"
+
+  RequestSpecificCouchbase:
+    title: Couchbase Specific Request
+    type: object
+    required:
+      - hostname
+      - encryption
+    properties:
+      hostname:
+        type: string
+        description: >
+          For Couchbase links only.
+          The remote hostname.
+      username:
+        type: string
+        description: >
+          For Couchbase links only.
+          The remote username.
+          Required for links with no encryption or half encryption.
+          Required for links with full encryption if using a password.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      password:
+        type: string
+        description: >
+          For Couchbase links only.
+          The remote password.
+          Required for links with no encryption or half encryption.
+          Required for links with full encryption if using a username.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      encryption:
+        type: string
+        description: |-
+          For Couchbase links only.
+          The type of encryption used by the link.
+
+          For details, see [encryption](#encryption).
+
+        # * `none`: Neither passwords nor data are encrypted.
+        # * `half`: Passwords are encrypted using SCRAM-SHA, but data is not.
+        # * `full`: All data and passwords are encrypted and TLS is used.
+        enum:
+          - none
+          - half
+          - full
+      certificate:
+        type: string
+        description: >
+          For Couchbase links only.
+          The content of the target cluster root certificate.
+          Required for links with full encryption.
+
+
+          You should URL-encode this parameter to escape any special characters.
+          If required, this parameter may contain multiple certificates, separated by new lines.
+      clientCertificate:
+        $ref: "#/components/schemas/CommonClientCertificate"
+        # type: string
+        # description: >
+        #   For Couchbase links, this is the content of the client certificate.
+        #   Required for links with full encryption if using a client key.
+
+
+        #   You should URL-encode this parameter to escape any special characters.
+      clientKey:
+        type: string
+        description: >
+          For Couchbase links only.
+          The content of the client key.
+          Required for links with full encryption if using a client certificate.
+
+
+          You should URL-encode this parameter to escape any special characters.
+
+  RequestSpecificS3:
+    title: S3 Specific Request
+    type: object
+    required:
+      - accessKeyId
+      - secretAccessKey
+      - region
+    properties:
+      accessKeyId:
+        type: string
+        description: >
+          For S3 links only.
+          The Amazon S3 access key ID.
+      secretAccessKey:
+        type: string
+        description: >
+          For S3 links only.
+          The Amazon S3 secret access key.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      sessionToken:
+        type: string
+        description: >
+          For S3 links only.
+          The Amazon S3 session token.
+          Use this parameter if you want the link to have temporary access.
+
+
+          Passing this parameter indicates that the `accessKeyId` and `secretAccessKey` are temporary credentials.
+          The Amazon S3 service validates the session token with each request to check whether the provided credentials have expired or are still valid.
+      region:
+        type: string
+        description: >
+          For S3 links only.
+          The Amazon S3 region.
+      serviceEndpoint:
+        type: string
+        description: >
+          For S3 links only.
+          The Amazon S3 service endpoint.
+
+#   RequestSpecificAzureBlob:
+#     title: Azure Blob Specific Request
+#     type: object
+#     # required:
+#     #   - endpoint
+#     properties:
+#       endpoint:
+#         $ref: "#/components/schemas/CommonEndpoint"
+#         # type: string
+#         # description: For Azure Blob links, this is the endpoint URI.
+#       accountName:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           The account name.
+#           Used for shared key authentication.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+#       accountKey:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           The account key.
+#           Used for shared key authentication.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+#       sharedAccessSignature:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           A token that can be used for authentication.
+#           Used for shared access signature authentication.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+#       managedIdentityId:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           The managed identity ID.
+#           Used for managed identity authentication.
+#           Only available if the application is running on an Azure instance, e.g. an Azure virtual machine.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+#       clientId:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           The client ID for the registered application.
+#           Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+#       tenantId:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           The tenant ID where the registered application is created.
+#           Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+#       clientSecret:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           The client secret for the registered application.
+#           Used for Azure Active Directory client secret authentication.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+#       clientCertificate:
+#         $ref: "#/components/schemas/CommonClientCertificate"
+        # type: string
+        # description: >
+        #   For Azure Blob links, this is the client certificate for the registered application.
+        #   Used for Azure Active Directory client certificate authentication.
+      
+      
+        #   You should URL-encode this parameter to escape any special characters.
+#       clientCertificatePassword:
+#         type: string
+#         description: >
+#           For Azure Blob links only.
+#           The client certificate password for the registered application.
+#           Used for Azure Active Directory client certificate authentication, if the client certificate is password-protected.
+
+
+#           You should URL-encode this parameter to escape any special characters.
+
+#   RequestSpecificGCS:
+#     title: GCS Specific Request
+#     type: object
+#     properties:
+#       endpoint:
+#         $ref: "#/components/schemas/CommonEndpoint"
+#         # type: string
+#         # description: For Google Cloud Storage links, this is the endpoint URI.
+#       jsonCredentials:
+#         type: string
+#         description: >
+#           For Google Cloud Storage links only.
+#           The JSON credentials of the link.
+
+
+#           This parameter is not allowed if `applicationDefaultCredentials` is provided.
+#       applicationDefaultCredentials:
+#         type: string
+#         enum:
+#           - 'true'
+#         description: |-
+#           For Google Cloud Storage links only.
+#           If present, indicates that the link should use the Google Application Default Credentials for authenticating.
+
+        # FIXME: This parameter may only have the value `"true"`.
+
+  ResponseAll:
+    title: Links
+    description: These properties are common to all links.
+    type: object
+    discriminator:
+      propertyName: type
+      mapping:
+        couchbase: "#/components/schemas/ResponseCouchbase"
+        s3: "#/components/schemas/ResponseS3"
+        #azureblob: "#/components/schemas/ResponseAzureBlob"
+        #gcs: "#/components/schemas/ResponseGCS"
+    required:
+      - name
+      - type
+    properties:
+      name:
+        type: string
+        description: The name of the link.
+        x-has-example: true
+        example: myLink
+      type:
+        type: string
+        x-desc-name: type
+        description: |-
+          The type of the link.
+
+          * `couchbase`: A link to a remote Couchbase cluster.
+          * `s3`: A link to the Amazon S3 service.
+          #* `azureblob`: A link to Microsoft Azure Blob Storage.
+          #* `gcs`: A link to Google Cloud Storage.
+        enum:
+          - couchbase
+          - s3
+          #- azureblob
+          #- gcs
+
+  ResponseCouchbase:
+    title: Couchbase Response
+    description: These properties are returned for remote Couchbase links.
+    allOf:
+      - $ref: "#/components/schemas/ResponseAll"
+      - $ref: "#/components/schemas/ResponseCouchbaseSpecific"
+
+  ResponseCouchbaseSpecific:
+        title: Couchbase Specific Response
+        type: object
+        required:
+          - activeHostname
+          - bootstrapAlternateAddress
+          - bootstrapHostname
+          - certificate
+          - clientCertificate
+          - clientKey
+          - clusterCompatibility
+          - encryption
+          - nodes
+          - password
+          - username
+          - uuid
+        properties:
+          activeHostname:
+            type: string
+            description: The remote hostname.
+            x-has-example: true
+            example: remoteHostName:8091
+          bootstrapAlternateAddress:
+            type: boolean
+            description: Specifies whether the provided (bootstrap) hostname is an alternative address.
+            x-has-example: true
+            example: false
+          bootstrapHostname:
+            type: string
+            description: The provided (bootstrap) hostname.
+            x-has-example: true
+            example: remoteHostName:8091
+          certificate:
+            type: string
+            nullable: true
+            description: >
+              The content of the target cluster root certificate.
+              Only set for links with full encryption.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          clientCertificate:
+            type: string
+            nullable: true
+            description: >
+              The content of the client certificate.
+              Only set for links with full encryption using client certificate and client key.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          clientKey:
+            type: string
+            nullable: true
+            description: >
+              The content of the client key.
+              Only set for links with full encryption using client certificate and client key.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          clusterCompatibility:
+            type: integer
+            description: For internal use only.
+            x-has-example: true
+            example: 393221
+          encryption:
+            type: string
+            x-desc-name: encryption
+            description: |
+              The type of encryption used by the link.
+
+              * `none`: Neither passwords nor data are encrypted.
+              * `half`: Passwords are encrypted using SCRAM-SHA, but data is not.
+              * `full`: All data and passwords are encrypted and TLS is used.
+            enum:
+              - none
+              - half
+              - full
+          nodes:
+            type: array
+            description: An array of objects, each of which contains information about a node in the target cluster.
+            items:
+              $ref: "#/components/schemas/ResponseCouchbaseSpecificNode"
+          password:
+            type: string
+            nullable: true
+            description: >
+              The password used to connect to the link.
+              This is redacted for the sake of security.
+              Not set for links with full encryption using client certificate and client key.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          username:
+            type: string
+            nullable: true
+            description: >
+              The remote username.
+              Not set for links with full encryption using client certificate and client key.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: remote.user
+          uuid:
+            type: string
+            format: UUID
+            description: A UUID uniquely identifying the link.
+            x-has-example: true
+            example: 6331e2a390125b662f7bcfd63ecb3a73
+
+  ResponseCouchbaseSpecificNode:
+              type: object
+              title: Nodes
+              properties:
+                alternateAddresses:
+                  type: string
+                  description: >
+                    The alternate address defined on the node, if any.
+                    If not defined, this property returns `null`.
+                  x-has-example: false
+                  example: null
+                hostname:
+                  type: string
+                  description: >
+                    The hostname of the node.
+                    If not defined, this property returns `null`.
+                  x-has-example: false
+                  example: null
+                services:
+                  $ref: "#/components/schemas/ResponseCouchbaseSpecificNodeServices"
+
+  ResponseCouchbaseSpecificNodeServices:
+                  type: object
+                  title: Services
+                  description: An object giving information about the services and ports configured on this node.
+                  properties:
+                    cbas:
+                      type: integer
+                      description: The port number for a connection to the Analytics service.
+                      x-has-example: true
+                      example: 8095
+                    cbasSSL:
+                      type: integer
+                      description: The port number for an encrypted connection to the Analytics service.
+                      x-has-example: true
+                      example: 18095
+                    kv:
+                      type: integer
+                      description: The port number for a connection to the Data service.
+                      x-has-example: true
+                      example: 11210
+                    kvSSL:
+                      type: integer
+                      description: The port number for an encrypted connection to the Data service.
+                      x-has-example: true
+                      example: 11207
+                    mgmt:
+                      type: integer
+                      description: The port number for a connection to the Cluster Manager service.
+                      x-has-example: true
+                      example: 8091
+                    mgmtSSL:
+                      type: integer
+                      description: The port number for an encrypted connection to the Cluster Manager service.
+                      x-has-example: true
+                      example: 18091
+
+  ResponseS3:
+    title: S3 Response
+    description: These properties are returned for S3 links.
+    allOf:
+      - $ref: "#/components/schemas/ResponseAll"
+      - $ref: "#/components/schemas/ResponseS3Specific"
+
+  ResponseS3Specific:
+        title: S3 Specific Response
+        type: object
+        required:
+          - accessKeyId
+          - region
+          - secretAccessKey
+          - serviceEndpoint
+        properties:
+          accessKeyId:
+            type: string
+            description: The Amazon S3 access key ID.
+            x-has-example: true
+            example: myAccessKey
+          region:
+            type: string
+            description: The Amazon S3 region.
+            x-has-example: true
+            example: us-east-1
+          secretAccessKey:
+            type: string
+            description: >
+              The Amazon S3 secret access key.
+              This is redacted for the sake of security.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          sessionToken:
+            type: string
+            description: >
+              The Amazon S3 session token.
+              Indicates that the link has temporary access, and that the `accessKeyId` and `secretAccessKey` are temporary credentials.
+              This is redacted for the sake of security.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          serviceEndpoint:
+            type: string
+            nullable: true
+            description: >
+              Amazon S3 service endpoint.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: my.endpoint.uri
+
+#   ResponseAzureBlob:
+#     title: Azure Blob Response
+#     description: These properties are returned for Azure Blob links.
+#     allOf:
+#       - $ref: "#/components/schemas/ResponseAll"
+#       - $ref: "#/components/schemas/ResponseAzureBlobSpecific"
+
+#   ResponseAzureBlobSpecific:
+#         title: Azure Blob Specific Response
+#         type: object
+#         required:
+#           - endpoint
+#         properties:
+#           accountKey:
+#             type: string
+#             nullable: true
+#             description: >
+#               The account key.
+#               Used for shared key authentication.
+#               This is redacted for the sake of security.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: <redacted sensitive entry>
+#           accountName:
+#             type: string
+#             nullable: true
+#             description: >
+#               The account name.
+#               Used for shared key authentication.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: myAccountName
+#           clientCertificate:
+#             type: string
+#             nullable: true
+#             description: >
+#               The client certificate for the registered application.
+#               Used for Azure Active Directory client certificate authentication.
+#               This is redacted for the sake of security.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: <redacted sensitive entry>
+#           clientCertificatePassword:
+#             type: string
+#             nullable: true
+#             description: >
+#               The client certificate password for the registered application.
+#               Used for Azure Active Directory client certificate authentication, if the client certificate is password-protected.
+#               This is redacted for the sake of security.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: <redacted sensitive entry>
+#           clientId:
+#             type: string
+#             description: >
+#               The client ID for the registered application.
+#               Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: myClientID
+#           clientSecret:
+#             type: string
+#             nullable: true
+#             description: >
+#               The client secret for the registered application.
+#               Used for Azure Active Directory client secret authentication.
+#               This is redacted for the sake of security.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: <redacted sensitive entry>
+#           endpoint:
+#             type: string
+#             description: The endpoint URI.
+#             x-has-example: true
+#             example: my.endpoint.uri
+#           managedIdentityId:
+#             type: string
+#             nullable: true
+#             description: >
+#               The managed identity ID.
+#               Used for managed identity authentication.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: myManagedIdentityID
+#           sharedAccessSignature:
+#             type: string
+#             nullable: true
+#             description: >
+#               A token that can be used for authentication.
+#               Used for shared access signature authentication.
+#               This is redacted for the sake of security.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: <redacted sensitive entry>
+#           tenantId:
+#             type: string
+#             nullable: true
+#             description: >
+#               The tenant ID where the registered application is created.
+#               Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: myTenantID
+
+#   ResponseGCS:
+#     title: GCS Response
+#     description: These properties are returned for Google Cloud Storage links.
+#     allOf:
+#       - $ref: "#/components/schemas/ResponseAll"
+#       - $ref: "#/components/schemas/ResponseGCSSpecific"
+
+#   ResponseGCSSpecific:
+#         title: GCS Specific Response
+#         type: object
+#         required:
+#           - applicationDefaultCredentials
+#           - endpoint
+#           - jsonCredentials
+#         properties:
+#           applicationDefaultCredentials:
+#             type: string
+#             nullable: true
+#             enum:
+#               - 'true'
+#             description: >
+#               If present, indicates that the link should use the Google Application Default Credentials for authenticating.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: true
+#           endpoint:
+#             type: string
+#             nullable: true
+#             description: >
+#               The endpoint URI.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: 'https://storage.googleapis.com'
+#           jsonCredentials:
+#             type: string
+#             nullable: true
+#             description: >
+#               The JSON credentials of the link.
+#               If not set, this property returns `null`.
+#             x-has-example: true
+#             example: <redacted sensitive entry>
+
+  Wrong:
+    title: Errors
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: string
+        description: An error message.
+
+ responses:
+  OK:
+    description: The operation was successful.
+
+  BadRequest:
+    description: >
+      Bad request.
+      A parameter has an incorrect value.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Wrong"
+
+  InternalServerError:
+    description: >
+      Internal Server Error.
+      Incorrect path or port number, incorrect credentials, badly formatted parameters, or missing arguments.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Wrong"
+
+ securitySchemes:
+  AnalyticsManage:
+    type: http
+    scheme: basic
+    description: |-
+      Users must have one of the following RBAC roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Enterprise Analytics Admin

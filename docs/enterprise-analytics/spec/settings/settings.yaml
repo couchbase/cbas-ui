@@ -1,0 +1,147 @@
+openapi: 3.0.3
+info:
+  title: Cluster Settings REST API
+  version: '2.0'
+  description: |
+    This API enables you to view or set cluster-level Enterprise Analytics settings.
+
+servers:
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8091"
+        description: |-
+          The Cluster administration REST port.
+          Use `18091` for secure access.
+
+          Note that the port numbers for this REST API are different to the port numbers used by the other Enterprise Analytics Service REST APIs.
+        enum:
+          - "8091"
+          - "18091"
+
+paths:
+  /settings/analytics:
+    get:
+      operationId: get_settings
+      summary: View Enterprise Analytics Settings
+      description: >
+        Retrieves cluster-level Analytics settings.
+      security:
+        - ClusterReadPoolsRead: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: post_settings
+      summary: Modify Enterprise Analytics Settings
+      description: >
+        Sets cluster-level Analytics settings.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Settings"
+      security:
+        - ClusterReadPoolsRead: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+ schemas:
+  Settings:
+    type: object
+    properties:
+      blobStorageScheme:
+        type: string
+        description: Specifies the blob storage scheme.
+        x-has-example: true
+        example: s3
+      blobStorageBucket:
+        type: string
+        description: Specifies the blob storage bucket name.
+        x-has-example: true
+        example: enteprise-analytics-bucket
+      blobStorageRegion:
+        type: string
+        description: Specifies the blob storage bucket region.
+        x-has-example: true
+        example: us-west-2
+      blobStoragePrefix:
+        type: string
+        description: Specifies the blob storage bucket prefix where enteprise analytics will store its data.
+        x-has-example: true
+        example: analytics-data/
+      blobStorageAnonymousAuth:
+        type: boolean
+        description: Specifies if anonymous authentication should be used when accessing the blob storage bucket.
+        x-has-example: true
+        example: false
+      blobStorageForcePathStyle:
+        type: boolean
+        description: Specifies if path style should be should be used when accessing the blob storage bucket.
+        x-has-example: true
+        example: false
+      numStoragePartitions:
+        type: integer
+        minimum: 1
+        maximum: 1024
+        description: Specifies the number partitions that will be used when storing the data in the blob storage bucket.
+        x-has-example: true
+        example: 128
+
+
+ responses:
+  OK:
+    description: The operation was successful.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Settings"
+
+  BadRequest:
+    description: >
+      Bad request.
+      A parameter has an incorrect value.
+    content:
+      application/json:
+        schema:
+          type: object
+
+  Unauthorized:
+    description: >
+      Unauthorized.
+      The user name or password may be incorrect.
+    content:
+      application/json:
+        schema:
+          type: object
+
+ securitySchemes:
+  ClusterReadPoolsRead:
+    type: http
+    scheme: basic
+    description: |-
+      Users must have one of the following RBAC roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Read-Only Admin

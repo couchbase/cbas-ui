@@ -1,0 +1,715 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Analytics Administration REST APIs
+  version: '2.0'
+  description: |
+    These APIs enables you to manage and monitor the Enterprise Analytics Service.
+
+servers:
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8095"
+        description: |-
+          The Enterprise Analytics Service REST port.
+          Use `18095` for secure access.
+        enum:
+          - "8095"
+          - "18095"
+
+
+paths:
+  /api/v1/active_requests:
+    delete:
+      operationId: cancel_request
+      summary: Request Cancellation
+      description: Cancels an active request.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - client_context_id
+              properties:
+                client_context_id:
+                  type: string
+                  description: Identifier passed by the client that is used to identify an active request to be cancelled.
+      security:
+        - AnalyticsManageAnalyticsSelect: []
+      responses:
+        "200":
+          description: >
+            The operation was successful.
+        "400":
+          description: >
+            Bad request.
+            Incorrect parameter or missing value.
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          description: >
+            Not found.
+            The path may be incorrect, or there is no active request with the specified identifier.
+    get:
+      operationId: return_active_requests
+      summary: Active Requests
+      description: Gets a list of the analytic requests that are running.
+      security:
+        - AnalyticsManageAnalyticsSelect: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an array id details on the running requests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Request"
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          description: >
+            Not found.
+            The path may be incorrect.
+
+  /api/v1/completed_requests:
+    get:
+      operationId: completed_requests
+      summary: Completed Requests
+      description: Gets a list of all completed analytic requests.
+      security:
+        - AnalyticsManageAnalyticsSelect: []
+      responses:
+        "200":
+          description: >
+            Success. Returns a list of all completed analytic requests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Request"
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          description: >
+            Not found.
+            The path may be incorrect.
+
+  /api/v1/status/service:
+    get:
+      operationId: service_status
+      summary: Service Status
+      description: Shows various details about the current status of the Enterprise Analytics Service, such as the service state, and the state of each node partition.
+      security:
+        - ClusterReadPoolsRead: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an object giving the current status of the Analytics Service.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Status"
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/service/restart:
+    post:
+      operationId: restart_service
+      summary: Service Restart
+      description: Restarts the Enterprise Analytics Service in all nodes in the cluster.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "202":
+          description: >
+            Accepted.
+            Returns an object showing the status of the cluster.
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/node/restart:
+    post:
+      operationId: restart_node
+      summary: Node Restart
+      description: Restarts the Enterprise Analytics Service on the target node.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "202":
+          description: >
+            Accepted.
+            Returns an object showing the status of the node.
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/status/ingestion:
+    get:
+      operationId: ingestion_status
+      summary: Ingestion Status
+      description: Shows the progress of ingestion for each collection.
+      security:
+        - AnalyticsManageAnalyticsSelect: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an object giving the ingestion status of each collection.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingestion"
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+components:
+ schemas:
+  Status:
+    description: An object giving information about the status of the Enterprise Analytics Service.
+    type: object
+    properties:
+      authorizedNodes:
+        type: array
+        description: An array of strings, each of which is the ID of an authorized node.
+        items:
+          type: string
+        x-has-example: true
+        example:
+          - 86586a966202b5aa4aed31633f330aba
+          - 948fb3af810a9b7bc6c76e2a69ba35d9
+      ccNodeId:
+        type: string
+        description: The ID of the cluster controller node.
+        x-has-example: true
+        example: 86586a966202b5aa4aed31633f330aba
+      nodeConfigUri:
+        type: string
+        description: The path of the Enterprise Analytics Service Node Configuration REST API.
+        x-has-example: true
+        example: /api/v1/config/node
+      nodeDiagnosticsUri:
+        type: string
+        description: >
+          The path of the Enterprise Analytics Node Diagnostics REST API.
+          For internal use only.
+        x-has-example: true
+        example: /api/v1/node/diagnostics
+      nodeRestartUri:
+        type: string
+        description: The path of the Enterprise Analytics Node Restart REST API.
+        x-has-example: true
+        example: /api/v1/node/restart
+      serviceRequestUri:
+        type: string
+        description: The path of the Enterprise Analytics Service Request REST API.
+        x-has-example: true
+        example: /api/v1/request
+      serviceConfigUri:
+        type: string
+        description: The path of the Enterprise Analytics Service Configuration REST API.
+        x-has-example: true
+        example: /api/v1/config/service
+      serviceRestartUri:
+        type: string
+        description: The path of the Enterprise Analytics Service Restart REST API.
+        x-has-example: true
+        example: /api/v1/service/restart
+      state:
+        type: string
+        enum:
+          - ACTIVE
+          - UNUSABLE
+          - SHUTTING_DOWN
+        description: The state of the Enterprise Analytics Service.
+        x-has-example: true
+        example: ACTIVE
+      nodes:
+        type: array
+        description: An array of objects, each giving information about one node.
+        items:
+          $ref: '#/components/schemas/StatusNodes'
+      partitions:
+        type: array
+        description: An array of objects, each giving information about one partition.
+        items:
+          $ref: '#/components/schemas/StatusPartitions'
+      partitionsTopology:
+        $ref: '#/components/schemas/StatusTopology'
+
+  StatusNodes:
+          type: object
+          title: Nodes
+          properties:
+            apiBase:
+              type: string
+              description: The URI scheme, host, and port for HTTP access to Enterprise Analytics REST APIs on this node.
+              x-has-example: true
+              example: http://192.168.8.101:8095
+            apiBaseHttps:
+              type: string
+              description: The URI scheme, host, and port for secure HTTPS access to Enterprise Analytics REST APIs on this node.
+              x-has-example: true
+              example: https://192.168.8.101:18095
+            nodeId:
+              type: string
+              description: The ID of the node.
+              x-has-example: true
+              example: 86586a966202b5aa4aed31633f330aba
+            nodeName:
+              type: string
+              description: The name or IP address of the node, including the cluster administration port.
+              x-has-example: true
+              example: 192.168.8.101:8091
+
+  StatusPartitions:
+          type: object
+          title: Partitions
+          properties:
+            active:
+              type: boolean
+              description: Indicates whether this partition is active.
+              x-has-example: true
+              example: true
+            activeNodeId:
+              type: string
+              description: The ID of the node where this partition is currently active.
+              x-has-example: true
+              example: 86586a966202b5aa4aed31633f330aba
+            iodeviceNum:
+              type: integer
+              description: The number of the IO Device where this partition is located.
+              x-has-example: true
+              example: 0
+            nodeId:
+              type: string
+              description: The ID of the node where this partition originated.
+              x-has-example: true
+              example: 86586a966202b5aa4aed31633f330aba
+            partitionId:
+              type: integer
+              description: The ID of this partition.
+              x-has-example: true
+              example: 0
+            path:
+              type: string
+              description: The path of the IO Device where this partition is located.
+              x-has-example: true
+              example: /data/@analytics/v_iodevice_0
+            pendingActivation:
+              type: boolean
+              description: Indicates whether this partition is waiting to become active.
+              x-has-example: true
+              example: false
+
+  StatusTopology:
+        type: object
+        description: An object giving information about the partition topology.
+        title: Partition Topology
+        properties:
+          balanced:
+            type: boolean
+            description: Indicates whether the Analytics nodes are balanced.
+            x-has-example: true
+            example: true
+          ccNodeId:
+            type: string
+            description: The ID of the cluster controller node.
+            x-has-example: true
+            example: 86586a966202b5aa4aed31633f330aba
+          metadataPartition:
+            type: integer
+            description: The ID of the metadata partition.
+            x-has-example: true
+            example: -1
+          numReplicas:
+            type: integer
+            description: The number of replicas.
+            x-has-example: true
+            example: 1
+          revision:
+            type: integer
+            description: The revision number of the partition topology.
+            x-has-example: true
+            example: 1
+          version:
+            type: integer
+            description: The version number of the partition topology.
+            x-has-example: true
+            example: 1
+          partitions:
+            type: array
+            description: An array of objects, each giving information about the state of one partition.
+            items:
+              $ref: '#/components/schemas/StatusTopologyState'
+
+  StatusTopologyState:
+              type: object
+              title: Partition States
+              properties:
+                id:
+                  type: integer
+                  description: The partition ID.
+                  x-has-example: true
+                  example: 0
+                master:
+                  type: string
+                  description: The ID of the node where the partition is currently active.
+                  x-has-example: true
+                  example: 86586a966202b5aa4aed31633f330aba
+                origin:
+                  type: string
+                  description: The ID of the node where the partition originated.
+                  x-has-example: true
+                  example: 86586a966202b5aa4aed31633f330aba
+
+  Ingestion:
+    description: An object containing a single links property.
+    type: object
+    properties:
+      links:
+        type: array
+        description: An array of objects, each giving information about a single linked scope.
+        items:
+          $ref: '#/components/schemas/IngestionLink'
+
+  IngestionLink:
+          type: object
+          title: Links
+          properties:
+            name:
+              type: string
+              description: The name of the link.
+              x-has-example: true
+              example: Local
+            scope:
+              type: string
+              description: The name of the scope.
+              x-has-example: true
+              example: travel-sample/inventory
+            status:
+              type: string
+              description: The status of the scope.
+              x-has-example: true
+              example: healthy
+              enum:
+                - healthy
+                - stopped
+                - unhealthy
+                - suspended
+            state:
+              type: array
+              description: >
+                An array of objects, each giving the ingestion state of one or more collections.
+
+
+                Collections which have the same ingestion state within this scope are aggregated together.
+              items:
+                $ref: '#/components/schemas/IngestionLinkState'
+
+  IngestionLinkState:
+                type: object
+                title: States
+                required:
+                  - timestamp
+                  - progress
+                  - scopes
+                properties:
+                  timestamp:
+                    type: integer
+                    description: The time since epoch that this sample was calculated, in milliseconds.
+                    x-has-example: true
+                    example: 1631273689161
+                  progress:
+                    type: number
+                    format: double
+                    description: The percentage (fraction from 0 to 1) of ingestion progress at the current time.
+                    minimum: 0
+                    maximum: 1
+                    x-has-example: true
+                    example: 0
+                  timeLag:
+                    type: integer
+                    description: >
+                      The estimated time that the ingestion lags behind the Data service, in milliseconds.
+                      Only displayed for collections that are not fully ingested.
+                    x-has-example: true
+                    example: 9744
+                  itemsProcessed:
+                    type: integer
+                    description: >
+                      The number of items ingested since last connect; that is, the total number of mutations and deletions processed.
+                      Only displayed for collections that are not fully ingested.
+
+
+                      Note that this value is reset on connect, so it may appear to get smaller.
+                    x-has-example: true
+                    example: 12301
+                  seqnoAdvances:
+                    type: integer
+                    description: >
+                      The change in sequence number (seqno) since last connect.
+                      Only displayed for collections that are not fully ingested.
+                    x-has-example: true
+                    example: 61
+                  scopes:
+                    type: array
+                    description: An array of objects, each one giving information about a single scope.
+                    items:
+                      $ref: '#/components/schemas/IngestionLinkStateScope'
+
+  IngestionLinkStateScope:
+                      type: object
+                      title: State Scopes
+                      required:
+                        - name
+                        - collections
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the Analytics scope.
+                          x-has-example: true
+                          example: travel-sample/inventory
+                        collections:
+                          type: array
+                          description: An array of objects, each one giving information about a single collection.
+                          items:
+                            $ref: '#/components/schemas/IngestionLinkStateScopeColl'
+
+  IngestionLinkStateScopeColl:
+                            type: object
+                            title: State Collections
+                            required:
+                              - name
+                            properties:
+                              name:
+                                type: string
+                                description: The name of the collection.
+                                x-has-example: true
+                                example: route
+
+  Mutations:
+    description: An object containing one or more nested scope objects, one for each available scope.
+    type: object
+    title: Mutations
+    additionalProperties:
+      $ref: '#/components/schemas/MutationsColl'
+    example:
+      "`travel-sample`.inventory":
+          hotel: 1
+          landmark: 7
+
+  MutationsColl:
+        type: object
+        description: >
+          An object containing one or more collection properties, one for each collection in the scope.
+
+
+          The name of the object is the name of the scope, in display form.
+          For example, `` `travel-sample`.inventory ``.
+        title: Collections
+        additionalProperties:
+            type: integer
+            description: >
+              The number of mutations in the DCP queue that have not yet been ingested.
+              The name of the property is the name of the collection.
+
+  Request:
+    description: An object giving information about an service request.
+    type: object
+    properties:
+      cancellable:
+        type: boolean
+        description: Whether this request can be cancelled.
+      clientContextID:
+        type: string
+        description: A context ID for debugging purposes.
+        x-has-example: true
+        example: 28379d60-7139-44d6-b57a-95935540b586
+      elapsedTime:
+        type: number
+        description: How long the request has been running in seconds.
+        x-has-example: true
+        example: 0.126
+      jobCreateTime:
+        type: string
+        description: The date and time when the request's job was created.
+        x-has-example: true
+        example: 2024-05-28T19:47:02.512
+      jobId:
+        type: string
+        description: >
+          The request's job ID.
+          This value can be null if request did not run (for example, due to an error).
+        x-has-example: true
+        example: JID:0.14
+      jobQueueTime:
+        type: number
+        description: How long the request's job has been in the queue waiting to run in seconds.
+        x-has-example: true
+        example: 0
+      jobRequiredCPUs:
+        type: integer
+        description: The number of CPU cores required to run this request.
+        x-has-example: true
+        example: 1
+      jobRequiredMemory:
+        type: integer
+        description: >
+          The bytes of RAM being used to process this request.
+        x-has-example: true
+        example: 34013184
+      jobStartTime:
+        type: string
+        description: The date and time the request's job began running.
+        x-has-example: true
+        example: 2024-05-28T19:47:02.514
+      jobStatus:
+        type: string
+        enum:
+          - PENDING
+          - RUNNING
+          - TERMINATED
+          - FAILURE
+          - FAILURE_BEFORE_EXECUTION
+          - "null"
+        description: The state of the request's job.
+        x-has-example: true
+        example: RUNNING
+      plan:
+        type: string
+        description: The query plan for this request.  
+      node:
+        type: string
+        description: The node that received the request.
+        x-has-example: true
+        example: 172.20.0.2:8095
+      remoteAddr:
+        type: string
+        description: The network address and port of the client that made the request.
+        x-has-example: true
+        example: 172.20.0.123:53612
+      requestTime:
+        type: string
+        description: The date and time the request was received.
+        x-has-example: true
+        example: 2024-05-28T19:44:07.730
+      scanConsistency:
+        type: string
+        description: The Scan Consistency setting used for the request's query.
+        x-has-example: true
+        example: not_bounded
+      state:
+        type: string
+        enum:
+          - received
+          - running
+          - cancelled
+          - completed
+        description: The state of the request.
+        x-has-example: true
+        example: running
+      statement:
+        type: string
+        description: The SQL++ query statement being run by the request.
+        x-has-example: true
+        example: select count(*) from hotel_endorsement_view;
+      userAgent: 
+        type: string
+        description: The user agent string of the browser that made the request.
+        x-has-example: true
+        example: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0
+      users:
+        type: string
+        description: The user who made the request.
+        x-has-example: true
+        example: Administrator
+      uuid:
+        type: string
+        description: The unique identifier for this request.
+        x-has-example: true
+        example: 91f60338-a3e0-4163-9287-5e723fda29ef
+
+ responses:
+  Unauthorized:
+    description: >
+      Unauthorized.
+      The user name or password may be incorrect.
+
+
+      Returns an object containing an error message.
+      Refer to [Error Codes](/server/7.6/analytics/error-codes.html).
+    content:
+      application/json:
+        schema:
+          type: object
+
+  NotFound:
+    description: >
+      Not found.
+      The path may be incorrect.
+
+ securitySchemes:
+  AnalyticsManageAnalyticsSelect:
+    type: http
+    scheme: basic
+    description: |
+      For the [Active Requests](#return_active_requests), [Request Cancellation](#cancel_request), [Completed Requests](#completed_requests), [Ingestion Status](#ingestion_status), and [Pending Mutations](#monitor_node) operations, users must have one of the following access roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Enterprise Analytics Admin
+      * Enterprise Analytics Access
+
+  ClusterReadPoolsRead:
+    type: http
+    scheme: basic
+    description: |
+      For the [Cluster Status](#cluster_status) operation, users must have one of the following access roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Read-Only Admin
+      * Enterprise Analytics Admin
+
+  AnalyticsManage:
+    type: http
+    scheme: basic
+    description: |
+      For the [Cluster Restart](#restart_cluster) and [Node Restart](#restart_node) operations, users must have one of the following RBAC roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Enterprise Analytics Admin
