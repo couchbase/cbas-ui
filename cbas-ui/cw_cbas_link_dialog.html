@@ -41,6 +41,7 @@ licenses/APL2.txt.
           <option value="azureblob" ng-if="isDeveloperPreview()">Azure Blob</option>
           <option value="azuredatalake" ng-if="isDeveloperPreview()">Azure Datalake</option>
           <option value="gcs" ng-if="isDeveloperPreview()">Google Cloud Storage</option>
+          <option value="kafka">Kafka</option>
         </select>
       </div>
 
@@ -484,6 +485,140 @@ licenses/APL2.txt.
               autocorrect="off"
               spellcheck="false"
               autocapitalize="off">
+        </div>
+      </div>
+
+      <!-- Options for Kafka Links -->
+      <div ng-if="options.link_type == 'kafka'">
+        <div class="formrow">
+          <label for="vendor">Vendor</label>
+          <select id="vendor" ng-model="options.kafka_link.vendor" required>
+            <option value="CONFLUENT">Confluent</option>
+          </select>
+        </div>
+
+        <div class="formrow">
+          <label for="kafka_bootstrap_servers">Bootstrap Servers</label>
+          <input
+                  ng-model="options.kafka_link.bootstrap_servers"
+                  id="kafka_bootstrap_servers"
+                  type="text"
+                  autocorrect="off"
+                  spellcheck="false"
+                  autocapitalize="off"
+                  placeholder="localhost:9092"
+                  required>
+        </div>
+
+        <div class="formrow">
+          <label for="confluent_auth">Authentication</label>
+          <select id="confluent_auth" ng-model="options.kafka_link.confluent_auth" required>
+            <option value="PLAIN">PLAIN</option>
+            <option value="SCRAM_SHA_256">SCRAM-SHA-256</option>
+            <option value="SCRAM_SHA_512">SCRAM-SHA-512</option>
+          </select>
+        </div>
+
+        <div class="formrow" ng-if="options.kafka_link.confluent_auth == 'PLAIN' || options.kafka_link.confluent_auth == 'SCRAM_SHA_256' || options.kafka_link.confluent_auth == 'SCRAM_SHA_512'">
+          <label>Username</label>
+          <input
+                  ng-model="options.kafka_link.username"
+                  type="text"
+                  autocorrect="off"
+                  spellcheck="false"
+                  autocapitalize="off" required>
+        </div>
+
+        <div class="formrow" ng-if="options.kafka_link.confluent_auth == 'PLAIN' || options.kafka_link.confluent_auth == 'SCRAM_SHA_256' || options.kafka_link.confluent_auth == 'SCRAM_SHA_512'">
+          <label>Password</label>
+          <input
+                  ng-model="options.kafka_link.password"
+                  type="password"
+                  autocorrect="off"
+                  spellcheck="false"
+                  mn-autocomplete-off
+                  autocomplete="one-time-code" required>
+        </div>
+
+        <div class="formrow">
+          <input id="confluent_tls_enable"
+                 ng-model="options.kafka_link.confluent_tls_enable"
+                 type="checkbox">
+          <label for="confluent_tls_enable" style="margin-right:0">Enable Transport Layer Security (TLS)</label>
+        </div>
+
+        <div class="formrow" ng-show="options.kafka_link.confluent_tls_enable">
+          <label for="kafka_certificate">Certificate</label>
+          <textarea
+                  id="kafka_certificate"
+                  ng-model="options.kafka_link.kafka_certificate"
+                  rows="4"
+                  placeholder="Enter the certificate content"
+                  autocorrect="off"
+                  spellcheck="false"
+                  autocapitalize="off">
+          </textarea>
+        </div>
+
+        <div class="formrow" ng-show="options.kafka_link.confluent_tls_enable">
+          <input  id="kafka_verify_hostname" type="checkbox" ng-model="options.kafka_link.verify_hostname">
+          <label for="kafka_verify_hostname"> Verify Hostname</label>
+        </div>
+
+        <div class="formrow">
+          <input id="schema_registry_enable"
+                 ng-model="options.kafka_link.schema_registry_enable"
+                 type="checkbox">
+          <label for="schema_registry_enable" style="margin-right:0">Use Custom Schema Registry</label>
+          <span
+                  class="fa-stack icon-info"
+                  uib-tooltip="Choose this option to ensure collections associated with this link can handle a variety of schema types. If this option is not selected, collections associated with this link handle JSON data only."
+                  tooltip-placement="auto right"
+          >
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+        </div>
+
+        <!-- Schema Registry Options -->
+        <div ng-if="options.kafka_link.schema_registry_enable">
+          <div class="formrow">
+            <label for="schema_registry_url">Schema Registry URL</label>
+            <input
+                    ng-model="options.kafka_link.schema_registry_url"
+                    id="schema_registry_url"
+                    type="text"
+                    autocorrect="off"
+                    spellcheck="false"
+                    autocapitalize="off"
+                    placeholder="https://schema-registry-url:8081"
+                    required>
+          </div>
+
+          <div class="formrow">
+            <label for="schema_registry_api_key">Registry API Key</label>
+            <input
+                    ng-model="options.kafka_link.schema_registry_api_key"
+                    id="schema_registry_api_key"
+                    type="text"
+                    autocorrect="off"
+                    spellcheck="false"
+                    autocapitalize="off"
+                    required>
+          </div>
+
+          <div class="formrow">
+            <label for="schema_registry_api_secret">Registry API Secret</label>
+            <input
+                    ng-model="options.kafka_link.schema_registry_api_secret"
+                    id="schema_registry_api_secret"
+                    type="password"
+                    autocorrect="off"
+                    spellcheck="false"
+                    mn-autocomplete-off
+                    autocomplete="one-time-code"
+                    required>
+          </div>
         </div>
       </div>
     </div>

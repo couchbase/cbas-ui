@@ -10,7 +10,10 @@ licenses/APL2.txt.
 
 <div class="dialog-med">
   <div class="panel-header">
-    <h2 ng-show="options.is_new" class="ellipsis margin-right-1">Add Remote Collection</h2>
+    <h2 ng-show="options.is_new && options.clusterBuckets && !isExternalCollection(options.link_details.type) && options.link_details.type != 'kafka'" class="ellipsis margin-right-1">Add Remote Couchbase Collection</h2>
+    <h2 ng-show="options.is_new && options.link_details.type == 'kafka'" class="ellipsis margin-right-1">Add Remote Kafka Collection</h2>
+    <h2 ng-show="options.is_new && isExternalCollection(options.link_details.type)" class="ellipsis margin-right-1">Add External Collection</h2>
+
     <h2 ng-show="!options.is_new">Collection Details</h2>
   </div>
   <form class="forms" name="datasetForm">
@@ -57,7 +60,7 @@ licenses/APL2.txt.
       <!-- For Local links, we have a list of buckets, otherwise bucket name is free text -->
       <div
          class="formrow"
-         ng-if="options.clusterBuckets && !isExternalCollection(options.link_details.type)"
+         ng-if="options.clusterBuckets && !isExternalCollection(options.link_details.type) && options.link_details.type != 'kafka'"
          ng-disabled="!options.is_new">
         <qw-collection-menu
            label="Source"
@@ -87,19 +90,6 @@ licenses/APL2.txt.
            autocorrect="off"
            spellcheck="false"
            autocapitalize="off" required>
-      </div>
-
-      <div class="formrow" ng-if="!isExternalCollection(options.link_details.type)">
-        <label>Where (optional)</label>
-        <textarea
-           ng-disabled="!options.is_new"
-           rows="3"
-           autocorrect="off"
-           autocompleterg="off"
-           spellcheck="false"
-           ng-model="options.where"
-           placeholder="Optional WHERE clause to filter documents in the dataset. Do not include the 'WHERE' keyword. E.g.,&nbsp;&nbsp;`type` = 'beer'">
-        </textarea>
       </div>
 
       <div ng-if="isExternalCollection(options.link_details.type)">
@@ -219,6 +209,86 @@ licenses/APL2.txt.
           <input ng-model="options.external_dataset.exclude" type="text" autocorrect="off"
                  spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new || options.external_dataset.include">
         </div>
+      </div>
+
+      <!-- Kafka Collection Configuration -->
+      <div ng-if="options.link_details.type == 'kafka'">
+        <div class="formrow">
+          <label for="kafka_topic">Topic Name</label>
+          <input  id="kafka_topic" ng-model="options.kafka_dataset.topic" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new" required>
+        </div>
+
+        <div class="formrow">
+          <label>Primary Key</label>
+          <input ng-model="options.kafka_dataset.primary_key" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new"
+                 placeholder="e.g., _columnar_ID:string" required>
+        </div>
+
+        <div class="formrow">
+          <label>Key Serialization Type</label>
+          <select ng-disabled="!options.is_new" ng-model="options.kafka_dataset.key_serialization_type">
+            <option>JSON</option>
+            <option>AVRO</option>
+            <option>PROTOBUF</option>
+          </select>
+        </div>
+
+        <div class="formrow">
+          <label>Value Serialization Type</label>
+          <select ng-disabled="!options.is_new" ng-model="options.kafka_dataset.value_serialization_type">
+            <option>JSON</option>
+            <option>AVRO</option>
+            <option>PROTOBUF</option>
+          </select>
+        </div>
+
+        <div class="formrow" ng-click="options.toggle_cdc_enabled()">
+          <input id="cdc_enabled" ng-model="options.kafka_dataset.cdc_enabled" type="checkbox" name="cdc_enabled">
+          <label for="cdc_enabled">CDC Enabled</label>
+        </div>
+
+        <div ng-if="options.kafka_dataset.cdc_enabled">
+          <div class="formrow">
+            <label>CDC Source</label>
+            <select ng-disabled="!options.is_new" ng-model="options.kafka_dataset.cdc_source">
+              <option value="MONGODB">MongoDB</option>
+              <option value="MYSQLDB">MySQL</option>
+              <option value="POSTGRESQL">PostgreSQL</option>
+              <option value="DYNAMODB">DynamoDB</option>
+            </select>
+          </div>
+
+          <div class="formrow">
+            <label>CDC Source Connector</label>
+            <select ng-disabled="!options.is_new" ng-model="options.kafka_dataset.cdc_source_connector">
+              <option>DEBEZIUM</option>
+              <option>MONGODB</option>
+              <option>GLUESYNC</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="formrow">
+          <label>Dead Letter Queue Topic</label>
+          <input ng-model="options.kafka_dataset.dead_letter_queue" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off" ng-disabled="!options.is_new"
+                 placeholder="Optional dead letter queue topic">
+        </div>
+      </div>
+
+      <div class="formrow" ng-if="!isExternalCollection(options.link_details.type)">
+        <label>Where (optional)</label>
+        <textarea
+                ng-disabled="!options.is_new"
+                rows="3"
+                autocorrect="off"
+                autocompleterg="off"
+                spellcheck="false"
+                ng-model="options.where"
+                placeholder="Optional WHERE clause to filter documents in the dataset. Do not include the 'WHERE' keyword. E.g.,&nbsp;&nbsp;`type` = 'beer'">
+        </textarea>
       </div>
     </div>
 

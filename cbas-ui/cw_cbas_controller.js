@@ -1487,6 +1487,20 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           auth_type: "anonymous",
           json_credentials: "",
           endpoint: ""
+        },
+        kafka_link: {
+          vendor: "CONFLUENT",
+          bootstrap_servers: "",
+          confluent_auth: "",
+          username: "",
+          password: "",
+          confluent_tls_enable: false,
+          kafka_certificate: "",
+          verify_hostname: false,
+          schema_registry_enable: false,
+          schema_registry_url: "",
+          schema_registry_api_key: "",
+          schema_registry_api_secret: ""
         }
       };
     }
@@ -1778,6 +1792,16 @@ function createNewCollection() {
         include: "",
         exclude: ""
       },
+      kafka_dataset: {
+        topic: "",
+        primary_key: "",
+        key_serialization_type: "JSON",
+        value_serialization_type: "JSON",
+        cdc_enabled: false,
+        cdc_source: "MONGODB",
+        cdc_source_connector: "DEBEZIUM",
+        dead_letter_queue: ""
+      },
       // KV buckets, scopes, and collections
       kv_buckets: [],
       kv_scopes: {},
@@ -1957,6 +1981,34 @@ function createNewCollection() {
               });
     }
 
+    function generateCreateKafkaCollectionStatement(dataset_options) {
+      let dbName = dataset_options.targetDatabase;
+      var dvName = dataset_options.targetScope;
+      var statement = 'CREATE COLLECTION `' + dbName + '`.`' + dvName + '`.`' + dataset_options.dataset_name + '`';
+
+      statement += ' PRIMARY KEY (' + dataset_options.kafka_dataset.primary_key + ')';
+      statement += ' ON ' + dataset_options.kafka_dataset.topic + ' AT ' + dataset_options.link_name;
+
+      // Build WITH clause for Kafka options
+      var withOptions = [];
+      withOptions.push(`"keySerializationType":"${dataset_options.kafka_dataset.key_serialization_type}"`);
+      withOptions.push(`"valueSerializationType":"${dataset_options.kafka_dataset.value_serialization_type}"`);
+
+      if (dataset_options.kafka_dataset.cdc_enabled) {
+        withOptions.push(`"cdcEnabled": "true"`);
+        withOptions.push(`"cdcDetails": { "cdcSource": "${dataset_options.kafka_dataset.cdc_source}", "cdcSourceConnector":"${dataset_options.kafka_dataset.cdc_source_connector}" }`);
+      }
+      if (options.dead_letter_queue) {
+        withOptions.push(`"deadLetterQueue":"${dataset_options.kafka_dataset.dead_letter_queue}"`);
+      }
+      if (withOptions.length > 0) {
+        statement += ` WITH { ${withOptions.join(', ')} }`;
+      }
+      if (dataset_options.where && !isExternalLink)
+        statement += " WHERE " + dataset_options.where;
+      return statement;
+    }
+
     // create a custom dataset on a given link
     function createNewDataset(link) {
       //console.log("Creating new dataset for: " + JSON.stringify(link));
@@ -2077,7 +2129,10 @@ function createNewCollection() {
             queryText += " }";
           }
 
-          //console.log("Got create query: " + queryText);
+          if (dataset_options.link_details.type === "kafka") {
+            queryText = generateCreateKafkaCollectionStatement(dataset_options);
+          }
+          console.log("Got create query: " + queryText);
 
           cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
             .then(function success() {

@@ -2643,6 +2643,41 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     });;
   }
 
+  function formatKafkaLinkParams(options) {
+    var params = {
+      type: 'kafka'
+    };
+
+    var kafkaClusterDetails = {
+      vendor: options.kafka_link.vendor,
+      brokersUrl: options.kafka_link.bootstrap_servers,
+      authenticationDetails: {
+        authenticationType: options.kafka_link.confluent_auth,
+        encryptionType: options.kafka_link.confluent_tls_enable ? "TLS" : "PLAINTEXT",
+        credentials: {
+          apiKey: options.kafka_link.username,
+          apiSecret: options.kafka_link.password
+        }
+      }
+    };
+    // Add certificate if provided
+    if (options.kafka_link.kafka_certificate) {
+      kafkaClusterDetails.authenticationDetails.kafkaCertificate = options.kafka_link.kafka_certificate;
+    }
+    params.kafkaClusterDetails = JSON.stringify(kafkaClusterDetails);
+
+    if (options.kafka_link.schema_registry_enable) {
+      var schemaRegistryDetails = {
+        connectionFields: {
+          schemaRegistryURL: options.kafka_link.schema_registry_url,
+          schemaRegistryCredentials: options.kafka_link.schema_registry_api_key + ":" + options.kafka_link.schema_registry_api_secret
+        }
+      };
+      params.schemaRegistryDetails = JSON.stringify(schemaRegistryDetails);
+    }
+    return params;
+  }
+
   function convertDialogScopeToAPIdata(scope) {
     var formData = {
       type: scope.link_type
@@ -2770,6 +2805,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (scope.gcs_link.endpoint) {
         formData.endpoint = scope.gcs_link.endpoint;
       }
+    } else if (scope.link_type == "kafka") {
+      formData = formatKafkaLinkParams(scope);
     }
 
     return formData;
@@ -2889,6 +2926,33 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
       scope.gcs_link.endpoint = apiData.endpoint;
       scope.gcs_link.json_credentials = "";
+    } else if (apiData.type == "kafka") {
+      if (apiData.kafkaClusterDetails) {
+        const kafkaDetails = apiData.kafkaClusterDetails;
+        scope.kafka_link.vendor = kafkaDetails.vendor;
+        scope.kafka_link.bootstrap_servers = kafkaDetails.brokersUrl || '';
+        scope.kafka_link.confluent_auth = kafkaDetails.authenticationDetails?.authenticationType || 'PLAIN';
+        scope.kafka_link.confluent_tls_enable = kafkaDetails.authenticationDetails?.encryptionType === 'TLS';
+        scope.kafka_link.username = kafkaDetails.authenticationDetails?.credentials?.apiKey || '';
+        // Note: password/apiSecret is not returned from API for security
+        scope.kafka_link.password = '';
+      }
+
+      if (apiData.schemaRegistryDetails) {
+        const schemaDetails = apiData.schemaRegistryDetails;
+        scope.kafka_link.schema_registry_enable = true;
+        scope.kafka_link.schema_registry_url = schemaDetails.connectionFields?.schemaRegistryURL || '';
+        // Parse credentials if available
+        const credentials = schemaDetails.connectionFields?.schemaRegistryCredentials || '';
+        if (credentials.includes(':')) {
+          const [apiKey] = credentials.split(':');
+          scope.kafka_link.schema_registry_api_key = apiKey;
+        }
+        // Note: schema_registry_api_secret is not returned from API for security
+        scope.kafka_link.schema_registry_api_secret = '';
+      } else {
+        scope.kafka_link.schema_registry_enable = false;
+      }
     }
   }
 
