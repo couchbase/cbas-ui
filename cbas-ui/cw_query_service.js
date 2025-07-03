@@ -1632,6 +1632,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   }
 
   function updateBucketsCallback() {
+    let expansionState = null;
+    try {
+      expansionState = saveExpansionState();
+    } catch (error) {
+      expansionState = null;
+    }
+
     cwQueryService.loadingBuckets = true;
     var queryText = cwConstantsService.keyspaceQuery;
     // MDB doesn't like the ugly whitespace in the metadata query, normalize it now
@@ -1664,6 +1671,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         logWorkbenchError(error);
       })
       .finally(function () {
+        if (expansionState) {
+          try {
+            restoreExpansionState(expansionState);
+          } catch (error) {
+          }
+        }
         cwQueryService.loadingBuckets = false;
       });
 
@@ -1679,6 +1692,89 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
        } else
          cwQueryService.links = [];
      });
+  }
+
+  function saveExpansionState() {
+    const state = {
+      databases: {},
+      dataverses: {},
+      shadows: {},
+      views: {}
+    };
+
+    // Save database expansion states
+    cwQueryService.databases.forEach(database => {
+      if (database.expanded !== undefined && database.DatabaseName) {
+        state.databases[database.DatabaseName] = database.expanded;
+      }
+    });
+
+    // Save dataverse expansion states
+    cwQueryService.dataverses.forEach(dataverse => {
+      if (dataverse.expanded !== undefined && dataverse.DatabaseName && dataverse.DataverseName) {
+        const key = `${dataverse.DatabaseName}.${dataverse.DataverseName}`;
+        state.dataverses[key] = dataverse.expanded;
+      }
+    });
+
+    // Save shadow (dataset) expansion states
+    cwQueryService.shadows.forEach(shadow => {
+      if (shadow.expanded !== undefined && shadow.DatabaseName && shadow.DataverseName && shadow.id) {
+        const key = `${shadow.DatabaseName}.${shadow.DataverseName}.${shadow.id}`;
+        state.shadows[key] = shadow.expanded;
+      }
+    });
+
+    // Save view expansion states - views are nested in dataverses
+    cwQueryService.dataverses.forEach(dataverse => {
+      if (dataverse.views) {
+        dataverse.views.forEach(view => {
+          if (view.expanded !== undefined && view.DatabaseName && view.DataverseName && view.id) {
+            const key = `${view.DatabaseName}.${view.DataverseName}.${view.id}`;
+            state.views[key] = view.expanded;
+          }
+        });
+      }
+    });
+
+    return state;
+  }
+
+  function restoreExpansionState(state) {
+    // Restore database expansion states
+    cwQueryService.databases.forEach(database => {
+      if (state.databases.hasOwnProperty(database.DatabaseName)) {
+        database.expanded = state.databases[database.DatabaseName];
+      }
+    });
+
+    // Restore dataverse expansion states
+    cwQueryService.dataverses.forEach(dataverse => {
+      const key = `${dataverse.DatabaseName}.${dataverse.DataverseName}`;
+      if (state.dataverses.hasOwnProperty(key)) {
+        dataverse.expanded = state.dataverses[key];
+      }
+    });
+
+    // Restore shadow (dataset) expansion states
+    cwQueryService.shadows.forEach(shadow => {
+      const key = `${shadow.DatabaseName}.${shadow.DataverseName}.${shadow.id}`;
+      if (state.shadows.hasOwnProperty(key)) {
+        shadow.expanded = state.shadows[key];
+      }
+    });
+
+    // Restore view expansion states
+    cwQueryService.dataverses.forEach(dataverse => {
+      if (dataverse.views) {
+        dataverse.views.forEach(view => {
+          const key = `${view.DatabaseName}.${view.DataverseName}.${view.id}`;
+          if (state.views.hasOwnProperty(key)) {
+            view.expanded = state.views[key];
+          }
+        });
+      }
+    });
   }
 
   function processMetadataQueryResult(data) {

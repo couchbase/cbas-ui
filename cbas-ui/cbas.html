@@ -349,7 +349,7 @@ licenses/APL2.txt.
                   </span>
                   <h6 class="ellipsis">{{database.databaseDisplayName}}</h6>
                   <div class="text-fine row" ng-if="database.databaseDisplayName != 'Default'">
-                    <a ng-click="qc.dropDatabase(database)" title="drop database">
+                    <a ng-click="qc.dropDatabase(database); $event.stopPropagation()" title="drop database">
                       <span class="icon fa-trash"></span>
                     </a>
                   </div>
@@ -357,7 +357,7 @@ licenses/APL2.txt.
 
                 <!-- Right Side: "+ scope" -->
                 <a title="Add new scope to database"
-                   ng-click="qc.createNewScope(database)"
+                   ng-click="qc.createNewScope(database); $event.stopPropagation()"
                    class="text-fine nowrap">
                   + scope
                 </a>
@@ -384,7 +384,7 @@ licenses/APL2.txt.
                     <div style="display: flex; gap: 4px; align-items: center;">
                       <h6 style="margin: 0;">{{dataverse.dataverseDisplayName}}</h6>
                       <div class="text-fine row" ng-if="dataverse.dataverseDisplayName != 'Default'">
-                        <a ng-click="qc.dropScope(dataverse)" title="drop scope">
+                        <a ng-click="qc.dropScope(dataverse); $event.stopPropagation()" title="drop scope">
                           <span class="icon fa-trash"></span>
                         </a>
                       </div>
@@ -506,7 +506,7 @@ licenses/APL2.txt.
                     <span ng-if="link.LinkType == 'EXTERNAL'" class="label neutral margin-right-quarter">
                       {{link.extLinkType}}
                     </span>
-  
+
                     <span
                        ng-if="link.IsActive === qc.datasetUnknownState"
                        title="fetching link state..."
@@ -516,7 +516,7 @@ licenses/APL2.txt.
                       <span
                          ng-if="!link.IsActive && qc.atLeast70"
                          class="icon fa-unlink orange-1 cursor-pointer"
-                         ng-click="qc.connectLink(link,dataverse)"
+                         ng-click="qc.connectLink(link,dataverse); $event.stopPropagation()"
                          uib-tooltip-html="'<b class=\'orange-1\'>link disconnected</b> | click icon to re-connect'"
                          tooltip-placement="auto top"
                          tooltip-append-to-body="true"
@@ -525,18 +525,18 @@ licenses/APL2.txt.
                       <span
                          ng-if="link.IsActive === true"
                          class="icon fa-link cursor-pointer grayblue-1"
-                         ng-click="qc.disconnectLink(link,dataverse)"
+                         ng-click="qc.disconnectLink(link,dataverse); $event.stopPropagation()"
                          uib-tooltip-html="'<b class=\'green-1\'>link connected</b> | click icon to disconnect'"
                          tooltip-placement="auto top"
                          tooltip-append-to-body="true"
                          tooltip-trigger="mouseenter">
                       </span>
                     </span>
-  
+
                   </span>
                   <a ng-show="qc.validated.canAccessLinks()"
                      title="Add new collection to link"
-                     ng-click="qc.createNewDataset(link)"
+                     ng-click="qc.createNewDataset(link); $event.stopPropagation()"
                      class="text-fine nowrap margin-left-1">
                     + collection
                   </a>
@@ -544,7 +544,7 @@ licenses/APL2.txt.
                 <div ng-repeat="shadow in qc.getDatasetsInLink(dataverse,link)">
                   <div ng-init="shadow.expanded = false">
                     <div class="row margin-left-half margin-top-half">
-  
+
                       <div
                          class="disclosure padding-left-1 ellipsis"
                          ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState, disclosed : shadow.expanded}"
