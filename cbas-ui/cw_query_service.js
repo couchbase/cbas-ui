@@ -305,15 +305,6 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.tooBigForUI = tooBigForUI;
   };
 
-  function getBucketState() {
-    var bucketStateRequest = {
-      url: cwConstantsService.bucketStateURL,
-      method: "GET",
-      headers: {'Content-Type': 'application/json', 'ignore-401': 'true'}
-    };
-    return ($http(bucketStateRequest));
-  }
-
   function getClusterBuckets() {
     var clusterBucketsRequest = {
       url: cwConstantsService.clusterBucketsURL,
@@ -1682,7 +1673,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
     // we need more details about links, however, so use the REST API to get that also
      $http({
-       url: "/_p/cbas/analytics/link",
+       url: "/_p/cbas/api/v1/link",
        headers: {'Content-Type': 'application/json', 'ignore-401': 'true', 'Analytics-Priority': '-1'},
        method: "GET",
      }).then(function success(resp) {
@@ -2687,14 +2678,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function editLink(linkDialogScope) {
     return $http({
-      url: "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.link_name),
+      url: "/_p/cbas/api/v1/link/" + encodeURIComponent(linkDialogScope.link_name),
       method: "PUT",
       data: convertDialogScopeToAPIdata(linkDialogScope),
     });
   }
 
   function createLink(linkDialogScope, dataverse) {
-    var url = "/_p/cbas/analytics/link/" + encodeURIComponent(linkDialogScope.link_name);
+    var url = "/_p/cbas/api/v1/link/" + encodeURIComponent(linkDialogScope.link_name);
     var request = {
       url: url,
       method: "POST",

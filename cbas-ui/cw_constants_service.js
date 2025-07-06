@@ -41,20 +41,17 @@ function getCwConstantsService() {
   cwConstantsService.queryURL = "../_p/cbas/query/service";
 
   // URL to use to cancel running queries
-  cwConstantsService.canelQueryURL = "../_p/cbas/analytics/admin/active_requests";
-
-  // URL to use to get the bucket connection state
-  cwConstantsService.bucketStateURL = "../_p/cbas/analytics/buckets";
+  cwConstantsService.canelQueryURL = "../_p/cbas/api/v1/active_requests";
 
   // URL to get user visible buckets
   cwConstantsService.clusterBucketsURL = "../pools/default/buckets";
 
   // URL to use to get the analytics stats
   // TODO switch back to ../_p/cbas/analytics/status/ingestion
-  cwConstantsService.analyticsStatsURL = "../_p/cbas/analytics/status/ingestion/v2";
+  cwConstantsService.analyticsStatsURL = "../_p/cbas/api/v1/status/ingestion";
 
   // URL to use to get AWS supported regions
-  cwConstantsService.awsRegionsURL = "../_p/cbas/analytics/link/enum/s3/region";
+  cwConstantsService.awsRegionsURL = "../_p/cbas/api/v1/link/enum/s3/region";
 
   // should we get passwords from the Couchbase server?
   cwConstantsService.getCouchbaseBucketPasswords = false;

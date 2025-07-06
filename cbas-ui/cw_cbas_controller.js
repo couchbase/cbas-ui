@@ -2040,10 +2040,10 @@ function createNewCollection() {
         dataset_options.proxy = null;
       }
       else if (!cwQueryService.globalLinks) {
-        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link?.LinkName);
+        dataset_options.proxy = "../_p/cbas/api/v1/link/%5Ep/" + encodeURIComponent(link?.LinkName);
       }
       else {
-        dataset_options.proxy = "../_p/cbas/analytics/link/%5Ep/" + encodeURIComponent(link?.DVName) + "/" + encodeURIComponent(link?.LinkName);
+        dataset_options.proxy = "../_p/cbas/api/v1/link/%5Ep/" + encodeURIComponent(link?.DVName) + "/" + encodeURIComponent(link?.LinkName);
       }
       dataset_options.is_new = true;
       dataset_options.dataset_name = "";
