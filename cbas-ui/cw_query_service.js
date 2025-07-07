@@ -1842,7 +1842,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             LinkName: record.Name, LinkType: linkType,
             IsActive: record.IsActive, extLinkType: record.LinkType
           };
-          if (theLink.LinkType === "EXTERNAL") theLink.IsActive = true; // external links can't be unlinked
+          if (theLink.LinkType === "EXTERNAL" && theLink.extLinkType !== "KAFKA") theLink.IsActive = true; // external links can't be unlinked
           cwQueryService.global_links.push(theLink)
           addToken(record.Name, "link");
         }
@@ -2156,6 +2156,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           }
         }
         shadow.remaining = cwQueryService.datasetDisconnectedState;
+        var globalLinks = cwQueryService.global_links;
+        if (globalLinks) {
+          for (var j = 0; j < globalLinks.length; j++) {
+            var link = globalLinks[j];
+            if (link.LinkName === shadow.LinkName) {
+              // Found the link, use its active state
+              shadow.remaining = (link.IsActive === true) ? 0 : cwQueryService.datasetDisconnectedState;
+              break;
+            }
+          }
+        }
         if (shadow.link)
           shadow.link.remaining = shadow.remaining;
       }

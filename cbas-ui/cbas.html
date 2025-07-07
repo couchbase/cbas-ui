@@ -284,7 +284,7 @@ licenses/APL2.txt.
                           title="fetching link state..."
                           class="icon fa-spinner fa-pulse grayblack-3">
                   </span>
-                  <span ng-if="link.LinkType == 'INTERNAL' && qc.atLeast70">
+                  <span ng-if="(link.LinkType == 'INTERNAL' || link.extLinkType == 'KAFKA') && qc.atLeast70">
                     <span
                             ng-if="!link.IsActive && qc.atLeast70"
                             class="icon fa-unlink orange-1 cursor-pointer"
@@ -512,7 +512,7 @@ licenses/APL2.txt.
                        title="fetching link state..."
                        class="icon fa-spinner fa-pulse grayblack-3">
                     </span>
-                    <span ng-if="link.LinkType == 'INTERNAL' && qc.atLeast70">
+                    <span ng-if="(link.LinkType == 'INTERNAL' ||  link.extLinkType == 'KAFKA') && qc.atLeast70">
                       <span
                          ng-if="!link.IsActive && qc.atLeast70"
                          class="icon fa-unlink orange-1 cursor-pointer"
@@ -619,7 +619,7 @@ licenses/APL2.txt.
                       <span ng-show="shadow.format">({{shadow.format}})</span>
                     </p>
                     <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
-                    <p class="margin-bottom-0" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
+                    <p class="margin-bottom-0" ng-show="link.LinkType != 'EXTERNAL' && link.extLinkType != 'KAFKA' && shadow.indexes.length > 0">
                       Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                       <div class="query-context cursor-pointer" ng-attr-title="{{idx.keys.join(', ')}}" ng-repeat="idx in shadow.indexes">
                         {{idx.IndexName}} {{idx.keys.join(', ')}}
