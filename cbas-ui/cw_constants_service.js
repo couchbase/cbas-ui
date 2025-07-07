@@ -38,7 +38,7 @@ function getCwConstantsService() {
   cwConstantsService.forbidMultipleQueries = false;
 
   // URL to use for running queries
-  cwConstantsService.queryURL = "../_p/cbas/query/service";
+  cwConstantsService.queryURL = "../_p/cbas/api/v1/request";
 
   // URL to use to cancel running queries
   cwConstantsService.canelQueryURL = "../_p/cbas/api/v1/active_requests";
@@ -173,7 +173,7 @@ ORDER BY
                                                      "CREATE OR REPLACE ANALYTICS VIEW", "CREATE DATABASE", "CREATE SCOPE",
                                                      "CREATE COLLECTION", "DROP DATABASE", "DROP SCOPE", "DROP COLLECTION"];
 
-  cwConstantsService.healthCheckURL = "../_p/cbas/admin/ping";
+  cwConstantsService.healthCheckURL = "../_p/cbas/api/v1/ping";
 
   // should we show the query options button?
   cwConstantsService.showOptions = true;
