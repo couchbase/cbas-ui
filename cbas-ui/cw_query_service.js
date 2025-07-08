@@ -2760,8 +2760,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     };
     // Add certificate if provided
     if (options.kafka_link.kafka_certificate) {
-      kafkaClusterDetails.authenticationDetails.kafkaCertificate = options.kafka_link.kafka_certificate;
+      kafkaClusterDetails.authenticationDetails.kafkaClusterCertificate = options.kafka_link.kafka_certificate;
     }
+     kafkaClusterDetails.authenticationDetails.verifyHostname = options.kafka_link.verify_hostname;
     params.kafkaClusterDetails = JSON.stringify(kafkaClusterDetails);
 
     if (options.kafka_link.schema_registry_enable) {
