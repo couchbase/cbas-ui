@@ -808,7 +808,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       // prepare cancel request
       var queryIdParam = cwConstantsService.queryIdParam + "=" + cwQueryService.currentQueryRequestID;
       var cancelQueryRequest = {
-        url: cwConstantsService.canelQueryURL + "?" + queryIdParam,
+        url: cwConstantsService.activeRequestsURL + "?" + queryIdParam,
         method: "DELETE"
       };
 
@@ -828,7 +828,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function cancelQueryById(request_id) {
     var cancelQueryRequest = {
-      url: cwConstantsService.canelQueryURL + '?request_id=' + request_id,
+      url: cwConstantsService.activeRequestsURL + '?request_id=' + request_id,
       method: 'DELETE'
     };
 
@@ -2567,45 +2567,42 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function updateQueryMonitoring(category) {
 
-    var query1 = "select value active_requests()";
-    var query2 = "select value completed_requests()";
-    var query = '';
+    var url = '';
 
     switch (category) {
       case 1:
-        query = query1;
+        url = cwConstantsService.activeRequestsURL;
         break;
       case 2:
-        query = query2;
+        url = cwConstantsService.completedRequestsURL;
         break;
       default:
         return;
     }
 
+    var queriesRequest = {
+      url: url,
+      method: "GET",
+      headers: {'Content-Type': 'application/json', 'ignore-401': 'true', 'Analytics-Priority': '-1'}
+    };
+
     var result = [];
 
-    //console.log("Got query: " + query);
-    //var config = {headers: {'Content-Type':'application/json','ns-server-proxy-timeout':20000}};
-    //console.log("Running monitoring cat: " + category + ", query: " + payload.statement);
-
-    return (executeQueryUtil(query, uiMonitoringSource, null, false))
+    return $http(queriesRequest)
       .then(function success(response) {
           var data = response.data;
           var status = response.status;
           var headers = response.headers;
           var config = response.config;
 
-          if (data.status == "success") {
-            result = data.results[0];
+          // The REST API should return the same structure as the SQL query
+          result = data;
 
-            // we need to reformat the duration values coming back
-            // since they are numbers, convert to time
+          // we need to reformat the duration values coming back
+          // since they are numbers, convert to time
 
-            for (var i = 0; i < result.length; i++) if (result[i].elapsedTime) {
-              result[i].elapsedTime = qwQueryPlanService.convertTimeFloatToFormattedString(result[i].elapsedTime);
-            }
-          } else {
-            result = [data.errors];
+          for (var i = 0; i < result.length; i++) if (result[i].elapsedTime) {
+            result[i].elapsedTime = qwQueryPlanService.convertTimeFloatToFormattedString(result[i].elapsedTime);
           }
 
           switch (category) {
@@ -2636,9 +2633,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           if (data && data.errors)
             error = error + ": " + JSON.stringify(data.errors);
           else if (status && _.isString(data))
-            error = error + ", query service returned status: " + status + ", " + data;
+            error = error + ", returned status: " + status + ", " + data;
           else if (status)
-            error = error + ", query service returned status: " + status;
+            error = error + ", returned status: " + status;
 
           logWorkbenchError(error);
           //        console.log("Got error: " + error);

@@ -40,8 +40,11 @@ function getCwConstantsService() {
   // URL to use for running queries
   cwConstantsService.queryURL = "../_p/cbas/api/v1/request";
 
-  // URL to use to cancel running queries
-  cwConstantsService.canelQueryURL = "../_p/cbas/api/v1/active_requests";
+  // URL to use to cancel or get running queries
+  cwConstantsService.activeRequestsURL = "../_p/cbas/api/v1/active_requests";
+
+  // URL to use to get completed queries
+  cwConstantsService.completedRequestsURL = "../_p/cbas/api/v1/completed_requests";
 
   // URL to get user visible buckets
   cwConstantsService.clusterBucketsURL = "../pools/default/buckets";

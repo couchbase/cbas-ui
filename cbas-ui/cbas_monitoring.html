@@ -67,13 +67,14 @@ licenses/APL2.txt.
 
       <section
         ng-repeat="result in qmc.monitoring.active_requests | orderBy:qmc.options().active_sort_by:qmc.options().active_sort_reverse">
-        <div class="cbui-tablerow padding-left">
+        <div class="cbui-tablerow padding-left" ng-click="qmc.showRequestDetails(result)" style="cursor: pointer;">
           <span
              class="cbui-table-cell flex-grow-3 cursor-pointer"
              uib-tooltip="{{result.statement}}"
              tooltip-placement="auto top"
              tooltip-append-to-body="true"
-             tooltip-class="break-word">
+             tooltip-class="break-word"
+             ng-click="$event.stopPropagation()">
             {{result.statement}}
           </span>
           <span class="cbui-table-cell">
@@ -89,11 +90,11 @@ licenses/APL2.txt.
             {{result.users}}
           </span>
           <span class="cbui-table-cell flex-grow-1-5 wrap text-right">
-            <a ng-if="result.plan" ng-click="qmc.showPlan(result.statement,result.plan)">Plan&nbsp;</a>
-            <a ui-sref="app.admin.cbas.workbench({query: result.statement})" class="nowrap">
+            <a ng-if="result.plan" ng-click="qmc.showPlan(result.plan); $event.stopPropagation()">plan&nbsp;</a>
+            <a ui-sref="app.admin.cbas.workbench({query: result.statement})" class="nowrap" ng-click="$event.stopPropagation()">
               Edit
             </a>
-            <a ng-if="result.cancellable" class="margin-left-half nowrap" ng-click="qmc.cancelQueryById(result.uuid)">
+            <a ng-if="result.cancellable" class="margin-left-half nowrap" ng-click="qmc.cancelQueryById(result.uuid); $event.stopPropagation()">
               {{qmc.getCancelLabel(result.uuid)}}
             </a>
           </span>
@@ -133,13 +134,14 @@ licenses/APL2.txt.
       </div>
 
       <section ng-repeat="result in qmc.monitoring.completed_requests | orderBy:qmc.options().completed_sort_by:qmc.options().completed_sort_reverse">
-        <div class="cbui-tablerow padding-left">
+        <div class="cbui-tablerow padding-left" ng-click="qmc.showRequestDetails(result)" style="cursor: pointer;">
           <span
              class="cbui-table-cell flex-grow-3 cursor-pointer"
              uib-tooltip="{{result.statement}}"
              tooltip-placement="auto top"
              tooltip-append-to-body="true"
-             tooltip-class="break-word">
+             tooltip-class="break-word"
+             ng-click="$event.stopPropagation()">
             {{result.statement}}
           </span>
           <span class="cbui-table-cell">
@@ -159,15 +161,16 @@ licenses/APL2.txt.
           <span class="cbui-table-cell cursor-pointer" uib-tooltip="{{result.requestTime}}"
              tooltip-placement="auto top"
              tooltip-append-to-body="true"
-             tooltip-class="break-word">
+             tooltip-class="break-word"
+             ng-click="$event.stopPropagation()">
             {{result.requestTime | limitTo:8:11}} {{result.requestTime | limitTo:3:-3}}
           </span>
           <span class="cbui-table-cell">
             {{result.users}}
           </span>
           <span class="cbui-table-cell flex-grow-half text-right">
-            <a ng-if="result.plan" ng-click="qmc.showPlan(result.statement,result.plan)">plan&nbsp;</a>
-            <a ui-sref="app.admin.cbas.workbench({query: result.statement})" class="nowrap">
+            <a ng-if="result.plan" ng-click="qmc.showPlan(result.plan); $event.stopPropagation()">plan&nbsp;</a>
+            <a ui-sref="app.admin.cbas.workbench({query: result.statement})" class="nowrap" ng-click="$event.stopPropagation()">
               edit
             </a>
           </span>

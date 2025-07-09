@@ -10,10 +10,12 @@ licenses/APL2.txt.
 
 import {is} from 'ramda';
 import mnStatsDesc from "mn_admin/mn_statistics_description";
+import cwPlanDetailsDialogTemplate from "./cw_plan_details_dialog.html";
+import cwRequestDetailsDialogTemplate from "./cw_request_details_dialog.html";
 
 export default cwCbasMonitorController;
-cwCbasMonitorController.$inject = ["$scope", "$timeout", "cwQueryService", "validateCbasService", "mnStatisticsNewService", "mnPermissions", "mnPoolDefault"];
-function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions, mnPoolDefault) {
+cwCbasMonitorController.$inject = ["$scope", "$timeout", "$uibModal", "cwQueryService", "validateCbasService", "mnStatisticsNewService", "mnPermissions", "mnPoolDefault"];
+function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, validateCbasService, mnStatisticsNewService, mnPermissions, mnPoolDefault) {
   var qmc = this;
 
   //
@@ -30,7 +32,10 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
   qmc.getCancelLabel = getCancelLabel;
   qmc.cancelledQueries = {}; // keep track of user-cancelled queries
 
-  //
+  // requests details
+  qmc.showRequestDetails = showRequestDetails;
+  qmc.showPlan = showPlan;
+
   // keep track of results from the server
   //
 
@@ -87,6 +92,52 @@ function cwCbasMonitorController ($scope, $timeout, cwQueryService, validateCbas
     // do the cancel
     cwQueryService.cancelQueryById(requestId)
       .then(function success() {/*delete qmc.cancelledQueries[requestId];*/},function error() {/*delete qmc.cancelledQueries[requestId];*/});
+  }
+
+  //
+  // show request details dialog
+  //
+
+  function showRequestDetails(request) {
+    var dialogScope = $scope.$new(true);
+    // Create a copy of the request object without $$hashKey and plan fields
+    var filteredRequest = {};
+    Object.keys(request).forEach(function(key) {
+      if (key !== '$$hashKey' && key !== 'plan') {
+        filteredRequest[key] = request[key];
+      }
+    });
+
+    dialogScope.requestJson = JSON.stringify(filteredRequest, null, 2);
+
+    $uibModal.open({
+      template: cwRequestDetailsDialogTemplate,
+      scope: dialogScope,
+      size: 'lg'
+    });
+  }
+
+  //
+  // show plan dialog
+  //
+
+  function showPlan(plan) {
+    var dialogScope = $scope.$new(true);
+    if (typeof plan === 'string') {
+      try {
+        dialogScope.planStr = JSON.stringify(JSON.parse(plan), null, 2);
+      } catch (e) {
+        dialogScope.planStr = plan;
+      }
+    } else {
+      dialogScope.planStr = JSON.stringify(plan, null, 2);
+    }
+
+    $uibModal.open({
+      template: cwPlanDetailsDialogTemplate,
+      scope: dialogScope,
+      size: 'lg'
+    });
   }
 
   //
