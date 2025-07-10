@@ -1752,7 +1752,7 @@ function createNewCollection() {
               qc.updateBuckets();
             },
             function error(resp) {
-              const errorStr = `Error creating collection: ${resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data)}`;
+              const errorStr = `Error dropping link: ${resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data)}`;
               cwQueryService.showErrorDialog(errorStr);
             }
           );
