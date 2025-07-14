@@ -131,30 +131,6 @@ components:
   Service:
     type: object
     properties:
-      activeMemoryGlobalBudget:
-        description: The memory budget (in bytes) for the active runtime.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 67108864
-      activeStopTimeout:
-        description: The maximum time (in seconds) to wait for a graceful stop of an active runtime.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 3600
-      activeSuspendTimeout:
-        description: The maximum time (in seconds) to wait for a graceful suspend of an active runtime.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 3600
-      analyticsBroadcastDcpStateMutationCount:
-        description: The number of processed mutations after which the DCP state is broadcast to storage
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 10000
       analyticsHttpRequestQueueSize:
         description: The maximum number of HTTP requests to queue pending ability to execute.
         type: integer
@@ -167,29 +143,105 @@ components:
         format: int32
         x-has-default: true
         default: 16
-      bindAddress:
-        type: string
-        description: The bind address to use.
-        nullable: true
-        x-has-default: false
-        default: null
-      bindToHost:
+      cloudAccessPreemptiveRefreshIntervalSeconds:
+        description: The interval at which to attempt to preemptively verify cloud access. If access is confirmed to be revoked, the process will halt. (0 == no preemptive refresh)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 15
+      cloudAccessRefreshHaltTimeoutSeconds:
+        description: The length of time before we will halt on failure to verify cloud access. (0 == wait forever)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      cloudAccessTtlSeconds:
+        description: The length of time allowed to assume we have still have write access to cloud resources
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 15
+      cloudMaxReadRequestsPerSecond:
+        description: The maximum number of read requests per second (default 1500, 0 means unlimited)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1500
+      cloudMaxWriteRequestsPerSecond:
+        description: The maximum number of write requests per second (default 250, 0 means unlimited)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 250
+      cloudRequestsHttpConnectionAcquireTimeout:
+        description: The waiting time (in seconds) to acquire an HTTP connection before failing the request. (default 120 seconds)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      cloudRequestsMaxHttpConnections:
+        description: The maximum number of HTTP connections to use concurrently for cloud requests per node. (default 1000)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1000
+      cloudRequestsMaxPendingHttpConnections:
+        description: The maximum number of HTTP connections allowed to wait for a connection per node. (default 10000)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 10000
+      cloudStorageAllocationPercentage:
+        description: The percentage of the total disk space that should be allocated for data storage when the 'selective' caching policy is used. The remaining will act as a buffer for query workspace (i.e., for query operations that require spilling to disk). (default 80% of the total disk space)
+        type: number
+        format: double
+        x-has-default: true
+        default: 0.8
+      cloudStorageDiskMonitorInterval:
+        description: The disk monitoring interval time (in seconds) determines how often the system checks for pressure on disk space when using the 'selective' caching policy. (default 120 seconds)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      cloudStorageIndexInactiveDurationThreshold:
+        description: The duration in minutes to consider an index is inactive. (default 360 or 6 hours)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 360
+      cloudStorageSweepThresholdPercentage:
+        description: The percentage of the used storage space at which the disk sweeper starts freeing space by punching holes in stored indexes or by evicting them entirely, when the 'selective' caching policy is used. (default 90% of the allocated space for storage)
+        type: number
+        format: double
+        x-has-default: true
+        default: 0.9
+      cloudWriteBufferSize:
+        description: The write buffer size in bytes. (default 8MB, min 5MB)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 8388608
+      compilerCbo:
+        description: Set the mode for cost based optimization.
         type: boolean
-        description: Bind to configured hostname instead of wildcard address.
         x-has-default: true
-        default: false
-      clusterConnectRetries:
-        description: Number of attempts to contact CC before giving up.
+        default: true
+      compilerColumnFilter:
+        description: Enable/disable the use of column min/max filters.
+        type: boolean
+        x-has-default: true
+        default: true
+      compilerCopyToWriteBufferSize:
+        description: The COPY TO write buffer size in bytes. (default 8MB, min 5MB).
         type: integer
         format: int32
         x-has-default: true
-        default: 5
-      collectDcpStateFromNodesTimeout:
-        description: The maximum time to wait to collect DCP state from all nodes in seconds.
-        type: integer
-        format: int32
+        default: 8388608
+      compilerExternalFieldPushdown:
+        description: Enable pushdown of field accesses to the external data-scan operator.
+        type: boolean
         x-has-default: true
-        default: 600
+        default: true
       compilerFramesize:
         description: The page size (in bytes) for computation.
         type: integer
@@ -208,20 +260,12 @@ components:
         format: int32
         x-has-default: true
         default: 33554432
-      compilerParallelism:
-        description: >
-          The degree of parallelism for query execution.
-          Zero means to use the storage parallelism as the query execution parallelism, while other integer values dictate the number of query execution parallel partitions.
-          The system will fall back to use the number of all available CPU cores in the cluster as the degree of parallelism if the number set by a user is too large or too small.
+      compilerRuntimeMemoryOverhead:
+        description: A percentage of the job's required memory to be added to account for runtime memory overhead.
         type: integer
         format: int32
         x-has-default: true
-        default: 0
-      compilerSortParallel:
-        description: Enables or disables full parallel sort.
-        type: boolean
-        x-has-default: true
-        default: false
+        default: 5
       compilerSortmemory:
         description: The memory budget (in bytes) for a sort operator instance in a partition.
         type: integer
@@ -234,29 +278,30 @@ components:
         format: int32
         x-has-default: true
         default: 33554432
+      copyToKvBucketWaitUntilReadyTimeout:
+        description: The number of seconds to wait for COPY TO KV bucket WaitUntilReady before timing out.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 30
       coresMultiplier:
         description: The factor to multiply by the number of cores to determine maximum query concurrent execution level.
         type: integer
         format: int32
         x-has-default: true
         default: 3
-      dcpBufferAckWatermark:
+      dcpChannelConnectAttemptTimeout:
+        description: The maximum attempt time to connect to a DCP channel in seconds.
         type: integer
-        description: >
-          The percentage of DCP connection buffer size at which to acknowledge bytes consumed to DCP producer.
-        format: int32
-        minimum: 1
-        maximum: 100
-        x-has-default: true
-        default: 20
-      dcpChannelReconnectRemoteIdleSeconds:
-        type: integer
-        description: >
-          Reconnect remote DCP channels that are idle for the specified number of seconds to ensure permissions have not been lost.
-          A value of 0 disables reconnects on idle.
         format: int32
         x-has-default: true
         default: 120
+      dcpChannelConnectTotalTimeout:
+        description: The maximum time to wait to connect to a DCP channel in seconds.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 480
       dcpConnectionBufferSize:
         type: integer
         description: |-
@@ -265,24 +310,8 @@ components:
           If the JVM maximum heap size is less than 8GB, the default for this parameter is 10 MB divided by the number of IO Devices on the node.
           Otherwise, the default is 1% of the JVM maximum heap size divided by the number of IO Devices on the node.
         format: int32
-      deadlockWatchdogHaltDelaySeconds:
-        description: The delay (in seconds) to wait for graceful shutdown due to deadlocked threads, before halting.
-        type: integer
-        format: int32
         x-has-default: true
-        default: 120
-      deadlockWatchdogPollSeconds:
-        description: The frequency (in seconds) to scan for deadlocked threads.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 300
-      jobHistorySize:
-        description: Limits the number of historical jobs remembered by the system to the specified value.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 10
+        default: 1048576
       jobQueueCapacity:
         description: The maximum number of jobs to queue before rejecting new jobs.
         type: integer
@@ -304,35 +333,30 @@ components:
         nullable: true
         x-has-default: false
         default: null
-      logLevel:
-        description: The logging level.
-        type: string
+      kafkaMaxFetchBytes:
+        description: Maximum number of bytes fetched by a kafka consumer in one request.
+        type: integer
+        format: int32
         x-has-default: true
-        default: DEBUG
+        default: 4194304
+      maxRedirectsRemoteLink:
+        description: The number of redirects to follow when communicating with a remote link cluster via http for remote links not configured to prevent redirects.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 10
       maxWebRequestSize:
         description: The maximum accepted web request size in bytes.
         type: integer
-        format: int32
+        format: int64
         x-has-default: true
-        default: 52428800
-      netBufferCount:
-        description: Number of network buffers per input/output channel.
+        default: 209715200
+      rebalanceEjectDelaySeconds:
+        description: The delay (in seconds) before a node is ejected from the cluster during rebalance from the time that the health check API on that node will start reporting an error response. This is to allow adequate time for the node to removed from consideration by clients utilizing the health check API, to avoid failures on rebalance out; 0 == means no delay.
         type: integer
         format: int32
         x-has-default: true
-        default: 1
-      netThreadCount:
-        description: Number of threads to use for Network I/O.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 1
-      rebalancePullDatasetSizeFrequency:
-        description: The frequency at which the Analytics collection size is pulled from nodes during rebalance in seconds.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 5
+        default: 0
       remoteLinkConnectTimeoutSeconds:
         description: >
           The maximum time (in seconds) to wait for a remote link connection to establish.
@@ -340,7 +364,13 @@ components:
         type: integer
         format: int32
         x-has-default: true
-        default: 60
+        default: 30
+      remoteLinkRefreshAuthSeconds:
+        description: The frequency at which permissions should be reevaluated for remote buckets/collections that may have been lost/restored for remote cluster versions at 7.0 or later; a value of 0 disables preemptive reevaluation.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 0
       remoteLinkSocketTimeoutSeconds:
         description: >
           The maximum time (in seconds) to wait after establishing the connection for remote links;
@@ -350,81 +380,59 @@ components:
         format: int32
         x-has-default: true
         default: 60
+      remoteLinkValidationMaxRetries:
+        description: The number of times to retry on a remote link credential / config validation connection failure, i.e. on CREATE or ALTER LINK (0 == don't retry).
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 0
+      remoteStorageSizeMetricTtlMillis:
+        description: The length of time after which remote storage size metric is recomputed.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 300000
       requestsArchiveSize:
         description: The maximum number of archived requests to maintain.
         type: integer
         format: int32
         x-has-default: true
-        default: 50
-      resultSweepThreshold:
-        description: The duration within which an instance of the result cleanup should be invoked in milliseconds.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 60000
+        default: 1000
       resultTtl:
         description: Limits the amount of time results for asynchronous jobs should be retained by the system in milliseconds.
         type: integer
-        format: int32
-        x-has-default: true
-        default: 86400000
-      storageBuffercacheMaxopenfiles:
-        description: The maximum number of open files in the buffer cache.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 2147483647
-      storageBuffercachePagesize:
-        description: The page size in bytes for pages in the buffer cache.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 131072
-      storageCompressionBlock:
-        description: The default compression scheme for the storage.
-        type: string
-        x-has-default: true
-        default: snappy
-      storageMemorycomponentNumcomponents:
-        description: The number of memory components to be used per LSM index.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 2
-      storageMemorycomponentPagesize:
-        description: The page size in bytes for pages allocated to memory components.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 131072
-      storageWriteRateLimit:
-        description: >
-          The maximum disk write rate for each storage partition in bytes per second.
-          Disabled if the provided value is less than or equal to 0.
-        type: integer
         format: int64
         x-has-default: true
-        default: 0
-      threaddumpFrequencySeconds:
-        description: The frequency (in seconds) at which to log diagnostic thread dumps.
+        default: 86400000
+      storageFormat:
+        description: The default storage format (either row or column).
+        type: string
+        x-has-default: true
+        default: column
+      storageMaxConcurrentFlushesPerPartition:
+        description: The maximum number of concurrently executed flushes per partition (0 means unlimited).
         type: integer
         format: int32
         x-has-default: true
-        default: 300
-      threaddumpLogLevel:
-        description: The log level at which to emit diagnostic thread dumps.
-        type: string
+        default: 1
+      storageMaxConcurrentMergesPerPartition:
+        description: The maximum number of concurrently executed merges per partition (0 means unlimited).
+        type: integer
+        format: int32
         x-has-default: true
-        default: DEBUG
-      traceCategories:
-        description: >
-          Categories for tracing.
-          The default is the empty array — no categories.
-        type: array
-        items:
-          type: string
+        default: 1
+      storageMaxScheduledMergesPerPartition:
+        description: The maximum number of scheduled merges per partition (0 means unlimited).
+        type: integer
+        format: int32
         x-has-default: true
-        default: []
+        default: 8
+      storageMemorycomponentMaxScheduledFlushes:
+        description: The maximum number of scheduled flush operations. 0 means that the value will be calculated as the number of partitions.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 0
       txnDatasetCheckpointInterval:
         description: The interval (in seconds) after which an Analytics collection is considered idle and persisted to disk.
         type: integer
