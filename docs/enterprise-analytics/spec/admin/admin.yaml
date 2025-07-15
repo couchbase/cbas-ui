@@ -48,7 +48,7 @@ paths:
                   type: string
                   description: Identifier passed by the client that is used to identify an active request to be cancelled.
       security:
-        - AnalyticsManageAnalyticsSelect: []
+        - AnalyticsManageAnalyticsAccess: []
       responses:
         "200":
           description: >
@@ -68,7 +68,7 @@ paths:
       summary: Active Requests
       description: Gets a list of the analytic requests that are running.
       security:
-        - AnalyticsManageAnalyticsSelect: []
+        - AnalyticsManageAnalyticsAccess: []
       responses:
         "200":
           description: >
@@ -93,7 +93,7 @@ paths:
       summary: Completed Requests
       description: Gets a list of all completed analytic requests.
       security:
-        - AnalyticsManageAnalyticsSelect: []
+        - AnalyticsManageAnalyticsAccess: []
       responses:
         "200":
           description: >
@@ -180,7 +180,7 @@ paths:
       summary: Ingestion Status
       description: Shows the progress of ingestion for each collection.
       security:
-        - AnalyticsManageAnalyticsSelect: []
+        - AnalyticsManageAnalyticsAccess: []
       responses:
         "200":
           description: >
@@ -682,7 +682,7 @@ components:
       The path may be incorrect.
 
  securitySchemes:
-  AnalyticsManageAnalyticsSelect:
+  AnalyticsManageAnalyticsAccess:
     type: http
     scheme: basic
     description: |
