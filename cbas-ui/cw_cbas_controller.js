@@ -274,7 +274,13 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.queryContextScope = cwConstantsService.defaultQueryContextScope;
 
     $scope.$watch(() => qc.queryContextDatabase, function () {
-      qc.queryContextScope = $scope.qc.filteredScopes[$scope.qc.queryContextDatabase][0];
+      var scopes = $scope.qc &&
+          $scope.qc.filteredScopes &&
+          $scope.qc.filteredScopes[$scope.qc.queryContextDatabase];
+
+      qc.queryContextScope = (Array.isArray(scopes) && scopes.length > 0)
+          ? scopes[0]
+          : cwConstantsService.defaultQueryContextScope;
     });
     $scope.$watch(() => cwQueryService.loadingBuckets, function () {
       if (!$scope.qc.filteredScopes[$scope.qc.queryContextDatabase] ||
