@@ -1990,10 +1990,10 @@ function createNewCollection() {
     function generateCreateKafkaCollectionStatement(dataset_options) {
       let dbName = dataset_options.targetDatabase;
       var dvName = dataset_options.targetScope;
-      var statement = 'CREATE COLLECTION `' + dbName + '`.`' + dvName + '`.`' + dataset_options.dataset_name + '`';
+      var statement = 'CREATE COLLECTION ' + wrapWithBackTick(dbName) + '.' + wrapWithBackTick(dvName) + '.' + wrapWithBackTick(dataset_options.dataset_name);
 
       statement += ' PRIMARY KEY (' + dataset_options.kafka_dataset.primary_key + ')';
-      statement += ' ON ' + dataset_options.kafka_dataset.topic + ' AT ' + dataset_options.link_name;
+      statement += ' ON ' + wrapWithBackTick(dataset_options.kafka_dataset.topic) + ' AT ' + wrapWithBackTick(dataset_options.link_name);
 
       // Build WITH clause for Kafka options
       var withOptions = [];
@@ -2004,15 +2004,19 @@ function createNewCollection() {
         withOptions.push(`"cdcEnabled": "true"`);
         withOptions.push(`"cdcDetails": { "cdcSource": "${dataset_options.kafka_dataset.cdc_source}", "cdcSourceConnector":"${dataset_options.kafka_dataset.cdc_source_connector}" }`);
       }
-      if (options.dead_letter_queue) {
+      if (dataset_options.kafka_dataset.dead_letter_queue) {
         withOptions.push(`"deadLetterQueue":"${dataset_options.kafka_dataset.dead_letter_queue}"`);
       }
       if (withOptions.length > 0) {
         statement += ` WITH { ${withOptions.join(', ')} }`;
       }
-      if (dataset_options.where && !isExternalLink)
+      if (dataset_options.where)
         statement += " WHERE " + dataset_options.where;
       return statement;
+    }
+
+    function wrapWithBackTick(str) {
+      return '`' + str + '`';
     }
 
     // create a custom dataset on a given link
