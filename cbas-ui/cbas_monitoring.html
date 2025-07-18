@@ -14,8 +14,8 @@ licenses/APL2.txt.
 <!-- top row w/ title/time/pill selectors -->
     <div class="row">
       <h4 class="inline">
-        <span ng-if="qmc.isSelected(1)">Active Enterprise Analytics Queries</span>
-        <span ng-if="qmc.isSelected(2)">Completed Enterprise Analytics Queries</span>
+        <span ng-if="qmc.isSelected(1)">Active Queries</span>
+        <span ng-if="qmc.isSelected(2)">Completed Queries</span>
         <small>
           {{qmc.updatedTime()}}
           <span ng-if="qmc.get_update_flag()" class="loading"></span>
