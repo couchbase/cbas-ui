@@ -686,7 +686,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Active Requests](#return_active_requests), [Request Cancellation](#cancel_request), [Completed Requests](#completed_requests), [Ingestion Status](#ingestion_status), and [Pending Mutations](#monitor_node) operations, users must have one of the following access roles:
+      For the [Active Requests](#return_active_requests), [Request Cancellation](#cancel_request), [Completed Requests](#completed_requests), [Ingestion Status](#ingestion_status), and [Pending Mutations](#monitor_node) operations, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
@@ -697,7 +697,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Cluster Status](#cluster_status) operation, users must have one of the following access roles:
+      For the [Cluster Status](#cluster_status) operation, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin

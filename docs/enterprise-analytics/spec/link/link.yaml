@@ -49,6 +49,7 @@ paths:
         - Multiple Links
       security:
         - AnalyticsManage: []
+        - DescribeLink: []
       responses:
         "200":
           description: >
@@ -92,6 +93,7 @@ paths:
               #     gcs: "#/components/schemas/RequestCreateGCS"
       security:
         - AnalyticsManage: []
+        - CreateLink: []
       responses:
         "200":
           $ref: '#/components/responses/OK'
@@ -114,6 +116,7 @@ paths:
             $ref: "#/components/schemas/CommonTypeEdit"
       security:
         - AnalyticsManage: []
+        - DescribeLink: []
       responses:
         "200":
           description: >
@@ -158,6 +161,7 @@ paths:
               #     gcs: "#/components/schemas/RequestEditGCS"
       security:
         - AnalyticsManage: []
+        - AlterLink: []
       responses:
         "200":
           $ref: '#/components/responses/OK'
@@ -178,6 +182,7 @@ paths:
         - $ref: "#/components/parameters/CommonLink"
       security:
         - AnalyticsManage: []
+        - DropLink: []
       responses:
         "200":
           $ref: '#/components/responses/OK'
@@ -1005,9 +1010,33 @@ components:
   AnalyticsManage:
     type: http
     scheme: basic
-    description: |-
+    description: |
       Users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
       * Enterprise Analytics Admin
+
+  DescribeLink:
+    type: http
+    scheme: basic
+    description: |
+      Users must be granted the `Describe Link` privilege.
+
+  CreateLink:
+    type: http
+    scheme: basic
+    description: |
+      Users must be granted the `Create Link` privilege.
+
+  AlterLink:
+    type: http
+    scheme: basic
+    description: |
+      Users must be granted the `Alter Link` privilege.
+
+  DropLink:
+    type: http
+    scheme: basic
+    description: |
+      Users must be granted the `Drop Link` privilege.
