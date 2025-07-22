@@ -184,7 +184,7 @@ licenses/APL2.txt.
   <footer class="footer-analytics">
     <div class="column vertical-divider">
       <span class="width-6">Disk Used</span>
-      <span class="text-right width-6">{{qmc.getLatestStat('@cbas.cbas_disk_used')/1024/1024 | number:1}} MB</span><br>
+      <span class="text-right width-6">{{qmc.getLatestStat('@cbas.cbas_disk_used_bytes')/1024/1024 | number:1}} MB</span><br>
       <span class="width-6">Heap Used</span>
       <span class="text-right width-6">{{qmc.getLatestStat('@cbas.cbas_heap_used')/1024/1024 | number:1}} MB</span>
     </div>

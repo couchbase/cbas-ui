@@ -174,7 +174,7 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
   }
 
   let statsNames = [
-      '@cbas.cbas_disk_used',            // disk used in bytes
+      '@cbas.cbas_disk_used_bytes',      // disk used in bytes
       '@cbas.cbas_gc_count',             // gc/second (i.e., rate)
       '@cbas.cbas_gc_time',              // ms/sec spent in gc
       '@cbas.cbas_heap_used',            // heap size in bytes

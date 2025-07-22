@@ -2191,16 +2191,16 @@ function createNewCollection() {
           "Warning, this will drop the view: ",[view.databaseDisplayName + "." + view.dataverseDisplayName + "." + view.id])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "DROP VIEW "+ dataverse.databaseQueryName + '.' + dataverse.dataverseQueryName + '.`' + view.id + '`';
+            var queryText = "DROP VIEW "+ view.DatabaseName + '.' + view.DataverseName + '.`' + view.id + '`';
 
             cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
                   qc.updateBuckets();
                 },
                 function error(resp) {
-                  console.log("Got drop collection error: " + JSON.stringify(resp));
+                  console.log("Got drop view error: " + JSON.stringify(resp));
                   //var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping collection: "));
+                  cwQueryService.showErrorDialog(errorRespToString(resp,"Error dropping view: "));
                 });
           }
         }, function no() {return Promise.resolve("no")});

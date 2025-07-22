@@ -174,7 +174,8 @@ ORDER BY
                                                      "CREATE ANALYTICS SCOPE", "DROP ANALYTICS SCOPE", "ALTER COLLECTION",
                                                      "CREATE ANALYTICS VIEW", "DROP ANALYTICS VIEW", "DROP LINK",
                                                      "CREATE OR REPLACE ANALYTICS VIEW", "CREATE DATABASE", "CREATE SCOPE",
-                                                     "CREATE COLLECTION", "DROP DATABASE", "DROP SCOPE", "DROP COLLECTION"];
+                                                     "CREATE COLLECTION", "DROP DATABASE", "DROP SCOPE", "DROP COLLECTION",
+                                                     "CREATE VIEW", "CREATE OR REPLACE VIEW", "DROP VIEW"];
 
   cwConstantsService.healthCheckURL = "../_p/cbas/api/v1/ping";
 
