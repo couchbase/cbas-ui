@@ -1798,16 +1798,7 @@ function createNewCollection() {
         include: "",
         exclude: ""
       },
-      kafka_dataset: {
-        topic: "",
-        primary_key: "",
-        key_serialization_type: "JSON",
-        value_serialization_type: "JSON",
-        cdc_enabled: false,
-        cdc_source: "MONGODB",
-        cdc_source_connector: "DEBEZIUM",
-        dead_letter_queue: ""
-      },
+      kafka_dataset: initializeKafkaDataset(),
       // KV buckets, scopes, and collections
       kv_buckets: [],
       kv_scopes: {},
@@ -2025,6 +2016,7 @@ function createNewCollection() {
       dataset_options.clusterBuckets =  qc.clusterBuckets;
       dataset_options.selected_bucket = '';
       dataset_options.where = null;
+      dataset_options.kafka_dataset = initializeKafkaDataset();
       // Function to filter dataverses based on the selected database
       function filterDataversesByDatabase(dataverse, databaseName) {
         return dataverse
@@ -2142,7 +2134,7 @@ function createNewCollection() {
           if (dataset_options.link_details.type === "kafka") {
             queryText = generateCreateKafkaCollectionStatement(dataset_options);
           }
-          console.log("Got create query: " + queryText);
+          // console.log("Got create query: " + queryText);
 
           cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
             .then(function success() {
@@ -2381,6 +2373,18 @@ function createNewCollection() {
       }
     }
 
+    function initializeKafkaDataset() {
+      return {
+        topic: "",
+        primary_key: "",
+        key_serialization_type: "JSON",
+        value_serialization_type: "JSON",
+        cdc_enabled: false,
+        cdc_source: "MONGODB",
+        cdc_source_connector: "DEBEZIUM",
+        dead_letter_queue: ""
+      };
+    }
   } // end of CBasController function
 
   function forceReload(url) {
