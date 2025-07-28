@@ -3,7 +3,7 @@ info:
   title: Enterprise Analytics Administration REST APIs
   version: '2.0'
   description: |
-    These APIs enables you to manage and monitor the Enterprise Analytics Service.
+    These APIs enable you to manage and monitor the Enterprise Analytics Service.
 
 servers:
   - url: '{scheme}://{host}:{port}'
@@ -36,17 +36,13 @@ paths:
       operationId: cancel_request
       summary: Request Cancellation
       description: Cancels an active request.
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              required:
-                - client_context_id
-              properties:
-                client_context_id:
-                  type: string
-                  description: Identifier passed by the client that is used to identify an active request to be cancelled.
+      parameters:
+        - name: client_context_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Identifier passed by the client that is used to identify an active request to be cancelled.
       security:
         - AnalyticsManageAnalyticsAccess: []
       responses:
@@ -66,7 +62,7 @@ paths:
     get:
       operationId: return_active_requests
       summary: Active Requests
-      description: Gets a list of the analytic requests that are running.
+      description: Gets a list of the requests that are running.
       security:
         - AnalyticsManageAnalyticsAccess: []
       responses:
@@ -91,13 +87,13 @@ paths:
     get:
       operationId: completed_requests
       summary: Completed Requests
-      description: Gets a list of all completed analytic requests.
+      description: Gets a list of all completed requests.
       security:
         - AnalyticsManageAnalyticsAccess: []
       responses:
         "200":
           description: >
-            Success. Returns a list of all completed analytic requests.
+            Success. Returns a list of all completed requests.
           content:
             application/json:
               schema:
@@ -414,11 +410,6 @@ components:
               description: The name of the link.
               x-has-example: true
               example: Local
-            scope:
-              type: string
-              description: The name of the scope.
-              x-has-example: true
-              example: travel-sample/inventory
             status:
               type: string
               description: The status of the scope.
@@ -499,7 +490,7 @@ components:
                       properties:
                         name:
                           type: string
-                          description: The name of the Analytics scope.
+                          description: The scope name of the collections.
                           x-has-example: true
                           example: travel-sample/inventory
                         collections:
@@ -555,7 +546,7 @@ components:
         description: Whether this request can be cancelled.
       clientContextID:
         type: string
-        description: A context ID for debugging purposes.
+        description: A context ID for debugging purposes or identifying a request.
         x-has-example: true
         example: 28379d60-7139-44d6-b57a-95935540b586
       elapsedTime:
@@ -588,7 +579,7 @@ components:
       jobRequiredMemory:
         type: integer
         description: >
-          The bytes of RAM being used to process this request.
+          The RAM required to run this request in bytes.
         x-has-example: true
         example: 34013184
       jobStartTime:
@@ -628,7 +619,7 @@ components:
         example: 2024-05-28T19:44:07.730
       scanConsistency:
         type: string
-        description: The Scan Consistency setting used for the request's query.
+        description: The scan consistency setting used for the request's query.
         x-has-example: true
         example: not_bounded
       state:
@@ -648,7 +639,7 @@ components:
         example: select count(*) from hotel_endorsement_view;
       userAgent: 
         type: string
-        description: The user agent string of the browser that made the request.
+        description: The user agent of the browser that made the request.
         x-has-example: true
         example: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0
       users:
@@ -686,7 +677,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Active Requests](#return_active_requests), [Request Cancellation](#cancel_request), [Completed Requests](#completed_requests), [Ingestion Status](#ingestion_status), and [Pending Mutations](#monitor_node) operations, users must have one of the following RBAC roles:
+      For the [Active Requests](#operation/return_active_requests), [Request Cancellation](#operation/cancel_request), [Completed Requests](#operation/completed_requests), and [Ingestion Status](#operation/ingestion_status) operations, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
@@ -697,7 +688,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Cluster Status](#cluster_status) operation, users must have one of the following RBAC roles:
+      For the [Service Status](#operation/service_status) operation, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
@@ -708,7 +699,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Cluster Restart](#restart_cluster) and [Node Restart](#restart_node) operations, users must have one of the following RBAC roles:
+      For the [Service Restart](#operation/restart_service) and [Node Restart](#operation/restart_node) operations, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin

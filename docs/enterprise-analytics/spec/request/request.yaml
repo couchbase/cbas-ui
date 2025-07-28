@@ -23,7 +23,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enteprise Analytics Service REST port.
+          The Enterprise Analytics Service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -35,7 +35,7 @@ paths:
       operationId: post_service
       summary: Request
       description: >
-        Enables you to execute a SQL\+\+ for Enteprise Analytics statement.
+        Enables you to execute a SQL\+\+ for Enterprise Analytics statement.
         This method allows you to run queries and modifying statements, and specify query parameters.
       requestBody:
        required: true
@@ -127,7 +127,7 @@ components:
           The value of this parameter must start with `default:`, followed by a scope name.
           The `default:` prefix is a dummy and is ignored when resolving a collection name or synonym name.
         x-has-default: true
-        default: default:Default
+        default: default:Default.Default
       readonly:
         type: boolean
         x-has-default: true
@@ -140,7 +140,7 @@ components:
         description: >
           The consistency guarantee constraint for index scanning.
           If `not_bounded`, the query is executed immediately.
-          If `request_plus`, the required datasets are updated with data available from the Data service at the time of the request before the query is executed.
+          If `request_plus`, the required collections are updated with data available from the Data service at the time of the request before the query is executed.
         enum:
           - not_bounded
           - request_plus
@@ -149,7 +149,7 @@ components:
         x-has-default: true
         default: ""
         description: >
-          The maximum time to wait for datasets to be updated before the query is executed.
+          The maximum time to wait for collections to be updated before the query is executed.
           The format includes an amount and a unit: `ns`, `us`, `ms`, `s`, `m`, or `h`.
           The default is `""` (no timeout).
       timeout:
@@ -234,11 +234,8 @@ components:
             type: string
             description: |-
               The client context ID of the request, if one was supplied —
-              refer to `client_context_id` in [Query Parameters][1].
+              refer to `client_context_id` in [Query Parameters](#Parameters).
 
-              [1]: #Parameters
-            x-desc-refs: |-
-              [1]: query-params.html
           signature:
             type: object
             description: >
@@ -275,12 +272,9 @@ components:
               Each warning is represented by an object in this list.
 
               Note that you can specify the maximum number of warning messages to be returned in the query response —
-              refer to `max-warnings` in [Query Parameters][1].
+              refer to `max-warnings` in [Query Parameters](#Parameters).
               By default, no warnings are returned, even if warnings have occurred during processing.
 
-              [1]: #Parameters
-            x-desc-refs: |-
-              [1]: query-params.html
             items:
               $ref: "#/components/schemas/ResponsesCommonWarnings"
           metrics:

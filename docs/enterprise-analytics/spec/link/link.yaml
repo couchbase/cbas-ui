@@ -24,7 +24,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enteprise Analytics Service REST port.
+          The Enterprise Analytics Service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -230,8 +230,6 @@ components:
 
       * `couchbase`: A link to a remote Couchbase cluster.
       * `s3`: A link to the Amazon S3 service.
-      #* `azureblob`: A link to Azure Blob Storage.
-      #* `gcs`: A link to Google Cloud Storage.
     enum:
       - couchbase
       - s3
@@ -256,9 +254,6 @@ components:
     description: |-
       For Couchbase links, this is the content of the client certificate.
       Required for links with full encryption if using a client key.
-
-      #For Azure Blob links, this is the client certificate for the registered application.
-      #Used for Azure Active Directory client certificate authentication.
 
       You should URL-encode this parameter to escape any special characters.
 
@@ -368,14 +363,11 @@ components:
       encryption:
         type: string
         description: |-
-          For Couchbase links only.
-          The type of encryption used by the link.
+          For Couchbase links only. The type of encryption used by the link.
 
-          For details, see [encryption](#encryption).
-
-        # * `none`: Neither passwords nor data are encrypted.
-        # * `half`: Passwords are encrypted using SCRAM-SHA, but data is not.
-        # * `full`: All data and passwords are encrypted and TLS is used.
+          * `none`: Neither passwords nor data are encrypted.
+          * `half`: Passwords are encrypted using SCRAM-SHA, but data is not.
+          * `full`: All data and passwords are encrypted and TLS is used.
         enum:
           - none
           - half
@@ -598,8 +590,6 @@ components:
 
           * `couchbase`: A link to a remote Couchbase cluster.
           * `s3`: A link to the Amazon S3 service.
-          #* `azureblob`: A link to Microsoft Azure Blob Storage.
-          #* `gcs`: A link to Google Cloud Storage.
         enum:
           - couchbase
           - s3

@@ -57,7 +57,7 @@ paths:
         IMPORTANT: For the configuration changes to take effect,
         you must restart the Enterprise Analytics Service using the [Service Restart API][1].
 
-        [1]: /server/7.6/analytics-rest-admin.html#restart_cluster
+        [1]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_service
       requestBody:
         description: An object specifying one or more of the configurable service-level parameters.
         content:
@@ -105,8 +105,8 @@ paths:
         you must restart the node using the [Node Restart API][1],
         or restart the Enterprise Analytics Service using the [Service Restart API][2].
 
-        [1]: /server/7.6/analytics-rest-admin.html#restart_node
-        [2]: /server/7.6/analytics-rest-admin.html#restart_service
+        [1]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_node
+        [2]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_service
       requestBody:
         description: An object specifying one or more of the configurable node-level parameters on this node.
         content:
@@ -156,7 +156,7 @@ components:
         x-has-default: true
         default: 120
       cloudAccessTtlSeconds:
-        description: The length of time allowed to assume we have still have write access to cloud resources
+        description: The length of time allowed to assume we still have write access to cloud resources
         type: integer
         format: int32
         x-has-default: true
@@ -326,7 +326,7 @@ components:
           Note that JVM arguments are generally not secure, and are exposed by [cbcollect_info][1] and the [System Event][2] log.
           To pass arguments opaquely, you may use [Java command-line argument files][3].
 
-          [1]: /server/7.6/cli/cbcollect-info-tool.html
+          [1]: /enterprise-analytics/current/cli/cbcollect-info-tool.html
           [2]: /server/7.6/learn/clusters-and-availability/system-events.html
           [3]: https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
         type: string
@@ -405,7 +405,7 @@ components:
         x-has-default: true
         default: 86400000
       storageFormat:
-        description: The default storage format (either row or column).
+        description: The default storage format (either `row` or `column`).
         type: string
         x-has-default: true
         default: column

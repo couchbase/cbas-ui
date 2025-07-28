@@ -79,7 +79,7 @@ components:
         type: string
         description: Specifies the blob storage bucket name.
         x-has-example: true
-        example: enteprise-analytics-bucket
+        example: enterprise-analytics-bucket
       blobStorageRegion:
         type: string
         description: Specifies the blob storage bucket region.
@@ -87,7 +87,7 @@ components:
         example: us-west-2
       blobStoragePrefix:
         type: string
-        description: Specifies the blob storage bucket prefix where enteprise analytics will store its data.
+        description: Specifies the blob storage bucket prefix where enterprise analytics will store its data.
         x-has-example: true
         example: analytics-data/
       blobStorageAnonymousAuth:
@@ -140,7 +140,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [View Enterprise Analytics Settings](#get_settings) operation, users must have one of the following RBAC roles:
+      For the [View Enterprise Analytics Settings](#operation/get_settings) operation, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
@@ -150,7 +150,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Modify Enterprise Analytics Settings](#post_settings) operation, users must have one of the following RBAC roles:
+      For the [Modify Enterprise Analytics Settings](#operation/post_settings) operation, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
