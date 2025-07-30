@@ -79,9 +79,7 @@ paths:
         "401":
           $ref: '#/components/responses/Unauthorized'
         "404":
-          description: >
-            Not found.
-            The path may be incorrect.
+          $ref: '#/components/responses/NotFound'
 
   /api/v1/completed_requests:
     get:
@@ -103,9 +101,7 @@ paths:
         "401":
           $ref: '#/components/responses/Unauthorized'
         "404":
-          description: >
-            Not found.
-            The path may be incorrect.
+          $ref: '#/components/responses/NotFound'
 
   /api/v1/status/service:
     get:
@@ -190,6 +186,29 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "404":
           $ref: '#/components/responses/NotFound'
+
+  /api/v1/health:
+    get:
+      operationId: health_check
+      summary: Health Check
+      description: Shows if the node is healthy and part of an Enterprise Analytics cluster.
+      parameters:
+        - name: uuid
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Cluster UUID. Assert that this node is part of the specified cluster instance, otherwise a 404 will be returned.
+      responses:
+        "204":
+          description: >
+            The node is healthy.
+        "503":
+          description: >
+            The node is being removed from the cluster.
+        "404":
+          description: >
+            The supplied cluster UUID does not match.
 
 components:
  schemas:
