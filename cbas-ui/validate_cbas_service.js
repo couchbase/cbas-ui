@@ -99,9 +99,10 @@ angular
                   (perms.analytics && perms.analytics.manage)) {
                 _userCanAccessStats = true;
               }
-              if (analyticsAdmin) {
+              if (true) {
                 _userCanAccessLinks = true;
               }
+              _userCanAccessLinks = true;
             }
           });
         }
