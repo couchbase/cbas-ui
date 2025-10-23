@@ -38,7 +38,7 @@ licenses/APL2.txt.
         <select id="link_type" ng-model="options.link_type" ng-disabled="!options.is_new" required>
           <option value="couchbase">Couchbase</option>
           <option value="s3">S3</option>
-          <option value="azureblob" ng-if="isDeveloperPreview()">Azure Blob</option>
+          <option value="azureblob">Azure Blob</option>
           <option value="azuredatalake" ng-if="isDeveloperPreview()">Azure Datalake</option>
           <option value="gcs" ng-if="isDeveloperPreview()">Google Cloud Storage</option>
           <option value="kafka">Kafka</option>
@@ -320,7 +320,7 @@ licenses/APL2.txt.
       <div ng-if="options.link_type == 'azureblob' || options.link_type == 'azuredatalake'">
 
         <div class="formrow">
-          <label>Endpoint</label>
+          <label>Blob Service Endpoint</label>
           <input
             ng-model="options.azure_link.endpoint"
             type="text"

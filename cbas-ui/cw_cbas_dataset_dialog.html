@@ -82,7 +82,9 @@ licenses/APL2.txt.
                spellcheck="false" autocapitalize="off" placeholder="Collection (omit for pre-7.0 clusters)">
       </div>
       <div class="formrow" ng-if="isExternalCollection(options.link_details.type)">
-        <label for="cluster_reference_name">Bucket Name</label>
+        <label for="cluster_reference_name">
+          {{ options.link_details.type == 'azureblob' ? 'Container Name' : 'Bucket Name' }}
+        </label>
         <input
            ng-disabled="!options.is_new"
            ng-model="options.selected_bucket"
