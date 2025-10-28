@@ -335,9 +335,11 @@ licenses/APL2.txt.
             <option value="anonymous">Anonymous (No credentials/authentication)</option>
             <option value="sharedkey">Shared Key</option>
             <option value="sharedaccesssignature">Shared Access Signature</option>
-            <option value="managedidentityid">Managed Identity ID</option>
+            <!--
+            <option value="managedidentityid" >Managed Identity ID</option>
             <option value="clientsecret">Client Secret</option>
             <option value="clientcertificate">Client Certificate</option>
+            -->
           </select>
         </div>
         <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedkey'">
