@@ -2844,53 +2844,70 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           formData.clientKeyPassphrase = JSON.stringify(formData.clientKeyPassphrase);
         }
       }
-    } else if (scope.link_type == "s3") {
+    } else if (scope.link_type === "s3") {
       formData.region = scope.s3_link.region;
+      formData.crossRegion = scope.s3_link.cross_region;
+      formData.disableSslVerify = scope.s3_link.disable_ssl_verify;
+      formData.pathStyleAddressing = scope.s3_link.path_style_addressing;
 
-      if (scope.s3_link.access_key_id) {
-        formData.accessKeyId = scope.s3_link.access_key_id;
-      }
-      if (scope.s3_link.access_key) {
-        formData.secretAccessKey = scope.s3_link.access_key;
-      }
-      if (scope.s3_link.session_token) {
-        formData.sessionToken = scope.s3_link.session_token;
-      }
       if (scope.s3_link.endpoint) {
-        formData.serviceEndpoint = scope.s3_link.endpoint;
+          formData.serviceEndpoint = scope.s3_link.endpoint;
       }
-    } else if (scope.link_type == "azureblob" || scope.link_type == "azuredatalake") {
+
+      if (scope.s3_link.auth_type === "accesskeys") {
+          if (scope.s3_link.access_key_id) {
+            formData.accessKeyId = scope.s3_link.access_key_id;
+          }
+          if (scope.s3_link.secret_access_key) {
+            formData.secretAccessKey = scope.s3_link.secret_access_key;
+          }
+          if (scope.s3_link.session_token) {
+            formData.sessionToken = scope.s3_link.session_token;
+          }
+      }
+
+      if (scope.s3_link.auth_type === "instanceprofile") {
+        formData.instanceProfile = true;
+      }
+
+      if (scope.s3_link.auth_type === "crossaccounttrust") {
+        formData.roleArn =  scope.s3_link.role_arn;
+        if (scope.s3_link.external_id) {
+          formData.externalId = scope.s3_link.external_id;
+        }
+
+        if (scope.s3_link.assumed_role_credentials === "instanceprofile") {
+          formData.instanceProfile = true;
+        } else if (scope.s3_link.assumed_role_credentials === "accesskeys") {
+          formData.accessKeyId = scope.s3_link.access_key_id;
+          formData.secretAccessKey = scope.s3_link.secret_access_key;
+        }
+      }
+    } else if (scope.link_type === "azureblob" || scope.link_type === "azuredatalake") {
         formData.endpoint = scope.azure_link.endpoint;
 
-        if (scope.azure_link.auth_type == "sharedkey") {
+        if (scope.azure_link.auth_type === "sharedkey") {
             formData.accountName = scope.azure_link.account_name;
             formData.accountKey = scope.azure_link.account_key;
         }
 
-        if (scope.azure_link.auth_type == "sharedaccesssignature") {
+        if (scope.azure_link.auth_type === "sharedaccesssignature") {
             formData.sharedAccessSignature = scope.azure_link.shared_access_signature;
         }
 
-        if (scope.azure_link.auth_type == "managedidentityid") {
-            formData.managedIdentityId = scope.azure_link.managed_identity_id;
+        if (scope.azure_link.auth_type === "managedidentity") {
+            formData.managedIdentity = true;
+            if (scope.azure_link.client_id) {
+                formData.clientId = scope.azure_link.client_id;
+            }
         }
 
-        if (scope.azure_link.auth_type == "clientsecret") {
+        if (scope.azure_link.auth_type === "clientsecret") {
             formData.clientId = scope.azure_link.client_id;
             formData.tenantId = scope.azure_link.tenant_id;
             formData.clientSecret = scope.azure_link.client_secret;
         }
-
-        if (scope.azure_link.auth_type == "clientcertificate") {
-            formData.clientId = scope.azure_link.client_id;
-            formData.tenantId = scope.azure_link.tenant_id;
-            formData.clientCertificate = scope.azure_link.client_certificate;
-
-            if (scope.azure_link.is_client_certificate_password == true) {
-                formData.clientCertificatePassword = scope.azure_link.client_certificate_password;
-            }
-        }
-    } else if (scope.link_type == "gcs") {
+    } else if (scope.link_type === "gcs") {
         if (scope.gcs_link.auth_type === "applicationdefaultcredentials") {
           formData.applicationDefaultCredentials = "true"
         }
@@ -2901,7 +2918,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (scope.gcs_link.endpoint) {
         formData.endpoint = scope.gcs_link.endpoint;
       }
-    } else if (scope.link_type == "kafka") {
+    } else if (scope.link_type === "kafka") {
       formData = formatKafkaLinkParams(scope);
     }
 
@@ -2975,27 +2992,43 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           }
         }
       }
-    } else if (apiData.type == "s3") {
-      scope.s3_link.access_key_id = apiData.accessKeyId;
-      scope.s3_link.access_key = apiData.secretAccessKey;
-      scope.s3_link.session_token = apiData.sessionToken;
+    } else if (apiData.type === "s3") {
+      // Based on the retrieved data, set the correct auth_type
+      if (apiData.roleArn) {
+        scope.s3_link.auth_type = "crossaccounttrust";
+        if (apiData.instanceProfile) {
+          scope.s3_link.assumed_role_credentials = "instanceprofile";
+        } else if (apiData.accessKeyId) {
+          scope.s3_link.assumed_role_credentials = "accesskeys";
+        }
+      } else if (apiData.instanceProfile) {
+        scope.s3_link.auth_type = "instanceprofile";
+      } else if (apiData.accessKeyId) {
+        scope.s3_link.auth_type = "accesskeys";
+      } else {
+        scope.s3_link.auth_type = "anonymous";
+      }
+
       scope.s3_link.region = apiData.region;
+      scope.s3_link.cross_region = apiData.crossRegion;
+      scope.s3_link.path_style_addressing = apiData.pathStyleAddressing;
+      scope.s3_link.disable_ssl_verify = apiData.disableSslVerify;
       scope.s3_link.endpoint = apiData.serviceEndpoint;
-    } else if (apiData.type == "azureblob" || apiData.type == "azuredatalake") {
+      scope.s3_link.access_key_id = apiData.accessKeyId;
+      scope.s3_link.secret_access_key = "";
+      scope.s3_link.session_token = "";
+      scope.s3_link.role_arn = apiData.roleArn;
+      scope.s3_link.external_id = apiData.externalId;
+    } else if (apiData.type === "azureblob" || apiData.type === "azuredatalake") {
       // Based on the retrieved data, set the correct auth_type
       if (apiData.accountName) {
         scope.azure_link.auth_type = "sharedkey";
       } else if (apiData.sharedAccessSignature) {
         scope.azure_link.auth_type = "sharedaccesssignature";
-      } else if (apiData.managedIdentityId) {
-        scope.azure_link.auth_type = "managedidentityid";
+      } else if (apiData.managedIdentity) {
+        scope.azure_link.auth_type = "managedidentity";
       } else if (apiData.clientSecret) {
         scope.azure_link.auth_type = "clientsecret";
-      } else if (apiData.clientCertificate) {
-        scope.azure_link.auth_type = "clientcertificate";
-        if (apiData.clientCertificatePassword) {
-          scope.azure_link.is_client_certificate_password = true;
-        }
       } else {
         scope.azure_link_auth_type = "anonymous";
       }
@@ -3004,13 +3037,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       scope.azure_link.account_name = apiData.accountName;
       scope.azure_link.account_key = "";
       scope.azure_link.shared_access_signature = "";
-      scope.azure_link.managed_identity_id = apiData.managedIdentityId;
       scope.azure_link.client_id = apiData.clientId;
       scope.azure_link.tenant_id = apiData.tenantId;
       scope.azure_link.client_secret = "";
       scope.azure_link.client_certificate = "";
       scope.azure_link.client_certificate_password = "";
-    } else if (apiData.type == "gcs") {
+    } else if (apiData.type === "gcs") {
       if (apiData.applicationDefaultCredentials) {
         scope.gcs_link.auth_type = "applicationdefaultcredentials"
       }
@@ -3022,7 +3054,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
       scope.gcs_link.endpoint = apiData.endpoint;
       scope.gcs_link.json_credentials = "";
-    } else if (apiData.type == "kafka") {
+    } else if (apiData.type === "kafka") {
       if (apiData.kafkaClusterDetails) {
         const kafkaDetails = apiData.kafkaClusterDetails;
         scope.kafka_link.vendor = kafkaDetails.vendor;

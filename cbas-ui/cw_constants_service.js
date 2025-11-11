@@ -194,10 +194,7 @@ ORDER BY
   // external collection constants start
   cwConstantsService.externalCollectionTypes = ['s3', 'azureblob', 'azuredatalake', 'gcs'];
   cwConstantsService.supportedExternalCollectionFormats = ['json', 'csv', 'tsv'];
-  cwConstantsService.linkTypesSupportingParquet = ['s3', 'azureblob', 'azuredatalake'];
-
-  // types that required developer preview, once all types are GAed, this field can be removed
-  cwConstantsService.linkTypeParquetRequiresDeveloperPreview = ['azureblob', 'azuredatalake'];
+  cwConstantsService.linkTypesSupportingParquet = ['s3', 'azureblob', 'azuredatalake', 'gcs'];
 
   cwConstantsService.defaultQueryContextDatabase = "Default";
   cwConstantsService.defaultQueryContextScope = "Default";
@@ -212,11 +209,6 @@ ORDER BY
 
   cwConstantsService.isParquetSupported = function (linkType) {
     return cwConstantsService.linkTypesSupportingParquet.includes(linkType);
-  };
-
-  // types that required developer preview, once all types are GAed, this function can be removed
-  cwConstantsService.isParquetRequiresDeveloperPreview = function (linkType) {
-    return cwConstantsService.linkTypeParquetRequiresDeveloperPreview.includes(linkType);
   };
   // external collection constants end
 

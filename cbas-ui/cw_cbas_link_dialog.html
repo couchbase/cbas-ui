@@ -265,58 +265,175 @@ licenses/APL2.txt.
 
       <!-- Options for S3 Links -->
       <div ng-if="options.link_type == 's3'">
+        <div class="formrow">
+          <label>Region</label>
+          <select ng-model="options.s3_link.region" required>
+            <option ng-repeat="region in options.aws_regions" ng-value="region">{{region}}</option>
+          </select>
+        </div>
 
-      <div class="formrow">
-        <label>Access Key ID</label>
-        <input
-           ng-model="options.s3_link.access_key_id"
-           type="text"
-           autocorrect="off"
-           spellcheck="false"
-           autocapitalize="off">
-      </div>
-      <div class="formrow">
-        <label>Secret Access Key</label>
-        <input
-           ng-model="options.s3_link.access_key"
-           autocorrect="off"
-           spellcheck="false"
-           mn-autocomplete-off
-           type="password"
-           name="secret_s3_key"
-           autocomplete="one-time-code">
-      </div>
-      <div class="formrow">
-        <label>Session Token</label>
-        <input
-           ng-model="options.s3_link.session_token"
-           autocorrect="off"
-           spellcheck="false"
-           mn-autocomplete-off
-           type="password"
-           name="s3_session_token"
-           autocomplete="one-time-code">
-      </div>
-      <div class="formrow">
-        <label>Region</label>
-        <select ng-model="options.s3_link.region" required>
-          <option ng-repeat="region in options.aws_regions" ng-value="region">{{region}}</option>
-        </select>
+        <div class="formrow">
+          <input
+           id="s3_cross_region"
+           ng-model="options.s3_link.cross_region"
+           type="checkbox">
+          <label for="s3_cross_region" style="margin-right:0">Cross Region</label>
+          <span
+              class="fa-stack icon-info"
+              uib-tooltip="Cross Region allows for detecting the correct bucket region automatically even if the link is created pointing to a different region.
+              However, if the resource accessing the bucket (e.g., EC2 instance) is in a different region than the bucket itself, there may be additional data
+              transfer costs incurred by AWS. It is recommended to ensure all resources are in the same region to avoid additional costs."
+              tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+        </div>
+
+        <div class="formrow">
+          <input
+              id="s3_path_style_addressing"
+              ng-model="options.s3_link.path_style_addressing"
+              type="checkbox">
+          <label for="s3_path_style_addressing" style="margin-right:0">Path-Style Addressing</label>
+        </div>
+
+        <div class="formrow">
+          <input
+            id="s3_disable_ssl_verify"
+            ng-model="options.s3_link.disable_ssl_verify"
+            type="checkbox">
+          <label for="s3_disable_ssl_verify" style="margin-right:0">Disable SSL Verify</label>
+        </div>
+
+        <div class="formrow">
+          <label>Endpoint</label>
+          <input
+            ng-model="options.s3_link.endpoint"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off">
+        </div>
+
+        <label>Authentication Method</label>
+        <div class="formrow">
+          <select id="aws_auth_type" ng-model="options.s3_link.auth_type" required>
+            <option value="anonymous">Anonymous (No credentials/authentication)</option>
+            <option value="accesskeys">Access Keys</option>
+            <option value="instanceprofile">Instance Profile</option>
+            <option value="crossaccounttrust">Cross Account Trust</option>
+          </select>
+        </div>
+        <div ng-if="options.s3_link.auth_type == 'accesskeys'">
+          <div class="formrow">
+            <label>Access Key ID</label>
+            <input
+              ng-model="options.s3_link.access_key_id"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              required>
+          </div>
+          <div class="formrow">
+            <label>Secret Access Key</label>
+            <input
+              ng-model="options.s3_link.secret_access_key"
+              autocorrect="off"
+              spellcheck="false"
+              mn-autocomplete-off
+              type="password"
+              name="secret_s3_key"
+              autocomplete="one-time-code"
+              required>
+          </div>
+          <div class="formrow">
+            <label>Session Token</label>
+            <input
+              ng-model="options.s3_link.session_token"
+              autocorrect="off"
+              spellcheck="false"
+              mn-autocomplete-off
+              type="password"
+              name="s3_session_token"
+              autocomplete="one-time-code">
+          </div>
+        </div>
+        <div ng-if="options.s3_link.auth_type == 'crossaccounttrust'">
+          <div class="formrow">
+            <label>Assumed Role ARN</label>
+            <input
+              ng-model="options.s3_link.role_arn"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              required>
+          </div>
+          <div class="formrow">
+            <label>External ID</label>
+            <input
+              ng-model="options.s3_link.external_id"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off">
+          </div>
+          <div class="formrow">
+            <label>Credentials Used To Assume Role</label>
+            <div>
+              <input
+                type="radio"
+                value="accesskeys"
+                id="for_assumed_role_access_keys"
+                ng-model="options.s3_link.assumed_role_credentials"
+                required>
+              <label
+                for="for_assumed_role_access_keys"
+                class="checkbox">
+                Access Keys
+              </label>
+              <input
+                type="radio"
+                value="instanceprofile"
+                id="for_assumed_role_instance_profile"
+                ng-model="options.s3_link.assumed_role_credentials"
+                required>
+              <label
+                for="for_assumed_role_instance_profile"
+                class="checkbox">
+                Instance Profile
+              </label>
+            </div>
+            <div ng-if="options.s3_link.assumed_role_credentials == 'accesskeys'">
+              <div class="formrow">
+                <label>Access Key ID</label>
+                <input
+                  ng-model="options.s3_link.access_key_id"
+                  type="text"
+                  autocorrect="off"
+                  spellcheck="false"
+                  autocapitalize="off"
+                  required>
+              </div>
+              <div class="formrow">
+                <label>Secret Access Key</label>
+                <input
+                  ng-model="options.s3_link.secret_access_key"
+                  autocorrect="off"
+                  spellcheck="false"
+                  mn-autocomplete-off
+                  type="password"
+                  name="secret_s3_key"
+                  autocomplete="one-time-code"
+                  required>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="formrow">
-        <label>Endpoint</label>
-        <input
-           ng-model="options.s3_link.endpoint"
-           type="text"
-           autocorrect="off"
-           spellcheck="false"
-           autocapitalize="off">
-      </div>
-
-      </div>
-
-      <!-- Options for Azure Blob Link -->
+      <!-- Options for Azure Blob & Datalake Links -->
       <div ng-if="options.link_type == 'azureblob' || options.link_type == 'azuredatalake'">
 
         <div class="formrow">
@@ -335,126 +452,94 @@ licenses/APL2.txt.
             <option value="anonymous">Anonymous (No credentials/authentication)</option>
             <option value="sharedkey">Shared Key</option>
             <option value="sharedaccesssignature">Shared Access Signature</option>
-            <!--
-            <option value="managedidentityid" >Managed Identity ID</option>
-            <option value="clientsecret">Client Secret</option>
-            <option value="clientcertificate">Client Certificate</option>
-            -->
+            <option ng-if="isDeveloperPreview()" value="managedidentity">Managed Identity</option>
+            <option ng-if="isDeveloperPreview()" value="clientsecret">Client Secret</option>
           </select>
         </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedkey'">
-          <label>Account Name</label>
-          <input
-            ng-model="options.azure_link.account_name"
-            type="text"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            mn-autocomplete-off
-            autocomplete="one-time-code"
-            required>
+        <div ng-if="options.azure_link.auth_type == 'sharedkey'">
+          <div class="formrow">
+            <label>Account Name</label>
+            <input
+              ng-model="options.azure_link.account_name"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              mn-autocomplete-off
+              autocomplete="one-time-code"
+              required>
+          </div>
+          <div class="formrow">
+            <label>Account Key</label>
+            <input
+              ng-model="options.azure_link.account_key"
+              type="password"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              mn-autocomplete-off
+              autocomplete="one-time-code"
+              required>
+          </div>
         </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedkey'">
-          <label>Account Key</label>
-          <input
-            ng-model="options.azure_link.account_key"
-            type="password"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            mn-autocomplete-off
-            autocomplete="one-time-code"
-            required>
+        <div ng-if="options.azure_link.auth_type == 'sharedaccesssignature'">
+          <div class="formrow">
+            <label>Shared Access Signature</label>
+            <input
+              ng-model="options.azure_link.shared_access_signature"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              mn-autocomplete-off
+              autocomplete="one-time-code"
+              required>
+          </div>
         </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'sharedaccesssignature'">
-          <label>Shared Access Signature</label>
-          <input
-            ng-model="options.azure_link.shared_access_signature"
-            type="text"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            mn-autocomplete-off
-            autocomplete="one-time-code"
-            required>
+        <div ng-if="options.azure_link.auth_type == 'managedidentity'">
+          <div class="formrow">
+            <label>Client ID (use for User-Assigned Managed Identity)</label>
+            <input
+              ng-model="options.azure_link.client_id"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off">
+          </div>
         </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'managedidentityid'">
-          <label>Managed Identity ID</label>
-          <input
-            ng-model="options.azure_link.managed_identity_id"
-            type="text"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            required>
-        </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientsecret' ||
-                                    options.azure_link.auth_type == 'clientcertificate'">
-          <label>Client ID</label>
-          <input
-            ng-model="options.azure_link.client_id"
-            type="text"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            required>
-        </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientsecret'">
-          <label>Client Secret</label>
-          <input
-            ng-model="options.azure_link.client_secret"
-            type="password"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            mn-autocomplete-off
-            autocomplete="one-time-code"
-            required>
-        </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientcertificate'">
-          <label>Client Certificate</label>
-          <textarea
-            rows="5"
-            class="monospaced certificate-props ng-binding"
-            style="word-break: break-word;max-width: 480px"
-            autocorrect="off"
-            autocompleterg="off"
-            spellcheck="false"
-            ng-model="options.azure_link.client_certificate"
-            placeholder="Copy/paste the certificate and the private key."
-            required>
-            </textarea>
-        </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientsecret' ||
-                                    options.azure_link.auth_type == 'clientcertificate'">
-          <label>Tenant ID</label>
-          <input
-            ng-model="options.azure_link.tenant_id"
-            type="text"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            required>
-        </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientcertificate'">
-          <input
-            id="is_client_certificate_password"
-            ng-model="options.azure_link.is_client_certificate_password"
-            type="checkbox">
-          <label for="is_client_certificate_password">Certificate Password</label>
-        </div>
-        <div class="formrow" ng-if="options.azure_link.auth_type == 'clientcertificate'
-                                    && options.azure_link.is_client_certificate_password == true">
-          <label>Client Certificate Password</label>
-          <input
-            ng-model="options.azure_link.client_certificate_password"
-            type="password"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            mn-autocomplete-off
-            autocomplete="one-time-code"
-            required>
+        <div ng-if="options.azure_link.auth_type == 'clientsecret'">
+          <div class="formrow">
+            <label>Client ID</label>
+            <input
+              ng-model="options.azure_link.client_id"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              required>
+          </div>
+          <div class="formrow">
+            <label>Client Secret</label>
+            <input
+              ng-model="options.azure_link.client_secret"
+              type="password"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              mn-autocomplete-off
+              autocomplete="one-time-code"
+              required>
+          </div>
+          <div class="formrow">
+            <label>Tenant ID</label>
+            <input
+              ng-model="options.azure_link.tenant_id"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              required>
+          </div>
         </div>
       </div>
 

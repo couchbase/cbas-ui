@@ -1470,16 +1470,24 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         },
         s3_link: {
           access_key_id: "",
-          access_key: "",
+          secret_access_key: "",
           session_token: "",
+          instance_profile: false,
+          role_arn: "",
+          external_id: "",
           region: "",
-          endpoint: ""
+          cross_region: false,
+          disable_ssl_verify: false,
+          endpoint: "",
+          assumed_role_credentials: "instanceprofile",
+          auth_type: "anonymous",
+          path_style_addressing: false,
         },
         azure_link: {
           account_name: "",
           account_key: "",
           shared_access_signature: "",
-          managed_identity_id: "",
+          managed_identity: false,
           client_id: "",
           tenant_id: "",
           client_secret: "",
@@ -1733,7 +1741,7 @@ function createNewCollection() {
         linkDialogScope.options.dataverse = link.DVName;
 
         // s3
-        linkDialogScope.options.s3_link.access_key = ""; // is never stored
+        linkDialogScope.options.s3_link.secret_access_key = ""; // is never stored
         linkDialogScope.options.s3_link.session_token = ""; // is never stored
 
         // couchbase
@@ -2069,12 +2077,6 @@ function createNewCollection() {
         var supported = cwConstantsService.isParquetSupported(linkType);
         if (!supported) {
           return false;
-        }
-
-        // link type supports parquet, check if developer preview is required
-        var developerPreviewNeeded = cwConstantsService.isParquetRequiresDeveloperPreview(linkType);
-        if (!developerPreviewNeeded) {
-          return true;
         }
 
         // developer preview is required, check if it is enabled
