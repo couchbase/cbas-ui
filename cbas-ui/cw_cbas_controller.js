@@ -149,6 +149,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     //
 
     qc.query = query;
+    qc.runAdviseOnLatest = runAdviseOnLatest;
     qc.save = save;
     qc.save_query = save_query;
     qc.unified_save = unified_save;
@@ -760,6 +761,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       // don't let the user edit the query while it's running
       qc.inputEditor.setReadOnly(true);
 
+      // if the advise tab is active, switch back to the JSON results tab
+      if (qc.isSelected(6))
+        qc.selectTab(1);
+
       // remove trailing whitespace to keep query from growing, and avoid
       // syntax errors (query parser doesn't like \n after ;
       if (endsWithSemi.test(qc.lastResult.query))
@@ -782,6 +787,45 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         promise.then(doneWithQuery, doneWithQuery);
       } else
         doneWithQuery();
+    };
+
+    //
+    // run index advisor on the current query
+    //
+
+    function runAdviseOnLatest() {
+      if (!qc.inputEditor) {
+        return;
+      }
+      if (qc.lastResult.query.trim().length == 0)
+        return;
+
+      if (qc.executingQuery.busy) {
+        cwQueryService.cancelQuery();
+        return;
+      }
+
+      qc.selectTab(6);
+      qc.inputEditor.setReadOnly(true);
+
+      if (endsWithSemi.test(qc.lastResult.query))
+        qc.lastResult.query = qc.lastResult.query.trim();
+
+      if (qc.queryContextDatabase != null && qc.queryContextScope != null) {
+        qc.lastResult.queryContext = "`" + qc.queryContextDatabase + "`.`" + qc.queryContextScope + "`";
+      } else {
+        qc.lastResult.queryContext = null;
+      }
+
+      var userQuery = qc.lastResult.query;
+      var adviseQuery = /^\s*advise/gmi.test(userQuery) ? userQuery : cwQueryService.addAdvise(userQuery);
+      var promise = cwQueryService.executeQuery(adviseQuery, userQuery, cwQueryService.options, false, qc.lastResult.queryContext);
+
+      if (promise) {
+        promise.then(doneWithQuery, doneWithQuery);
+      } else {
+        doneWithQuery();
+      }
     };
 
     //

@@ -198,6 +198,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.planFormat = 'json';
   cwQueryService.fetchingStats = false;
   cwQueryService.isAllowedMultiStatement = isAllowedMultiStatement;
+  cwQueryService.addAdvise = addAdvise;
   cwQueryService.showEmptyScopes = true;
   cwQueryService.globalLinks = false;
 
@@ -279,7 +280,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   function QueryResult(status, elapsedTime, executionTime, resultCount, resultSize, result,
                        data, query, requestID, explainResult, mutationCount, processedObjects, queueWaitTime,
                        warningCount, warnings, limitedWarningsCount, queryContext, chart_options, tooBigForUI,
-                       compileTime, metrics) {
+                       compileTime, metrics,
+                       adviceText, isAdviseQuery, adviceDetails) {
     this.status = status;
     this.resultCount = resultCount;
     this.mutationCount = mutationCount;
@@ -306,6 +308,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.limitedWarningsCount = limitedWarningsCount;
     this.chart_options = chart_options;
     this.tooBigForUI = tooBigForUI;
+    this.adviceText = adviceText || "";
+    this.isAdviseQuery = !!isAdviseQuery;
+    this.adviceDetails = adviceDetails || {current: [], recommended: []};
   };
 
   function getClusterBuckets() {
@@ -333,12 +338,29 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     return (timeStr); // couldn't match, just return orig value
   }
 
+  function formatErrorMessages(errors) {
+    if (!errors)
+      return "";
+
+    if (_.isArray(errors))
+      return errors.map(err => err && (err.msg || err.message || JSON.stringify(err))).join("\n");
+
+    if (_.isString(errors))
+      return errors;
+
+    if (_.isObject(errors))
+      return JSON.stringify(errors, null, 2);
+
+    return String(errors);
+  }
+
   QueryResult.prototype.clone = function () {
     return new QueryResult(this.status, this.elapsedTime, this.executionTime, this.resultCount,
                            this.resultSize, this.result, this.data, this.query, this.requestID, this.explainResult,
                            this.mutationCount, this.processedObjects, this.queueWaitTime, this.warningCount, this.warnings,
                            this.limitedWarningsCount, this.queryContext, this.chart_options, this.tooBigForUI,
-                           this.compileTime, this.metrics
+                           this.compileTime, this.metrics,
+                           this.adviceText, this.isAdviseQuery, this.adviceDetails
                           );
   };
   QueryResult.prototype.copyIn = function (other) {
@@ -364,7 +386,66 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.queryContext = other.queryContext;
     this.chart_options = other.chart_options;
     this.tooBigForUI = other.tooBigForUI;
+    this.adviceText = other.adviceText;
+    this.isAdviseQuery = other.isAdviseQuery;
+    this.adviceDetails = other.adviceDetails || {current: [], recommended: []};
   };
+
+  function extractIndexAdviceDetails(result) {
+    const sections = {current: new Set(), recommended: new Set()};
+    collectIndexAdvice(result, sections, 0);
+    return {
+      current: Array.from(sections.current),
+      recommended: Array.from(sections.recommended)
+    };
+  }
+
+  function collectIndexAdvice(node, sections, depth) {
+    // Index advisor responses can be nested fairly deeply; allow more levels
+    // before giving up to ensure we don't miss index_statement entries.
+    if (depth > 20 || node === undefined || node === null)
+      return;
+
+    if (_.isArray(node)) {
+      node.forEach(function (item) {
+        collectIndexAdvice(item, sections, depth + 1);
+      });
+      return;
+    }
+
+    if (_.isObject(node)) {
+      const adviseInfo = node.adviseinfo || (node.advice && node.advice.adviseinfo);
+
+      if (adviseInfo) {
+        if (_.isArray(adviseInfo.current_indexes)) {
+          adviseInfo.current_indexes.forEach(function (idx) {
+            const stmt = idx && (idx.index_statement || idx.statement || idx.ddl || idx.toString());
+            if (stmt)
+              sections.current.add(stmt);
+          });
+        }
+
+        const recommended = adviseInfo.recommended_indexes;
+        if (recommended) {
+          const addRecommended = function (arr) {
+            if (_.isArray(arr)) {
+              arr.forEach(function (idx) {
+                const stmt = idx && (idx.index_statement || idx.statement || idx.ddl || idx.toString());
+                if (stmt)
+                  sections.recommended.add(stmt);
+              });
+            }
+          };
+          addRecommended(recommended.indexes);
+          addRecommended(recommended.covering_indexes);
+        }
+      }
+
+      _.forOwn(node, function (value) {
+        collectIndexAdvice(value, sections, depth + 1);
+      });
+    }
+  }
 
   QueryResult.prototype.set_chart_options = function(new_options) {
     this.chart_options = new_options;
@@ -1045,6 +1126,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function executeQuery(queryText, userQuery, queryOptions, explainOnly, queryContext) {
     var newResult;
+    var queryIsAdvise = /(?:^|;)\s*advise\b/mi.test(queryText);
 
     //console.log("Got query to execute: " + queryText);
     //logWorkbenchError("Got query to execute: " + queryText);
@@ -1074,6 +1156,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       pastQueries.push(newResult);
       currentQueryIndex = pastQueries.length - 1; // after run, set current result to end
     }
+
+    newResult.isAdviseQuery = queryIsAdvise;
+    newResult.adviceText = "";
+    newResult.adviceDetails = {current: [], recommended: []};
 
     // reset dataWIPTooBigForUI
     cwQueryService.dataWIPTooBigForUI = false;
@@ -1348,6 +1434,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               newResult.warnings = JSON.stringify(data.warnings, null, 2);
             else if (data.errors)
               newResult.warnings = JSON.stringify(data.errors, null, 2);
+            if (queryIsAdvise && data.errors && !newResult.adviceText)
+              newResult.adviceText = formatErrorMessages(data.errors);
             if (data.status == "stopped") {
               result = {status: "Query stopped on server."};
             }
@@ -1382,6 +1470,15 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             else
               newResult.result = angular.toJson(result, true);
             newResult.data = result;
+            if (queryIsAdvise) {
+              const adviceDetails = extractIndexAdviceDetails(result);
+              newResult.adviceDetails = adviceDetails;
+              if (!newResult.adviceText && (adviceDetails.current.length || adviceDetails.recommended.length))
+                newResult.adviceText = adviceDetails.recommended.concat(adviceDetails.current).join("\n");
+              newResult.isAdviseQuery = true;
+              if (!newResult.adviceText && data.status && data.status !== "success")
+                newResult.adviceText = "Index Advisor failed: " + data.status;
+            }
 
             var isJsonPlan = request.planFormat === "json";
             var plan = "";
@@ -1504,6 +1601,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             newResult.processedObjects = 0;
             newResult.warningCount = 0;
             newResult.queryDone = true;
+            if (queryIsAdvise) {
+              newResult.isAdviseQuery = true;
+              newResult.adviceText = "Index Advisor failed: Failure contacting server.";
+              newResult.adviceDetails = {current: [], recommended: []};
+            }
 
             // make sure to only finish if the explain query is also done
             if (newResult.explainDone) {
@@ -1528,6 +1630,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             newResult.queryDone = true;
             if (cwQueryService.isDataWIPTooBigForUI()) {
               newResult.tooBigForUI = true;
+            }
+            if (queryIsAdvise) {
+              newResult.isAdviseQuery = true;
+              newResult.adviceText = "Index Advisor failed: Query interrupted.";
+              newResult.adviceDetails = {current: [], recommended: []};
             }
 
             // make sure to only finish if the explain query is also done
@@ -1554,6 +1661,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             newResult.result = JSON.stringify(newResult.data, null, '  ');
             newResult.status = "errors";
             newResult.queryDone = true;
+            if (queryIsAdvise) {
+              newResult.isAdviseQuery = true;
+              newResult.adviceText = formatErrorMessages(newResult.data);
+              newResult.adviceDetails = {current: [], recommended: []};
+            }
 
             // make sure to only finish if the explain query is also done
             if (newResult.explainDone) {
@@ -1574,6 +1686,16 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             }
             newResult.data = data.errors;
             newResult.result = JSON.stringify(data.errors, null, '  ');
+          }
+          if (queryIsAdvise) {
+            newResult.isAdviseQuery = true;
+            if (data && data.errors)
+              newResult.adviceText = formatErrorMessages(data.errors);
+            else if (data && data.status)
+              newResult.adviceText = "Index Advisor failed: " + data.status;
+            else
+              newResult.adviceText = "Index Advisor failed.";
+            newResult.adviceDetails = {current: [], recommended: []};
           }
 
           if (status)
@@ -2045,6 +2167,21 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       }
       if (!isAllowedMultiStatement(statement)) {
         queryText = queryText.replace(statement, "explain " + statement);
+        break;
+      }
+    }
+    return queryText;
+  }
+
+  function addAdvise(queryText) {
+    var statements = queryText.split(";");
+    for (var i = 0; i < statements.length; i++) {
+      var statement = statements[i].trim();
+      if (statement.length === 0) {
+        continue;
+      }
+      if (!isAllowedMultiStatement(statement)) {
+        queryText = queryText.replace(statement, "advise " + statement);
         break;
       }
     }

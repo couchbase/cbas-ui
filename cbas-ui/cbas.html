@@ -110,6 +110,14 @@ licenses/APL2.txt.
             </div>
           </button>
           <button
+             ng-if="qc.isEnterprise"
+             ng-disabled="qc.executingQuery.busy"
+             ng-click="qc.runAdviseOnLatest()"
+             class="outline tight">
+            Index Advisor
+            <span ng-if="qc.executingQuery.busy" class="icon fa-spinner fa-spin fa-pulse"></span>
+          </button>
+          <button
              ng-disabled="qc.executingQuery.busy"
              ng-click="qc.query(true)"
              class="outline tight">
@@ -202,6 +210,8 @@ licenses/APL2.txt.
            ng-class="{selected: qc.isSelected(4)}">Plan</a>
         <a ng-click="qc.selectTab(5)"
            ng-class="{selected: qc.isSelected(5)}">Plan Text</a>
+        <a ng-click="qc.selectTab(6)" ng-if="qc.isEnterprise"
+           ng-class="{selected: qc.isSelected(6)}">Advice</a>
       </span>
     </div>
 
@@ -236,6 +246,31 @@ licenses/APL2.txt.
            ng-if="qc.isSelected(5)"
            ui-ace="qc.acePlanOptions"
            ng-model="qc.lastResult.explainResultText"></div>
+
+      <div class="wb-index-advice wb-results-advice" ng-if="qc.isSelected(6)">
+        <h5 class="margin-bottom-half">Index Advisor</h5>
+        <div ng-if="qc.lastResult.isAdviseQuery">
+          <div ng-if="qc.lastResult.adviceDetails.current.length">
+            <div class="text-smallish margin-bottom-quarter">Index Currently Used</div>
+            <pre class="text-smallish" style="white-space: pre-wrap; background: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 4px; padding: 0.5rem 0.75rem; margin: 0 0 .5rem 0;"
+                ng-bind="qc.lastResult.adviceDetails.current.join('\n')"></pre>
+          </div>
+          <div ng-if="qc.lastResult.adviceDetails.recommended.length">
+            <div class="text-smallish margin-bottom-quarter">Index Recommendations</div>
+            <pre class="text-smallish" style="white-space: pre-wrap; background: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 4px; padding: 0.5rem 0.75rem; margin: 0;"
+                ng-bind="qc.lastResult.adviceDetails.recommended.join('\n')"></pre>
+          </div>
+          <div class="text-smallish" ng-if="!qc.lastResult.adviceDetails.current.length && !qc.lastResult.adviceDetails.recommended.length && qc.lastResult.adviceText">
+            {{qc.lastResult.adviceText}}
+          </div>
+          <div class="text-smallish" ng-if="!qc.lastResult.adviceDetails.current.length && !qc.lastResult.adviceDetails.recommended.length && !qc.lastResult.adviceText">
+            No index recommendations returned for this query.
+          </div>
+        </div>
+        <div class="text-smallish" ng-if="!qc.lastResult.isAdviseQuery">
+          Click Index Advisor to generate query index recommendations.
+        </div>
+      </div>
     </div>
   </div>
 
