@@ -1802,18 +1802,7 @@ function createNewCollection() {
       selected_scope: "",
       selected_collection: "",
       proxy: null, // proxy for remote cluster
-      external_dataset: {
-        path: "",
-        format: "json",
-        header: true,
-        decimal_to_double: false,
-        parse_json_string: true,
-        timezone: "",
-        inline_type_def: "",
-        null_value: "",
-        include: "",
-        exclude: ""
-      },
+      external_dataset: initializeExternalDataset(),
       kafka_dataset: initializeKafkaDataset(),
       // KV buckets, scopes, and collections
       kv_buckets: [],
@@ -2032,6 +2021,7 @@ function createNewCollection() {
       dataset_options.clusterBuckets =  qc.clusterBuckets;
       dataset_options.selected_bucket = '';
       dataset_options.where = null;
+      dataset_options.external_dataset = initializeExternalDataset();
       dataset_options.kafka_dataset = initializeKafkaDataset();
       // Function to filter dataverses based on the selected database
       function filterDataversesByDatabase(dataverse, databaseName) {
@@ -2393,6 +2383,21 @@ function createNewCollection() {
         cdc_source: "MONGODB",
         cdc_source_connector: "DEBEZIUM",
         dead_letter_queue: ""
+      };
+    }
+
+    function initializeExternalDataset() {
+      return {
+        path: "",
+        format: "json",
+        header: true,
+        decimal_to_double: false,
+        parse_json_string: true,
+        timezone: "",
+        inline_type_def: "",
+        null_value: "",
+        include: "",
+        exclude: ""
       };
     }
   } // end of CBasController function
