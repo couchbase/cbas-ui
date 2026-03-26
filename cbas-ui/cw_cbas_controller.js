@@ -257,6 +257,28 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       copyResultAsCSV();
     };
 
+    qc.copyMetrics = function () {
+      if (!qc.lastResult.metrics) {
+        return;
+      }
+      var metricsJson = JSON.stringify(qc.lastResult.metrics, null, 2);
+      var copyElement = document.createElement("textarea");
+      angular.element(document.body.append(copyElement));
+      copyElement.value = metricsJson;
+      copyElement.focus();
+      copyElement.select();
+      document.execCommand('copy');
+      copyElement.remove();
+    };
+
+    qc.getMetricsAsHTML = function () {
+      if (!qc.lastResult.metrics) {
+        return "";
+      }
+      var metricsJson = JSON.stringify(qc.lastResult.metrics, null, 2);
+      return "<pre class='margin-0'>" + metricsJson + "</pre>";
+    };
+
     qc.showEmptyScopes = function() {return cwQueryService.showEmptyScopes;};
     qc.toggleEmptyScopes = function() {cwQueryService.showEmptyScopes = !cwQueryService.showEmptyScopes;};
     qc.scopeEmpty = function(dataverse) {
