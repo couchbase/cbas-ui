@@ -129,4 +129,13 @@ angular.module('cwCbas', [
 
   }])
   .controller('cwCbasController', cbasController)
-  .controller('cwCbasMonitorController', cwCbasMonitorController);
+  .controller('cwCbasMonitorController', cwCbasMonitorController)
+  .filter('humanNumber', function() {
+    return function(n) {
+      if (n == null) return n;
+      if (n >= 1e9) return (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
+      if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
+      if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+      return n;
+    };
+  });
