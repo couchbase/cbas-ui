@@ -59,7 +59,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     qc.dataverses = cwQueryService.dataverses;    // dataverses
     qc.databases =  cwQueryService.databases;     // databases
-    
+
     qc.shadows = cwQueryService.shadows;                // shadow datasets on cluster
     qc.clusterBuckets = cwQueryService.clusterBuckets; // all cluster buckets
     qc.gettingBuckets = cwQueryService.gettingBuckets;  // busy retrieving?
@@ -171,6 +171,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.dropDataset = dropDataset;
     qc.dropView = dropView;
     qc.dropScope = dropScope;
+    qc.getIngestionTooltip = getIngestionTooltip;
     qc.dropDatabase = dropDatabase;
     qc.getDataverseInDatabase = getDataverseInDatabase;
     qc.getDatabaseScopeNames = databaseNamesToScopeNames;
@@ -2372,6 +2373,21 @@ function createNewCollection() {
             });
       }
     }
+  function getIngestionTooltip(shadow) {
+      let result = "";
+      if (shadow.seqnoLag) {
+        result += shadow.seqnoLag + " seqno lag";
+      }
+      if (shadow.itemsQueued) {
+        if (result.length > 0)
+          result += "<br>";
+        result += shadow.itemsQueued + " items queued";
+      }
+      if (result.length > 0) {
+        return "<em class=\"text-smaller\">" + result + "</em>";
+      }
+      return "";
+  }
 
     function initializeKafkaDataset() {
       return {
