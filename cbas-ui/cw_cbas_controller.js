@@ -1498,6 +1498,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           role_arn: "",
           external_id: "",
           region: "",
+          other_region: "",
           cross_region: false,
           disable_ssl_verify: false,
           endpoint: "",

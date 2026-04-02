@@ -2860,7 +2860,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     } else if (scope.link_type === "s3") {
-      formData.region = scope.s3_link.region;
+      formData.region = scope.s3_link.region === "Other" ? scope.s3_link.other_region : scope.s3_link.region;
       formData.crossRegion = scope.s3_link.cross_region;
       formData.disableSslVerify = scope.s3_link.disable_ssl_verify;
       formData.pathStyleAddressing = scope.s3_link.path_style_addressing;
@@ -3024,7 +3024,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         scope.s3_link.auth_type = "anonymous";
       }
 
-      scope.s3_link.region = apiData.region;
+      // Check if the region is in the standard list; if not, treat it as "Other"
+      if (cwQueryService.awsRegions.includes(apiData.region)) {
+        scope.s3_link.region = apiData.region;
+        scope.s3_link.other_region = "";
+      } else {
+        scope.s3_link.region = "Other";
+        scope.s3_link.other_region = apiData.region;
+      }
       scope.s3_link.cross_region = apiData.crossRegion;
       scope.s3_link.path_style_addressing = apiData.pathStyleAddressing;
       scope.s3_link.disable_ssl_verify = apiData.disableSslVerify;
