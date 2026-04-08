@@ -155,7 +155,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.dropDataset = dropDataset;
     qc.dropView = dropView;
     qc.dropScope = dropScope;
-    qc.getIngestionTooltip = getIngestionTooltip;
 
     //
     // options for the two Ace editors, the input and the output
@@ -2039,23 +2038,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
             });
       }
     }
-  function getIngestionTooltip(shadow) {
-      let result = "";
-      if (shadow.seqnoLag) {
-        result += shadow.seqnoLag + " seqno lag";
-      }
-      if (shadow.itemsQueued) {
-        if (result.length > 0)
-          result += "<br>";
-        result += shadow.itemsQueued + " items queued";
-      }
-      if (result.length > 0) {
-        return "<em class=\"text-smaller\">" + result + "</em>";
-      }
-      return "";
-  }
 
-} // end of CBasController function
+  } // end of CBasController function
 
   function forceReload(url) {
     if (window.location.href == url) {
