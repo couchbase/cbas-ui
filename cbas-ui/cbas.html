@@ -365,31 +365,9 @@ licenses/APL2.txt.
                       </a>
                     </p>
                   </div>
-                  <div class="margin-left-3 margin-bottom-half">
+                  <div class="margin-left-3 margin-bottom-half" ng-show="shadow.remaining > 0">
                     <em class="text-smaller">
-                      <span
-                            tooltip-placement="auto bottom"
-                            tooltip-append-to-body="true"
-                            tooltip-trigger="mouseenter">
-                        <span ng-show="shadow.mutationsPerSecond > 0">
-                          {{shadow.mutationsPerSecond | humanNumber}} mutations/sec
-                        </span>
-                        <span ng-show="shadow.seqnoLag">
-                          <span ng-show="shadow.mutationsPerSecond > 0"> | </span>
-                          {{shadow.seqnoLag | humanNumber}} seqno lag
-                        </span>
-                        <span ng-show="shadow.seqnoLag && shadow.progress && shadow.remaining > 0">
-                          <span ng-show="shadow.mutationsPerSecond > 0 || shadow.seqnoLag"> | </span>
-                          progress {{shadow.progress}}%
-                        </span>
-                        <span ng-show="shadow.remaining > 0">
-                          <span ng-show="shadow.mutationsPerSecond || shadow">|</span>
-                          {{shadow.remaining | humanNumber}} item<span ng-show="shadow.remaining > 1">s</span> remaining</span>
-                        <span ng-show="shadow.timeLag">
-                          <span ng-show="shadow.remaining > 0">| </span>
-                          {{shadow.timeLag}} est. time remaining
-                        </span>
-                      </span>
+                      progress {{shadow.progress}}%<span ng-show="shadow.timeLag">| {{shadow.timeLag}} est. time remaining</span>
                     </em>
                   </div>
                 </div>

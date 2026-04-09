@@ -40,8 +40,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   //
 
   cwQueryService.outputTab = 1;     // remember selected output tab
-  cwQueryService.datasetUnknownState = -1;
-  cwQueryService.datasetDisconnectedState = -2;
+  cwQueryService.datasetDisconnectedState = -1;
+  cwQueryService.datasetUnknownState = -2;
   cwQueryService.externalDatasetState = -3;
   cwQueryService.selectTab = function (newTab) {
     cwQueryService.outputTab = newTab;
@@ -1966,19 +1966,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   }
 
   function parseState(state, collectionsStats) {
-    if (!state.mutationsPerSecond) {
-      state.mutationsPerSecond = 0
-    }
     if ('scopes' in state) {
       let scopes = state['scopes'];
-      let ingestionState = {
-        "progress": round(state.progress * 100, 1),
-        "remaining": state.itemsRemaining,
-        "timeLag": timeForHumans(state.timeLag),
-        "mutationsPerSecond": state.mutationsPerSecond,
-        "seqnoLag": state.seqnoLag,
-        "itemsQueued": state.itemsQueued
-      };
+      let ingestionState = { "progress": round(state.progress * 100, 1), "timeLag" : timeForHumans(state.timeLag)};
       for (let i = 0; i < scopes.length; i++) {
         let scopeName = scopes[i].name;
         let collections = scopes[i].collections;
@@ -2023,28 +2013,15 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           if (collectionStats != null) {
             shadow.progress = collectionStats.progress;
             shadow.timeLag = collectionStats.timeLag;
-            shadow.remaining = collectionStats.remaining;
-            shadow.seqnoLag = collectionStats.seqnoLag;
-            shadow.itemsQueued = collectionStats.itemsQueued;
-            shadow.mutationsPerSecond = collectionStats.mutationsPerSecond;
-            if (shadow.link) {
-              shadow.link.progress = shadow.progress;
+            shadow.remaining = shadow.progress === 100 ? 0 : 1;
+            if (shadow.link)
               shadow.link.remaining = shadow.remaining;
-              shadow.link.seqnoLag = shadow.seqnoLag;
-              shadow.link.itemsQueued = shadow.itemsQueued;
-              shadow.link.mutationsPerSecond = shadow.mutationsPerSecond;
-            }
             continue;
           }
         }
         shadow.remaining = cwQueryService.datasetDisconnectedState;
-        if (shadow.link) {
-          shadow.link.progress = 0;
-          shadow.link.remaining = 0;
-          shadow.link.seqnoLag = 0;
-          shadow.link.itemsQueued = 0;
-          shadow.link.mutationsPerSecond = 0;
-        }
+        if (shadow.link)
+          shadow.link.remaining = shadow.remaining;
       }
     }
   }
