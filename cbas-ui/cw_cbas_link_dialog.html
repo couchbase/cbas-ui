@@ -269,7 +269,19 @@ licenses/APL2.txt.
           <label>Region</label>
           <select ng-model="options.s3_link.region" required>
             <option ng-repeat="region in options.aws_regions" ng-value="region">{{region}}</option>
+            <option value="Other">Other</option>
           </select>
+        </div>
+
+        <div class="formrow" ng-if="options.s3_link.region == 'Other'">
+          <label>Other Region</label>
+          <input
+            ng-model="options.s3_link.other_region"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
         </div>
 
         <div class="formrow">

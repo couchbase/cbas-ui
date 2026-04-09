@@ -278,10 +278,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   function QueryResult(status, elapsedTime, executionTime, resultCount, resultSize, result,
                        data, query, requestID, explainResult, mutationCount, processedObjects, queueWaitTime,
-                       warningCount, warnings, limitedWarningsCount, queryContext, chart_options, tooBigForUI) {
+                       warningCount, warnings, limitedWarningsCount, queryContext, chart_options, tooBigForUI,
+                       compileTime, metrics) {
     this.status = status;
     this.resultCount = resultCount;
-    this.resultCount = mutationCount;
+    this.mutationCount = mutationCount;
     this.resultSize = resultSize;
     this.processedObjects = processedObjects;
     this.queueWaitTime = truncateTime(queueWaitTime);
@@ -298,6 +299,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
     this.elapsedTime = truncateTime(elapsedTime);
     this.executionTime = truncateTime(executionTime);
+    this.compileTime = truncateTime(compileTime);
+    this.metrics = metrics;
     this.warningCount = warningCount;
     this.warnings = warnings;
     this.limitedWarningsCount = limitedWarningsCount;
@@ -334,13 +337,16 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     return new QueryResult(this.status, this.elapsedTime, this.executionTime, this.resultCount,
                            this.resultSize, this.result, this.data, this.query, this.requestID, this.explainResult,
                            this.mutationCount, this.processedObjects, this.queueWaitTime, this.warningCount, this.warnings,
-                           this.limitedWarningsCount, this.queryContext, this.chart_options, this.tooBigForUI
+                           this.limitedWarningsCount, this.queryContext, this.chart_options, this.tooBigForUI,
+                           this.compileTime, this.metrics
                           );
   };
   QueryResult.prototype.copyIn = function (other) {
     this.status = other.status;
     this.elapsedTime = truncateTime(other.elapsedTime);
     this.executionTime = truncateTime(other.executionTime);
+    this.compileTime = truncateTime(other.compileTime);
+    this.metrics = other.metrics;
     this.resultCount = other.resultCount;
     this.processedObjects = other.processedObjects;
     this.queueWaitTime = truncateTime(other.queueWaitTime);
@@ -1109,12 +1115,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     lastResult.result = executingQueryTemplate.result;
     lastResult.data = executingQueryTemplate.data;
     lastResult.status = executingQueryTemplate.status;
-    lastResult.resultSize = executingQueryTemplate.resultSize;
-    lastResult.resultCount = executingQueryTemplate.resultCount;
-    lastResult.processedObjects = executingQueryTemplate.processedObjects;
-    lastResult.warningCount = executingQueryTemplate.warningCount;
-    lastResult.warnings = executingQueryTemplate.warnings;
-    lastResult.limitedWarningsCount = executingQueryTemplate.limitedWarningsCount;
+    lastResult.resultSize = null;
+    lastResult.resultCount = null;
+    lastResult.processedObjects = null;
+    lastResult.warningCount = null;
+    lastResult.warnings = null;
+    lastResult.limitedWarningsCount = null;
+    lastResult.elapsedTime = null;
+    lastResult.executionTime = null;
+    lastResult.compileTime = null;
+    lastResult.queueWaitTime = null;
+    lastResult.metrics = null;
 
     var pre_post_ms = new Date().getTime(); // when did we start?
 
@@ -1357,6 +1368,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             newResult.status = data.status;
             newResult.elapsedTime = data.metrics.elapsedTime;
             newResult.executionTime = data.metrics.executionTime;
+            newResult.compileTime = data.metrics.compileTime;
+            newResult.metrics = data.metrics;
             newResult.resultCount = data.metrics.resultCount;
             newResult.processedObjects = data.metrics.processedObjects;
             newResult.queueWaitTime = data.metrics.queueWaitTime;
@@ -1571,6 +1584,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           if (data.metrics) {
             newResult.elapsedTime = data.metrics.elapsedTime;
             newResult.executionTime = data.metrics.executionTime;
+            newResult.compileTime = data.metrics.compileTime;
+            newResult.metrics = data.metrics;
             newResult.resultCount = data.metrics.resultCount;
             if (data.metrics.mutationCount)
               newResult.mutationCount = data.metrics.mutationCount;
@@ -2867,7 +2882,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     } else if (scope.link_type === "s3") {
-      formData.region = scope.s3_link.region;
+      formData.region = scope.s3_link.region === "Other" ? scope.s3_link.other_region : scope.s3_link.region;
       formData.crossRegion = scope.s3_link.cross_region;
       formData.disableSslVerify = scope.s3_link.disable_ssl_verify;
       formData.pathStyleAddressing = scope.s3_link.path_style_addressing;
@@ -3031,7 +3046,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         scope.s3_link.auth_type = "anonymous";
       }
 
-      scope.s3_link.region = apiData.region;
+      // Check if the region is in the standard list; if not, treat it as "Other"
+      if (cwQueryService.awsRegions.includes(apiData.region)) {
+        scope.s3_link.region = apiData.region;
+        scope.s3_link.other_region = "";
+      } else {
+        scope.s3_link.region = "Other";
+        scope.s3_link.other_region = apiData.region;
+      }
       scope.s3_link.cross_region = apiData.crossRegion;
       scope.s3_link.path_style_addressing = apiData.pathStyleAddressing;
       scope.s3_link.disable_ssl_verify = apiData.disableSslVerify;
