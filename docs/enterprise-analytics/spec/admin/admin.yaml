@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Enterprise Analytics Administration REST APIs
-  version: '2.0'
+  version: '2.1'
   description: |
     These APIs enable you to manage and monitor the Enterprise Analytics Service.
 
