@@ -151,6 +151,8 @@ components:
           Only required if the endpoint is signed by a certificate authority (CA) other than a well-known public CA
           (e.g., for self-signed or private/internal CA certificates).
           Multiple certificates can be provided to support certificate rotation.
+
+          **Available from Enterprise Analytics 2.1.1.**
         x-has-example: true
         example:
           - "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
@@ -161,6 +163,8 @@ components:
           The Access Key ID for static credential authentication. If provided, must be supplied together with `blobStorageSecretAccessKey`.
           If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
           See also `blobStorageAnonymousAuth` for anonymous access.
+
+          **Available from Enterprise Analytics 2.1.1.**
         x-has-example: true
         example: AKIAIOSFODNN7EXAMPLE
       blobStorageSecretAccessKey:
@@ -170,6 +174,8 @@ components:
           The Secret Access Key for static credential authentication. If provided, must be supplied together with `blobStorageAccessKeyId`.
           If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
           This value is masked as `***` in logs and when returned from the API for security reasons.
+
+          **Available from Enterprise Analytics 2.1.1.**
         x-has-example: true
         example: "***"
       numStoragePartitions:

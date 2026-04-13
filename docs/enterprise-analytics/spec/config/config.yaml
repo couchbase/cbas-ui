@@ -302,6 +302,24 @@ components:
         format: int32
         x-has-default: true
         default: 120
+      cloudRequestsHttpConnectionMaxIdleSeconds:
+        description: |-
+          The time (in seconds) after which an idle cloud connection will be closed. (0 == unlimited idle)
+
+          **Available from Enterprise Analytics 2.1.1.**
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      cloudRequestsHttpConnectionMaxLifetimeSeconds:
+        description: |-
+          The time (in seconds) after which a cloud connection will no longer be reused. (0 == unlimited lifetime)
+
+          **Available from Enterprise Analytics 2.1.1.**
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3600
       cloudRequestsMaxHttpConnections:
         description: The maximum number of HTTP connections to use concurrently for cloud requests per node. (default 1000)
         type: integer
@@ -433,18 +451,31 @@ components:
         x-has-default: true
         default: 8388608
       compilerDisjunctionAsJoin:
-        description: Rewrite disjunctions to joins in query plans.
+        description: |-
+          Rewrite disjunctions to joins in query plans.
+
+          **Available from Enterprise Analytics 2.1.1.**
+          The default is `false` for clusters provisioned from 2.1.1 onwards.
+          Clusters upgraded to 2.1.1 have this set to `true` to preserve pre-upgrade behavior.
         type: boolean
         x-has-default: true
         default: false
       compilerDisjunctionHashThreshold:
-        description: The number of disjunctions after which a hash-based approach is used for evaluating OR operations. -1 disables the hash-based approach.
+        description: |-
+          The number of disjunctions after which a hash-based approach is used for evaluating OR operations. -1 disables the hash-based approach.
+
+          **Available from Enterprise Analytics 2.1.1.**
         type: integer
         format: int32
         x-has-default: true
         default: -1
       compilerExtractCommonExpressionLimit:
-        description: The maximum number of common expressions to extract.
+        description: |-
+          The maximum number of common expressions to extract.
+
+          **Available from Enterprise Analytics 2.1.1.**
+          The default is `100` for clusters provisioned from 2.1.1 onwards.
+          Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
         type: integer
         format: int32
         x-has-default: true
@@ -525,9 +556,13 @@ components:
         x-has-default: true
         default: "512 KiB"
       compilerOptimizeExpressionMaxArgs:
-        description: >
+        description: |-
           Avoid costly O(N^2) expression optimization passes (e.g. constant folding, CSE) on large IN-list queries
           when the number of OR/AND function arguments is greater than or equal to the specified value.
+
+          **Available from Enterprise Analytics 2.1.1.**
+          The default is `200` for clusters provisioned from 2.1.1 onwards.
+          Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
         type: integer
         format: int32
         x-has-default: true
