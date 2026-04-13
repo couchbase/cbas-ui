@@ -171,7 +171,7 @@ components:
           If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
           This value is masked as `***` in logs and when returned from the API for security reasons.
         x-has-example: true
-        example: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+        example: "***"
       numStoragePartitions:
         type: integer
         minimum: 1
