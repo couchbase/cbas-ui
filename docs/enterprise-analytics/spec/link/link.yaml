@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Enterprise Analytics Links REST API
-  version: '2.0'
+  version: '2.1'
   description: |-
     This API enables you to manage the links to remote Couchbase clusters and external data sources.
 
@@ -82,7 +82,7 @@ paths:
               allOf:
                 - $ref: "#/components/schemas/RequestCreateCouchbase"
                 - $ref: "#/components/schemas/RequestCreateS3"
-              #  - $ref: "#/components/schemas/RequestCreateAzureBlob"
+                - $ref: "#/components/schemas/RequestCreateAzureBlob"
               #  - $ref: "#/components/schemas/RequestCreateGCS"
               # discriminator:
               #   propertyName: type
@@ -150,7 +150,7 @@ paths:
               allOf:
                 - $ref: "#/components/schemas/RequestEditCouchbase"
                 - $ref: "#/components/schemas/RequestEditS3"
-#                 - $ref: "#/components/schemas/RequestEditAzureBlob"
+                - $ref: "#/components/schemas/RequestEditAzureBlob"
 #                 - $ref: "#/components/schemas/RequestEditGCS"
               # discriminator:
               #   propertyName: type
@@ -208,7 +208,7 @@ components:
       enum:
         - couchbase
         - s3
-        #- azureblob
+        - azureblob
         #- gcs
     in: query
     required: false
@@ -230,10 +230,11 @@ components:
 
       * `couchbase`: A link to a remote Couchbase cluster.
       * `s3`: A link to the Amazon S3 service.
+      * `azureblob`: A link to the Azure Blob Storage service.
     enum:
       - couchbase
       - s3
-      #- azureblob
+      - azureblob
       #- gcs
 
   CommonTypeEdit:
@@ -245,7 +246,7 @@ components:
     enum:
       - couchbase
       - s3
-      #- azureblob
+      - azureblob
       #- gcs
 
   # Workaround for OpenApi Generator. Should have separate parameters for Couchbase and Azure.
@@ -257,14 +258,13 @@ components:
 
       You should URL-encode this parameter to escape any special characters.
 
-  # Workaround for OpenApi Generator. Should have separate parameters for Couchbase and Azure.
-#   CommonEndpoint:
-#     type: string
-#     description: |-
-#       For Azure Blob links and Google Cloud Storage links.
-#       The endpoint URI.
+  # Workaround for OpenApi Generator. Should have separate parameters for Azure and S3.
+  CommonEndpoint:
+    type: string
+    description: |-
+      The endpoint URI.
 
-#       Required for Azure Blob links; optional for Google Cloud Storage links.
+      Required for Azure Blob links; optional for S3 links (e.g. when using S3-compatible storage).
 
   RequestCreateAll:
     type: object
@@ -286,11 +286,11 @@ components:
       - $ref: "#/components/schemas/RequestCreateAll"
       - $ref: "#/components/schemas/RequestSpecificS3"
 
-#   RequestCreateAzureBlob:
-#     title: Create Azure Blob Link Request
-#     allOf:
-#       - $ref: "#/components/schemas/RequestCreateAll"
-#       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
+  RequestCreateAzureBlob:
+    title: Create Azure Blob Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestCreateAll"
+      - $ref: "#/components/schemas/RequestSpecificAzureBlob"
 
 #   RequestCreateGCS:
 #     title: Create GCS Link Request
@@ -316,11 +316,11 @@ components:
       - $ref: "#/components/schemas/RequestEditAll"
       - $ref: "#/components/schemas/RequestSpecificS3"
 
-#   RequestEditAzureBlob:
-#     title: Edit Azure Blob Link Request
-#     allOf:
-#       - $ref: "#/components/schemas/RequestEditAll"
-#       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
+  RequestEditAzureBlob:
+    title: Edit Azure Blob Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestEditAll"
+      - $ref: "#/components/schemas/RequestSpecificAzureBlob"
 
 #   RequestEditGCS:
 #     title: Edit GCS Link Request
@@ -405,20 +405,27 @@ components:
     title: S3 Specific Request
     type: object
     required:
-      - accessKeyId
-      - secretAccessKey
       - region
     properties:
+      region:
+        type: string
+        description: >
+          For S3 links only.
+          The Amazon S3 region.
       accessKeyId:
         type: string
         description: >
           For S3 links only.
           The Amazon S3 access key ID.
+          Required when using access key authentication.
+          Must be provided together with `secretAccessKey`.
       secretAccessKey:
         type: string
         description: >
           For S3 links only.
           The Amazon S3 secret access key.
+          Required when using access key authentication.
+          Must be provided together with `accessKeyId`.
 
 
           You should URL-encode this parameter to escape any special characters.
@@ -428,85 +435,124 @@ components:
           For S3 links only.
           The Amazon S3 session token.
           Use this parameter if you want the link to have temporary access.
+          Requires `accessKeyId` and `secretAccessKey` to also be provided.
 
 
-          Passing this parameter indicates that the `accessKeyId` and `secretAccessKey` are temporary credentials.
+          Passing this parameter indicates that the credentials are temporary.
           The Amazon S3 service validates the session token with each request to check whether the provided credentials have expired or are still valid.
-      region:
+      instanceProfile:
+        type: string
+        enum:
+          - 'true'
+        description: >
+          For S3 links only.
+          If set to `true`, the link uses the EC2 instance profile for authentication.
+          Cannot be combined with `accessKeyId`, `secretAccessKey`, or `sessionToken`.
+      roleArn:
         type: string
         description: >
           For S3 links only.
-          The Amazon S3 region.
+          The Amazon Resource Name (ARN) of the role to assume for cross-account authentication.
+          Requires either `instanceProfile` or `accessKeyId` and `secretAccessKey` (non-temporary) to provide the credentials used to assume the role.
+      externalId:
+        type: string
+        description: >
+          For S3 links only.
+          An external ID for cross-account role assumption.
+          Used together with `roleArn`.
+          If `roleArn` is provided and `externalId` is not, one is automatically generated and returned in the response.
+      crossRegion:
+        type: string
+        enum:
+          - 'true'
+          - 'false'
+        description: >
+          For S3 links only.
+          If set to `true`, allows the link to access S3 buckets in regions other than the one specified by `region`.
+          Warning: Accessing buckets in a different region incurs cross-region data transfer charges.
       serviceEndpoint:
         type: string
         description: >
           For S3 links only.
           The Amazon S3 service endpoint.
+      pathStyleAddressing:
+        type: string
+        enum:
+          - 'true'
+          - 'false'
+        description: >
+          For S3 links only.
+          If set to `true`, uses path-style addressing for S3 requests instead of virtual-hosted-style.
+          Defaults to `true` if `serviceEndpoint` is set.
+      disableSslVerify:
+        type: boolean
+        description: >
+          For S3 links only.
+          If set to `true`, SSL verification is disabled.
 
-#   RequestSpecificAzureBlob:
-#     title: Azure Blob Specific Request
-#     type: object
-#     # required:
-#     #   - endpoint
-#     properties:
-#       endpoint:
-#         $ref: "#/components/schemas/CommonEndpoint"
-#         # type: string
-#         # description: For Azure Blob links, this is the endpoint URI.
-#       accountName:
-#         type: string
-#         description: >
-#           For Azure Blob links only.
-#           The account name.
-#           Used for shared key authentication.
-
-
-#           You should URL-encode this parameter to escape any special characters.
-#       accountKey:
-#         type: string
-#         description: >
-#           For Azure Blob links only.
-#           The account key.
-#           Used for shared key authentication.
-
-
-#           You should URL-encode this parameter to escape any special characters.
-#       sharedAccessSignature:
-#         type: string
-#         description: >
-#           For Azure Blob links only.
-#           A token that can be used for authentication.
-#           Used for shared access signature authentication.
+  RequestSpecificAzureBlob:
+    title: Azure Blob Specific Request
+    type: object
+    required:
+      - endpoint
+    properties:
+      endpoint:
+        $ref: "#/components/schemas/CommonEndpoint"
+      accountName:
+        type: string
+        description: >
+          For Azure Blob links only.
+          The account name.
+          Used for shared key authentication.
 
 
-#           You should URL-encode this parameter to escape any special characters.
-#       managedIdentityId:
+          You should URL-encode this parameter to escape any special characters.
+      accountKey:
+        type: string
+        description: >
+          For Azure Blob links only.
+          The account key.
+          Used for shared key authentication.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      sharedAccessSignature:
+        type: string
+        description: >
+          For Azure Blob links only.
+          A token that can be used for authentication.
+          Used for shared access signature authentication.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      # The following authentication methods are implemented but not yet supported for general use:
+#       managedIdentity:
 #         type: string
 #         description: >
 #           For Azure Blob links only.
 #           The managed identity ID.
 #           Used for managed identity authentication.
 #           Only available if the application is running on an Azure instance, e.g. an Azure virtual machine.
-
-
+#
+#
 #           You should URL-encode this parameter to escape any special characters.
 #       clientId:
 #         type: string
 #         description: >
 #           For Azure Blob links only.
 #           The client ID for the registered application.
-#           Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
-
-
+#           Used for Azure Active Directory client secret authentication.
+#
+#
 #           You should URL-encode this parameter to escape any special characters.
 #       tenantId:
 #         type: string
 #         description: >
 #           For Azure Blob links only.
 #           The tenant ID where the registered application is created.
-#           Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
-
-
+#           Used for Azure Active Directory client secret authentication.
+#
+#
 #           You should URL-encode this parameter to escape any special characters.
 #       clientSecret:
 #         type: string
@@ -514,27 +560,14 @@ components:
 #           For Azure Blob links only.
 #           The client secret for the registered application.
 #           Used for Azure Active Directory client secret authentication.
-
-
+#
+#
 #           You should URL-encode this parameter to escape any special characters.
-#       clientCertificate:
-#         $ref: "#/components/schemas/CommonClientCertificate"
-        # type: string
-        # description: >
-        #   For Azure Blob links, this is the client certificate for the registered application.
-        #   Used for Azure Active Directory client certificate authentication.
-      
-      
-        #   You should URL-encode this parameter to escape any special characters.
-#       clientCertificatePassword:
-#         type: string
-#         description: >
-#           For Azure Blob links only.
-#           The client certificate password for the registered application.
-#           Used for Azure Active Directory client certificate authentication, if the client certificate is password-protected.
-
-
-#           You should URL-encode this parameter to escape any special characters.
+      disableSslVerify:
+        type: boolean
+        description: >
+          For Azure Blob links only.
+          If set to `true`, SSL verification is disabled.
 
 #   RequestSpecificGCS:
 #     title: GCS Specific Request
@@ -571,7 +604,7 @@ components:
       mapping:
         couchbase: "#/components/schemas/ResponseCouchbase"
         s3: "#/components/schemas/ResponseS3"
-        #azureblob: "#/components/schemas/ResponseAzureBlob"
+        azureblob: "#/components/schemas/ResponseAzureBlob"
         #gcs: "#/components/schemas/ResponseGCS"
     required:
       - name
@@ -590,10 +623,11 @@ components:
 
           * `couchbase`: A link to a remote Couchbase cluster.
           * `s3`: A link to the Amazon S3 service.
+          * `azureblob`: A link to the Azure Blob Storage service.
         enum:
           - couchbase
           - s3
-          #- azureblob
+          - azureblob
           #- gcs
 
   ResponseCouchbase:
@@ -780,101 +814,127 @@ components:
         type: object
         required:
           - accessKeyId
+          - crossRegion
+          - instanceProfile
           - region
           - secretAccessKey
           - serviceEndpoint
+          - sessionToken
         properties:
           accessKeyId:
             type: string
-            description: The Amazon S3 access key ID.
+            nullable: true
+            description: >
+              The Amazon S3 access key ID.
+              If not set, this property returns `null`.
             x-has-example: true
             example: myAccessKey
+          crossRegion:
+            type: boolean
+            description: >
+              Whether the link can access S3 buckets in regions other than the configured region.
+            x-has-example: true
+            example: false
+          externalId:
+            type: string
+            nullable: true
+            description: >
+              The external ID for cross-account role assumption.
+              Only set when `roleArn` is used.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          instanceProfile:
+            type: string
+            nullable: true
+            description: >
+              Whether the EC2 instance profile is used for authentication.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
           region:
             type: string
             description: The Amazon S3 region.
             x-has-example: true
             example: us-east-1
+          roleArn:
+            type: string
+            nullable: true
+            description: >
+              The Amazon Resource Name (ARN) of the role assumed for cross-account authentication.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
           secretAccessKey:
             type: string
+            nullable: true
             description: >
               The Amazon S3 secret access key.
               This is redacted for the sake of security.
-            x-has-example: true
-            example: <redacted sensitive entry>
-          sessionToken:
-            type: string
-            description: >
-              The Amazon S3 session token.
-              Indicates that the link has temporary access, and that the `accessKeyId` and `secretAccessKey` are temporary credentials.
-              This is redacted for the sake of security.
+              If not set, this property returns `null`.
             x-has-example: true
             example: <redacted sensitive entry>
           serviceEndpoint:
             type: string
             nullable: true
             description: >
-              Amazon S3 service endpoint.
+              The Amazon S3 service endpoint.
               If not set, this property returns `null`.
             x-has-example: true
             example: my.endpoint.uri
+          sessionToken:
+            type: string
+            nullable: true
+            description: >
+              The Amazon S3 session token.
+              Indicates that the link has temporary access, and that the `accessKeyId` and `secretAccessKey` are temporary credentials.
+              This is redacted for the sake of security.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: <redacted sensitive entry>
 
-#   ResponseAzureBlob:
-#     title: Azure Blob Response
-#     description: These properties are returned for Azure Blob links.
-#     allOf:
-#       - $ref: "#/components/schemas/ResponseAll"
-#       - $ref: "#/components/schemas/ResponseAzureBlobSpecific"
+  ResponseAzureBlob:
+    title: Azure Blob Response
+    description: These properties are returned for Azure Blob links.
+    allOf:
+      - $ref: "#/components/schemas/ResponseAll"
+      - $ref: "#/components/schemas/ResponseAzureBlobSpecific"
 
-#   ResponseAzureBlobSpecific:
-#         title: Azure Blob Specific Response
-#         type: object
-#         required:
-#           - endpoint
-#         properties:
-#           accountKey:
-#             type: string
-#             nullable: true
-#             description: >
-#               The account key.
-#               Used for shared key authentication.
-#               This is redacted for the sake of security.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: <redacted sensitive entry>
-#           accountName:
-#             type: string
-#             nullable: true
-#             description: >
-#               The account name.
-#               Used for shared key authentication.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: myAccountName
-#           clientCertificate:
-#             type: string
-#             nullable: true
-#             description: >
-#               The client certificate for the registered application.
-#               Used for Azure Active Directory client certificate authentication.
-#               This is redacted for the sake of security.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: <redacted sensitive entry>
-#           clientCertificatePassword:
-#             type: string
-#             nullable: true
-#             description: >
-#               The client certificate password for the registered application.
-#               Used for Azure Active Directory client certificate authentication, if the client certificate is password-protected.
-#               This is redacted for the sake of security.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: <redacted sensitive entry>
+  ResponseAzureBlobSpecific:
+        title: Azure Blob Specific Response
+        type: object
+        required:
+          - accountKey
+          - accountName
+          - endpoint
+          - sharedAccessSignature
+        properties:
+          accountKey:
+            type: string
+            nullable: true
+            description: >
+              The account key.
+              Used for shared key authentication.
+              This is redacted for the sake of security.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          accountName:
+            type: string
+            nullable: true
+            description: >
+              The account name.
+              Used for shared key authentication.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: myAccountName
+          # The following properties are for authentication methods that are implemented but not yet supported for general use:
 #           clientId:
 #             type: string
+#             nullable: true
 #             description: >
 #               The client ID for the registered application.
-#               Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
+#               Used for Azure Active Directory client secret authentication.
 #               If not set, this property returns `null`.
 #             x-has-example: true
 #             example: myClientID
@@ -888,12 +948,22 @@ components:
 #               If not set, this property returns `null`.
 #             x-has-example: true
 #             example: <redacted sensitive entry>
-#           endpoint:
-#             type: string
-#             description: The endpoint URI.
-#             x-has-example: true
-#             example: my.endpoint.uri
-#           managedIdentityId:
+          disableSslVerify:
+            type: boolean
+            description: >
+              Whether SSL verification is disabled.
+            x-has-example: true
+            example: false
+          endpoint:
+            type: string
+            nullable: true
+            description: >
+              The endpoint URI.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: my.endpoint.uri
+          # The following properties are for authentication methods that are implemented but not yet supported for general use:
+#           managedIdentity:
 #             type: string
 #             nullable: true
 #             description: >
@@ -902,22 +972,23 @@ components:
 #               If not set, this property returns `null`.
 #             x-has-example: true
 #             example: myManagedIdentityID
-#           sharedAccessSignature:
-#             type: string
-#             nullable: true
-#             description: >
-#               A token that can be used for authentication.
-#               Used for shared access signature authentication.
-#               This is redacted for the sake of security.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: <redacted sensitive entry>
+          sharedAccessSignature:
+            type: string
+            nullable: true
+            description: >
+              A token that can be used for authentication.
+              Used for shared access signature authentication.
+              This is redacted for the sake of security.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          # The following properties are for authentication methods that are implemented but not yet supported for general use:
 #           tenantId:
 #             type: string
 #             nullable: true
 #             description: >
 #               The tenant ID where the registered application is created.
-#               Used for Azure Active Directory client secret authentication, or Azure Active Directory client certificate authentication.
+#               Used for Azure Active Directory client secret authentication.
 #               If not set, this property returns `null`.
 #             x-has-example: true
 #             example: myTenantID

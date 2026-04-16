@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Cluster Settings REST API
-  version: '2.0'
+  version: '2.1'
   description: |
     This API enables you to view or set cluster-level Enterprise Analytics settings.
 
@@ -72,39 +72,117 @@ components:
     properties:
       blobStorageScheme:
         type: string
-        description: Specifies the blob storage scheme.
+        description: |
+          The storage scheme (provider) to use. Supported values:
+          - `s3` — AWS S3 or an S3-compatible storage service.
+          - `azblob` — Azure Blob Storage.
+        enum:
+          - s3
+          - azblob
         x-has-example: true
         example: s3
       blobStorageBucket:
         type: string
-        description: Specifies the blob storage bucket name.
+        description: |
+          The name of the blob storage bucket (S3) or container (Azure Blob Storage) where Enterprise Analytics will store its data.
         x-has-example: true
         example: enterprise-analytics-bucket
       blobStorageRegion:
         type: string
-        description: Specifies the blob storage bucket region.
+        description: |
+          The region of the blob storage bucket. Applies only when `blobStorageScheme` is `s3`.
         x-has-example: true
         example: us-west-2
       blobStoragePrefix:
         type: string
-        description: Specifies the blob storage bucket prefix where enterprise analytics will store its data.
+        description: |
+          Optional. The path prefix within the bucket (S3) or container (Azure Blob Storage) where Enterprise Analytics will store its data. If not specified, the data is stored in the root of the bucket /
         x-has-example: true
         example: analytics-data/
       blobStorageAnonymousAuth:
         type: boolean
-        description: Specifies if anonymous authentication should be used when accessing the blob storage bucket.
+        description: |
+          Applies only when `blobStorageScheme` is `s3`.
+          If `true`, the storage bucket will be accessed without any credentials (anonymous access).
+          See also `blobStorageAccessKeyId` and `blobStorageSecretAccessKey` for static credentials,
+          or omit all credential fields to use the Standard Credential Chain.
         x-has-example: true
         example: false
       blobStorageForcePathStyle:
         type: boolean
-        description: Specifies if path style should be should be used when accessing the blob storage bucket.
+        description: |
+          (Deprecated) Use `blobStoragePathStyleAddressing` instead.
+        deprecated: true
         x-has-example: true
         example: false
+      blobStoragePathStyleAddressing:
+        type: boolean
+        description: |
+          Applies only when `blobStorageScheme` is `s3` and a custom `blobStorageEndpoint` is configured (S3-compatible storage).
+          If `true`, path-style URLs are used (e.g., `https://s3.example.com/bucket-name/key`).
+          If `false`, virtual-hosted-style URLs are used (e.g., `https://bucket-name.s3.example.com/key`).
+          Some S3-compatible storage services require path-style addressing.
+          Replaces the deprecated `blobStorageForcePathStyle`.
+        x-has-example: true
+        example: false
+      blobStorageEndpoint:
+        type: string
+        description: |
+          The endpoint URL for the blob storage service. Required when using S3-compatible storage or Azure Blob Storage.
+          - For `s3` (S3-compatible): the URL of your S3-compatible storage service (e.g., `https://my-object-storage:18082`).
+          - For `azblob`: the Blob service endpoint for your Azure storage account (e.g., `https://mycompany.blob.core.windows.net/`).
+        x-has-example: true
+        example: https://my-object-storage:18082
+      blobStorageDisableSslVerify:
+        type: boolean
+        description: |
+          If `true`, disables certificate verification for SSL/TLS connections to the blob storage endpoint.
+          Useful for testing or when using self-signed certificates, but **not recommended for production**.
+          Warning: Disabling SSL verification in a production environment is highly insecure and exposes the system
+          to serious risks, including Man-in-the-Middle (MITM) attacks.
+        x-has-example: true
+        example: false
+      blobStorageCertificates:
+        type: array
+        items:
+          type: string
+        description: |
+          One or more PEM-encoded certificates to trust when connecting to the blob storage endpoint.
+          Only required if the endpoint is signed by a certificate authority (CA) other than a well-known public CA
+          (e.g., for self-signed or private/internal CA certificates).
+          Multiple certificates can be provided to support certificate rotation.
+
+          **Available from Enterprise Analytics 2.1.1.**
+        x-has-example: true
+        example:
+          - "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+      blobStorageAccessKeyId:
+        type: string
+        description: |
+          Optional. Applies only when `blobStorageScheme` is `s3`.
+          The Access Key ID for static credential authentication. If provided, must be supplied together with `blobStorageSecretAccessKey`.
+          If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
+          See also `blobStorageAnonymousAuth` for anonymous access.
+
+          **Available from Enterprise Analytics 2.1.1.**
+        x-has-example: true
+        example: AKIAIOSFODNN7EXAMPLE
+      blobStorageSecretAccessKey:
+        type: string
+        description: |
+          Optional. Applies only when `blobStorageScheme` is `s3`.
+          The Secret Access Key for static credential authentication. If provided, must be supplied together with `blobStorageAccessKeyId`.
+          If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
+          This value is masked as `***` in logs and when returned from the API for security reasons.
+
+          **Available from Enterprise Analytics 2.1.1.**
+        x-has-example: true
+        example: "***"
       numStoragePartitions:
         type: integer
         minimum: 1
         maximum: 1024
-        description: Specifies the number partitions that will be used when storing the data in the blob storage bucket.
+        description: Specifies the number of partitions that will be used when storing the data in the blob storage bucket.
         x-has-example: true
         example: 128
 

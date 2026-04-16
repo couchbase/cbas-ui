@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Enterprise Analytics Configuration REST API
-  version: '2.0'
+  version: '2.1'
   description: |
     This API enables you to configure Enterprise Analytics Service.
 
@@ -131,6 +131,43 @@ components:
   Service:
     type: object
     properties:
+      abortTasksTimeout:
+        description: The maximum time to wait for tasks to be aborted, in milliseconds.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 600000
+      activeMemoryGlobalBudget:
+        description: The memory budget for the active runtime. Accepts either an integer number of bytes or a byte string (e.g. `64MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: "64 MiB"
+      activeStopTimeout:
+        description: The maximum time (in seconds) to wait for a graceful stop of an active runtime.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3600
+      activeSuspendTimeout:
+        description: The maximum time (in seconds) to wait for a graceful suspend of an active runtime.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3600
+      allowLoopbackRedirectRemoteLink:
+        description: Allow remote link redirects to loopback addresses.
+        type: boolean
+        x-has-default: true
+        default: false
+      analyticsBroadcastDcpStateMutationCount:
+        description: The number of processed mutations after which the DCP state is broadcast to storage.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 100000
       analyticsHttpRequestQueueSize:
         description: The maximum number of HTTP requests to queue pending ability to execute.
         type: integer
@@ -143,42 +180,146 @@ components:
         format: int32
         x-has-default: true
         default: 16
-      cloudAccessPreemptiveRefreshIntervalSeconds:
-        description: The interval at which to attempt to preemptively verify cloud access. If access is confirmed to be revoked, the process will halt. (0 == no preemptive refresh)
+      authorizationCacheTtlSeconds:
+        description: How long (in seconds) to cache user authorizations before checking with the authorization provider.
         type: integer
         format: int32
         x-has-default: true
-        default: 15
-      cloudAccessRefreshHaltTimeoutSeconds:
-        description: The length of time before we will halt on failure to verify cloud access. (0 == wait forever)
+        default: 5
+      authorizationHaltOnLostCredentialsSeconds:
+        description: >
+          How long to wait (in seconds) when receiving 401 from the parent process for credentials to succeed before
+          halting. (0 == no wait, -1 == wait forever)
         type: integer
         format: int32
         x-has-default: true
         default: 120
+      awsAssumeRoleAsyncRefreshEnabled:
+        description: >
+          Whether the AWS credential provider should fetch credentials asynchronously in the background.
+          If `true`, threads are less likely to block when credentials are loaded, but additional resources are used to
+          maintain the provider.
+        type: boolean
+        x-has-default: true
+        default: true
+      awsAssumeRoleDuration:
+        description: AWS assuming role duration in seconds. Range from 900 seconds (15 minutes) to 43200 seconds (12 hours).
+        type: integer
+        format: int32
+        minimum: 900
+        maximum: 43200
+        x-has-default: true
+        default: 3600
+      awsAssumeRolePrefetchTime:
+        description: >
+          The amount of time (in seconds), relative to STS token expiration, at which cached credentials are considered
+          close to stale and should be updated. Prefetch updates will occur between the specified time and the stale time
+          of the provider.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 300
+      awsAssumeRoleStaleTime:
+        description: The amount of time (in seconds), relative to STS token expiration, that the cached credentials are considered stale and must be updated.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 60
+      azureRequestTimeout:
+        description: Timeout (in seconds) for Azure client requests.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      bindAddress:
+        description: The specific bind address to use. If not set, the wildcard address is used.
+        type: string
+        nullable: true
+        x-has-default: false
+        default: null
+      bindToHost:
+        description: If `true`, bind to the configured hostname instead of the wildcard address.
+        type: boolean
+        x-has-default: true
+        default: false
+      cloudAccessPreemptiveRefreshIntervalSeconds:
+        description: >
+          The interval (in seconds) at which to attempt to preemptively verify cloud access.
+          If access is confirmed to be revoked, the process will halt. (0 == no preemptive refresh)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 30
+      cloudAccessRefreshHaltTimeoutSeconds:
+        description: The length of time (in seconds) before the process will halt on failure to verify cloud access. (0 == wait forever)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 300
       cloudAccessTtlSeconds:
-        description: The length of time allowed to assume we still have write access to cloud resources
+        description: The length of time (in seconds) allowed to assume we still have write access to cloud resources.
         type: integer
         format: int32
         x-has-default: true
         default: 15
+      cloudAcquireTokenTimeout:
+        description: >
+          The waiting time (in milliseconds) if a requesting thread failed to acquire a token when the rate limit of
+          cloud requests is exceeded. (min: 1, max: 5000)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 100
+      cloudEvictionPlanReevaluateThreshold:
+        description: The number of eviction events after which the eviction plan is re-evaluated.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 50
       cloudMaxReadRequestsPerSecond:
-        description: The maximum number of read requests per second (default 1500, 0 means unlimited)
+        description: The maximum number of read requests per second (default 1500, 0 means unlimited).
         type: integer
         format: int32
         x-has-default: true
         default: 1500
       cloudMaxWriteRequestsPerSecond:
-        description: The maximum number of write requests per second (default 250, 0 means unlimited)
+        description: The maximum number of write requests per second (default 250, 0 means unlimited).
         type: integer
         format: int32
         x-has-default: true
         default: 250
+      cloudProfilerLogInterval:
+        description: >
+          The interval (in minutes) at which to log cloud request statistics. Minimum is 1 minute.
+          Note: enabling this logging may perturb the performance of cloud requests. (0 == disabled)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 5
       cloudRequestsHttpConnectionAcquireTimeout:
         description: The waiting time (in seconds) to acquire an HTTP connection before failing the request. (default 120 seconds)
         type: integer
         format: int32
         x-has-default: true
         default: 120
+      cloudRequestsHttpConnectionMaxIdleSeconds:
+        description: |-
+          The time (in seconds) after which an idle cloud connection will be closed. (0 == unlimited idle)
+
+          **Available from Enterprise Analytics 2.1.1.**
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      cloudRequestsHttpConnectionMaxLifetimeSeconds:
+        description: |-
+          The time (in seconds) after which a cloud connection will no longer be reused. (0 == unlimited lifetime)
+
+          **Available from Enterprise Analytics 2.1.1.**
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3600
       cloudRequestsMaxHttpConnections:
         description: The maximum number of HTTP connections to use concurrently for cloud requests per node. (default 1000)
         type: integer
@@ -192,13 +333,43 @@ components:
         x-has-default: true
         default: 10000
       cloudStorageAllocationPercentage:
-        description: The percentage of the total disk space that should be allocated for data storage when the 'selective' caching policy is used. The remaining will act as a buffer for query workspace (i.e., for query operations that require spilling to disk). (default 80% of the total disk space)
+        description: >
+          The percentage of the total disk space that should be allocated for data storage when the `selective` caching
+          policy is used. The remaining will act as a buffer for query workspace (i.e., for query operations that require
+          spilling to disk). (default 80% of the total disk space)
         type: number
         format: double
         x-has-default: true
         default: 0.8
+      cloudStorageCachePolicy:
+        description: >
+          The caching policy for cloud storage data. Supported values:
+          - `selective` — Only cache data that is likely to be reused; sweeps disk when storage thresholds are exceeded.
+          - `eager` — Cache all data eagerly.
+          - `lazy` — Cache data on first access.
+        type: string
+        x-has-default: true
+        default: selective
+      #cloudStorageDebugModeEnabled:
+      #  description: Whether or not the debug mode is enabled when using the `selective` caching policy.
+      #  type: boolean
+      #  x-has-default: true
+      #  default: false
+      #cloudStorageDebugSweepThresholdSize:
+      #  description: >
+      #    For debugging only. Overrides `cloudStorageSweepThresholdPercentage` — pressure size will be the current
+      #    used space plus the additional bytes provided by this option instead of using the percentage threshold.
+      #    Accepts either an integer number of bytes or a byte string (e.g. `1GiB`).
+      #  oneOf:
+      #    - type: string
+      #    - type: integer
+      #      format: int64
+      #  x-has-default: true
+      #  default: "1 GiB"
       cloudStorageDiskMonitorInterval:
-        description: The disk monitoring interval time (in seconds) determines how often the system checks for pressure on disk space when using the 'selective' caching policy. (default 120 seconds)
+        description: >
+          The disk monitoring interval time (in seconds) that determines how often the system checks for pressure on disk
+          space when using the `selective` caching policy. (default 120 seconds)
         type: integer
         format: int32
         x-has-default: true
@@ -209,8 +380,28 @@ components:
         format: int32
         x-has-default: true
         default: 360
+      cloudStorageS3ClientReadTimeout:
+        description: The read timeout (in seconds) for the S3 synchronous client. -1 means the SDK default.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: -1
+      cloudStorageS3ParallelDownloaderClientType:
+        description: >
+          The S3 client type used for parallel downloads. Defaults to `crt` when no custom endpoint is
+          configured, and `java` otherwise (computed at startup).
+        type: string
+        x-has-default: false
+      cloudStorageS3UseRoundRobinDnsResolver:
+        description: Enable round-robin DNS resolver for the S3 client.
+        type: boolean
+        x-has-default: true
+        default: false
       cloudStorageSweepThresholdPercentage:
-        description: The percentage of the used storage space at which the disk sweeper starts freeing space by punching holes in stored indexes or by evicting them entirely, when the 'selective' caching policy is used. (default 90% of the allocated space for storage)
+        description: >
+          The percentage of the used storage space at which the disk sweeper starts freeing space by punching holes in
+          stored indexes or by evicting them entirely, when the `selective` caching policy is used.
+          (default 90% of the allocated space for storage)
         type: number
         format: double
         x-has-default: true
@@ -221,6 +412,28 @@ components:
         format: int32
         x-has-default: true
         default: 8388608
+      clusterConnectRetries:
+        description: The number of times to retry connecting to the cluster controller.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 5
+      collectDcpStateFromNodesTimeout:
+        description: The maximum time (in seconds) to wait to collect DCP state from all nodes.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 600
+      compilerArrayindex:
+        description: Enable/disable using array-indexes in queries.
+        type: boolean
+        x-has-default: true
+        default: true
+      compilerBatchLookup:
+        description: Enable/disable batch point-lookups when running queries with secondary indexes.
+        type: boolean
+        x-has-default: true
+        default: true
       compilerCbo:
         description: Set the mode for cost based optimization.
         type: boolean
@@ -237,29 +450,144 @@ components:
         format: int32
         x-has-default: true
         default: 8388608
+      compilerDisjunctionAsJoin:
+        description: |-
+          Rewrite disjunctions to joins in query plans.
+
+          **Available from Enterprise Analytics 2.1.1.**
+          The default is `false` for clusters provisioned from 2.1.1 onwards.
+          Clusters upgraded to 2.1.1 have this set to `true` to preserve pre-upgrade behavior.
+        type: boolean
+        x-has-default: true
+        default: false
+      compilerDisjunctionHashThreshold:
+        description: |-
+          The number of disjunctions after which a hash-based approach is used for evaluating OR operations. -1 disables the hash-based approach.
+
+          **Available from Enterprise Analytics 2.1.1.**
+        type: integer
+        format: int32
+        x-has-default: true
+        default: -1
+      compilerExtractCommonExpressionLimit:
+        description: |-
+          The maximum number of common expressions to extract.
+
+          **Available from Enterprise Analytics 2.1.1.**
+          The default is `100` for clusters provisioned from 2.1.1 onwards.
+          Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 100
       compilerExternalFieldPushdown:
         description: Enable pushdown of field accesses to the external data-scan operator.
         type: boolean
         x-has-default: true
         default: true
+      compilerExternalscanmemory:
+        description: The memory budget for an external scan operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `8KiB`, `1MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: "8 KiB"
       compilerFramesize:
-        description: The page size (in bytes) for computation.
-        type: integer
-        format: int32
+        description: The page size for computation. Accepts either an integer number of bytes or a byte string (e.g. `32KiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
         x-has-default: true
-        default: 32768
+        default: "32 KiB"
       compilerGroupmemory:
-        description: The memory budget (in bytes) for a group by operator instance in a partition.
-        type: integer
-        format: int32
+        description: The memory budget for a group by operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
         x-has-default: true
-        default: 33554432
+        default: "32 MiB"
       compilerJoinmemory:
-        description: The memory budget (in bytes) for a join operator instance in a partition.
+        description: The memory budget for a join operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: "32 MiB"
+      compilerMaxVariableOccurrencesInlining:
+        description: Maximum occurrences of a variable allowed in an expression for inlining.
         type: integer
         format: int32
         x-has-default: true
-        default: 33554432
+        default: 128
+      compilerMinGroupmemory:
+        description: The minimum memory budget for a group by operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `512KiB`, `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: "512 KiB"
+      compilerMinJoinmemory:
+        description: The minimum memory budget for a join operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `512KiB`, `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: "512 KiB"
+      compilerMinSortmemory:
+        description: The minimum memory budget for a sort operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `512KiB`, `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: "512 KiB"
+      compilerMinWindowmemory:
+        description: The minimum memory budget for a window operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `512KiB`, `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: "512 KiB"
+      compilerOptimizeExpressionMaxArgs:
+        description: |-
+          Avoid costly O(N^2) expression optimization passes (e.g. constant folding, CSE) on large IN-list queries
+          when the number of OR/AND function arguments is greater than or equal to the specified value.
+
+          **Available from Enterprise Analytics 2.1.1.**
+          The default is `200` for clusters provisioned from 2.1.1 onwards.
+          Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 200
+      compilerOrderedFields:
+        description: Enable/disable select order list.
+        type: boolean
+        x-has-default: true
+        default: false
+      compilerParallelism:
+        description: >
+          The degree of parallelism for query execution.
+          Zero means to use the storage parallelism as the query execution parallelism, while other integer values
+          dictate the number of query execution parallel partitions. The system will fall back to use the number of
+          all available CPU cores in the cluster as the degree of parallelism if the number set by a user is too
+          large or too small.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 0
+      compilerQueryplanshape:
+        description: Set the mode for forcing the shape of the query plan (e.g., `zigzag`, `leftdeep`, `rightdeep`).
+        type: string
+        x-has-default: true
+        default: zigzag
       compilerRuntimeMemoryOverhead:
         description: A percentage of the job's required memory to be added to account for runtime memory overhead.
         type: integer
@@ -267,17 +595,26 @@ components:
         x-has-default: true
         default: 5
       compilerSortmemory:
-        description: The memory budget (in bytes) for a sort operator instance in a partition.
-        type: integer
-        format: int32
+        description: The memory budget for a sort operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
         x-has-default: true
-        default: 33554432
+        default: "32 MiB"
+      compilerSortParallel:
+        description: Enables/disables full parallel sort.
+        type: boolean
+        x-has-default: true
+        default: false
       compilerWindowmemory:
-        description: The memory budget (in bytes) for a window operator instance in a partition.
-        type: integer
-        format: int32
+        description: The memory budget for a window operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `32MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
         x-has-default: true
-        default: 33554432
+        default: "32 MiB"
       copyToKvBucketWaitUntilReadyTimeout:
         description: The number of seconds to wait for COPY TO KV bucket WaitUntilReady before timing out.
         type: integer
@@ -290,6 +627,12 @@ components:
         format: int32
         x-has-default: true
         default: 3
+      dcpBufferAckWatermark:
+        description: The integer percentage of DCP connection buffer size at which to acknowledge bytes consumed to the DCP producer as part of flow control.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 20
       dcpChannelConnectAttemptTimeout:
         description: The maximum attempt time to connect to a DCP channel in seconds.
         type: integer
@@ -303,21 +646,172 @@ components:
         x-has-default: true
         default: 480
       dcpConnectionBufferSize:
-        type: integer
         description: |-
-          DCP connection buffer size (in bytes).
+          DCP connection buffer size in bytes.
 
-          If the JVM maximum heap size is less than 8GB, the default for this parameter is 10 MB divided by the number of IO Devices on the node.
-          Otherwise, the default is 1% of the JVM maximum heap size divided by the number of IO Devices on the node.
+          **Default:** Computed at startup — 10 MiB divided by the number of IO devices on the node when the JVM
+          maximum heap is less than 8 GiB; otherwise 1% of the JVM maximum heap divided by the number of IO devices.
+          A plain integer value in bytes may be specified to override this.
+        type: integer
+        format: int32
+        x-has-default: false
+      dcpForceSnappyCompression:
+        description: >
+          Directs KV to snappy compress all values before sending to Analytics.
+          This should only be enabled in specific circumstances, as it will increase memory and CPU use on data nodes.
+          Only applicable if snappy compression support is enabled (`dcpSupportSnappyCompression`).
+        type: boolean
+        x-has-default: true
+        default: false
+      dcpIdleQueueFlushThresholdMillis:
+        description: The number of milliseconds before an empty DCP queue will trigger a flush of any pending incoming mutations to storage. (0 == flush instantly, negative value == never flush)
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 100
+      dcpMaxConnectionsPerKvNode:
+        description: The maximum number of DCP connections to allow to each KV node for an ingestion (cluster-wide).
+        type: integer
         format: int32
         x-has-default: true
-        default: 1048576
+        default: 128
+      dcpMinWorkPerKvConnection:
+        description: >
+          The minimum amount of work to allow per DCP connection for each ingestion connection. Work is
+          (vbuckets * streams), where one stream is used for each unique KV collection being ingested.
+          When allocating connections, it will be attempted to keep work per connection above this number.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 8
+      dcpNoopInterval:
+        description: The DCP NOOP interval (in seconds) used for dead connection detection.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 120
+      dcpStreamRequestIncludePurgeSeqnos:
+        description: Whether the DCP client should include the purge sequence number in stream requests, if supported by the producer.
+        type: boolean
+        x-has-default: true
+        default: true
+      dcpSupportSnappyCompression:
+        description: Support receiving values from KV via DCP in snappy compressed form.
+        type: boolean
+        x-has-default: true
+        default: true
+      dcpTargetMaxWorkPerKvConnection:
+        description: >
+          The maximum amount of work to target per DCP connection for each ingestion connection. Work is
+          (vbuckets * streams), where one stream is used for each unique KV collection being ingested.
+          The larger this number, the fewer DCP connections that will be attempted to be used.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 64
+      deadlockWatchdogHaltDelaySeconds:
+        description: The delay (in seconds) to wait for graceful shutdown due to deadlocked threads, before halting.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 120
+      deadlockWatchdogPollSeconds:
+        description: The frequency (in seconds) to scan for deadlocked threads.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 300
+      gcpImpersonateServiceAccountDuration:
+        description: GCS impersonating service account duration in seconds. Range from 60 seconds (1 minute) to 3600 seconds (1 hour).
+        type: integer
+        format: int32
+        minimum: 60
+        maximum: 3600
+        x-has-default: true
+        default: 900
+      healthCheckStatusCodeEjecting:
+        description: >
+          HTTP status code returned by the health check endpoint (GET :8095/api/v1/health) when the node is being
+          rebalanced out of the cluster. This should indicate failure to upstream load balancers so that traffic is no
+          longer routed to the node.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 503
+      healthCheckStatusCodeNormal:
+        description: >
+          HTTP status code returned by the health check endpoint (GET :8095/api/v1/health) when the node is healthy
+          and able to serve traffic. This should indicate success to upstream load balancers.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 204
+      ingestionMaxBootstrapIntervalSeconds:
+        description: >
+          The timeout (in seconds) to wait for remaining partitions to complete bootstrapping after at least one has
+          bootstrapped, before aborting ingestion and triggering a reconnect.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 480
+      jobHistorySize:
+        description: The number of historical jobs to retain in memory.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 10
       jobQueueCapacity:
         description: The maximum number of jobs to queue before rejecting new jobs.
         type: integer
         format: int32
         x-has-default: true
         default: 4096
+      jsonMaxDepth:
+        description: The maximum nesting depth for JSON objects. The depth is a count of objects and arrays that have not been closed, `{` and `[` respectively.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1000
+      jsonMaxDocLength:
+        description: The maximum length of a JSON document. Accepts either an integer number of bytes or a byte string (e.g. `10MiB`). 0 means no limit.
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: 0
+      jsonMaxNameLength:
+        description: The maximum length of a JSON field name. Accepts either an integer number of bytes or a byte string.
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: 50000
+      jsonMaxNumberLength:
+        description: The maximum length of a JSON number. Accepts either an integer number of bytes or a byte string. 0 or less means no limit.
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: 1000
+      jsonMaxStringLength:
+        description: The maximum length of a JSON string value. Accepts either an integer number of bytes or a byte string. 0 or less means no limit.
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: "40 MiB"
+      jsonMaxTokenCount:
+        description: >
+          The maximum number of JSON tokens in a JSON object (0 or less is no limit). A token is a single unit of input,
+          such as a number, a string, an object start or end, or an array start or end.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 0
       jvmArgs:
         description: |-
           JVM arguments to pass to the Analytics Driver.
@@ -334,11 +828,23 @@ components:
         x-has-default: false
         default: null
       kafkaMaxFetchBytes:
-        description: Maximum number of bytes fetched by a kafka consumer in one request.
+        description: Maximum number of bytes fetched by a Kafka consumer in one request.
         type: integer
         format: int32
         x-has-default: true
         default: 4194304
+      maxActiveLinks:
+        description: The maximum number of links that can be active at any given time.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 100
+      maxRedirectsLocal:
+        description: The number of redirects to follow when communicating with the local cluster via HTTP(S).
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 0
       maxRedirectsRemoteLink:
         description: The number of redirects to follow when communicating with a remote link cluster via http for remote links not configured to prevent redirects.
         type: integer
@@ -351,12 +857,42 @@ components:
         format: int64
         x-has-default: true
         default: 209715200
+      metadataRegistrationTimeoutSecs:
+        description: How long (in seconds) to wait for the metadata node to register with the cluster controller.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1800
+      netBufferCount:
+        description: The number of network buffers per thread.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1
+      netThreadCount:
+        description: The number of network I/O threads.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 1
+      nodeDeltaRecovery:
+        description: Attempt to perform delta recovery when a node is recovered after a failover.
+        type: boolean
+        x-has-default: true
+        default: true
       rebalanceEjectDelaySeconds:
         description: The delay (in seconds) before a node is ejected from the cluster during rebalance from the time that the health check API on that node will start reporting an error response. This is to allow adequate time for the node to removed from consideration by clients utilizing the health check API, to avoid failures on rebalance out; 0 == means no delay.
         type: integer
         format: int32
         x-has-default: true
         default: 0
+      # unused in EA as we don't rebalance datasets, we reassign storage partitions
+      #rebalancePullDatasetSizeFrequency:
+      #  description: The frequency (in seconds) at which the Analytics collection size is pulled from nodes during rebalance.
+      #  type: integer
+      #  format: int32
+      #  x-has-default: true
+      #  default: 5
       remoteLinkConnectTimeoutSeconds:
         description: >
           The maximum time (in seconds) to wait for a remote link connection to establish.
@@ -387,28 +923,139 @@ components:
         x-has-default: true
         default: 0
       remoteStorageSizeMetricTtlMillis:
-        description: The length of time after which remote storage size metric is recomputed.
+        description: The length of time after which the remote storage size metric is recomputed.
         type: integer
         format: int64
         x-has-default: true
         default: 300000
+      replicaInactivityTimeoutSeconds:
+        description: The number of seconds to wait before declaring a replica inactive while it is catching up.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 900
+      replicaRecoveryWaitIntervalSeconds:
+        description: The number of seconds to wait for a failed replica to recover before suspending new writes.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 720
+      replicaReportIntervalSeconds:
+        description: The number of seconds to wait before sending a replicas report.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 5
+      #replicationTimeout:
+      #  description: The timeout (in seconds) for replication operations.
+      #  type: integer
+      #  format: int64
+      #  x-has-default: true
+      #  default: 30
       requestsArchiveSize:
         description: The maximum number of archived requests to maintain.
         type: integer
         format: int32
         x-has-default: true
         default: 1000
-      resultTtl:
-        description: Limits the amount of time results for asynchronous jobs should be retained by the system in milliseconds.
+      # async api is unsupported in 2.1
+      #resultSweepThreshold:
+      #  description: The duration (in milliseconds) after which the system will sweep for expired async query results.
+      #  type: integer
+      #  format: int64
+      #  x-has-default: true
+      #  default: 60000
+      # async api is unsupported in 2.1
+      #resultTtl:
+      #  description: Limits the amount of time results for asynchronous jobs should be retained by the system in milliseconds.
+      #  type: integer
+      #  format: int64
+      #  x-has-default: true
+      #  default: 86400000
+      serializationReplacementsLogFrequency:
+        description: The frequency (in seconds) at which to debug-log serialization replacements.
         type: integer
         format: int64
         x-has-default: true
-        default: 86400000
+        default: 1800
+      storageBuffercacheMaxopenfiles:
+        description: The maximum number of open files in the buffer cache.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 2147483647
+      storageBuffercachePagesize:
+        description: The page size for pages in the buffer cache. Accepts either an integer number of bytes or a byte string (e.g. `128KiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: "128 KiB"
+      storageColumnBufferAcquireTimeout:
+        description: The maximum time in milliseconds to wait for acquiring a buffer from the column buffer pool.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 120000
+      storageColumnBufferPoolMaxMemory:
+        description: >
+          The maximum memory allocated to the column buffer pool.
+          Accepts either an integer number of bytes or a byte string (e.g. `512MiB`).
+
+
+          **Default:** 3% of the JVM maximum heap size, or 100 MiB for JVM heaps below ~3.3 GiB (computed at startup).
+          A value of `0` restores the computed default.
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: false
+      storageColumnBufferPoolMaxSize:
+        description: The maximum number of buffers in the column buffer pool.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 8000
+      storageColumnBufferSize:
+        description: The size of each buffer in the column buffer pool. Accepts either an integer number of bytes or a byte string (e.g. `4KiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: "4 KiB"
+      storageCompressionBlock:
+        description: The default block compression scheme for storage (e.g., `snappy`, `none`).
+        type: string
+        x-has-default: true
+        default: snappy
+      storageDiskForceBytes:
+        description: The number of bytes written before each disk force (fsync). Accepts either an integer number of bytes or a byte string (e.g. `16MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: "16 MiB"
       storageFormat:
         description: The default storage format (either `row` or `column`).
         type: string
         x-has-default: true
         default: column
+      storageIoScheduler:
+        description: The I/O scheduler for LSM flush and merge operations (e.g., `greedy`, `async`).
+        type: string
+        x-has-default: true
+        default: async
+      storageMaxColumnsInZerothSegment:
+        description: The maximum number of columns in the zero segment (page-zero). Accepts either an integer or a byte string.
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: 5000
       storageMaxConcurrentFlushesPerPartition:
         description: The maximum number of concurrently executed flushes per partition (0 means unlimited).
         type: integer
@@ -427,19 +1074,80 @@ components:
         format: int32
         x-has-default: true
         default: 8
+      storageMemorycomponentFlushThreshold:
+        description: The memory usage threshold (as a fraction) at which memory components should be flushed.
+        type: number
+        format: double
+        x-has-default: true
+        default: 0.9
       storageMemorycomponentMaxScheduledFlushes:
         description: The maximum number of scheduled flush operations. 0 means that the value will be calculated as the number of partitions.
         type: integer
         format: int32
         x-has-default: true
         default: 0
+      storageMemorycomponentNumcomponents:
+        description: The number of memory components to be used per LSM index.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 2
+      storageMemorycomponentPagesize:
+        description: The page size for pages allocated to memory components. Accepts either an integer number of bytes or a byte string (e.g. `128KiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int32
+        x-has-default: true
+        default: "128 KiB"
+      storagePageZeroWriter:
+        description: "The implementation to use for writing page-zero in storage components. Possible values: `default`, `sparse`, `adaptive`."
+        type: string
+        x-has-default: true
+        default: default
+      storageWriteRateLimit:
+        description: The maximum disk write rate for each storage partition. 0 or less disables the limit. Accepts either an integer number of bytes per second or a byte string (e.g. `100MiB`).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: true
+        default: 0
+      streamingSocketTimeoutSeconds:
+        description: >
+          The maximum time (in seconds) to wait for a response for streaming requests; the maximum time of inactivity
+          between two data packets. A value of 0 disables timeout; a value of -1 sets timeout to the system default.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 0
+      threaddumpFrequencySeconds:
+        description: The frequency (in seconds) at which to log diagnostic thread dumps.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 300
+      threaddumpLogLevel:
+        description: The log level at which to emit diagnostic thread dumps (e.g., `DEBUG`, `INFO`, `WARN`).
+        type: string
+        x-has-default: true
+        default: DEBUG
+      traceCategories:
+        description: |-
+          A comma-separated list of trace categories to enable for diagnostic tracing.
+          The default is undefined (null — no categories enabled).
+        type: string
+        nullable: true
+        x-has-default: false
+        default: null
       txnDatasetCheckpointInterval:
         description: The interval (in seconds) after which an Analytics collection is considered idle and persisted to disk.
         type: integer
         format: int32
         x-has-default: true
         default: 3600
-  
+
+
   Node:
     type: object
     properties:
@@ -463,16 +1171,40 @@ components:
         description: |-
           The size of memory allocated to the disk buffer cache.
           The value should be a multiple of the buffer cache page size.
+          Accepts either an integer number of bytes or a byte string (e.g. `512MiB`, `2GiB`).
 
-          The default is 1/4 of the allocated memory.
-        type: integer
+          **Default:** 1/4 of the JVM maximum heap size (computed at startup).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: false
       storageMemorycomponentGlobalbudget:
         description: |-
           The size of memory allocated to the memory components.
           The value should be a multiple of the memory component page size.
+          Accepts either an integer number of bytes or a byte string (e.g. `512MiB`, `2GiB`).
 
-          The default is 1/4 of the allocated memory.
-        type: integer
+          **Default:** 1/4 of the JVM maximum heap size (computed at startup).
+        oneOf:
+          - type: string
+          - type: integer
+            format: int64
+        x-has-default: false
+      # these were in the NC section in error, so we hide them from here since they are actually global settings
+      #storagePageZeroWriter:
+      #  description: "The implementation to use for writing page-zero in storage components on this node. Possible values: `default`, `sparse`, `adaptive`."
+      #  type: string
+      #  x-has-default: true
+      #  default: default
+      #storageMaxColumnsInZerothSegment:
+      #  description: The maximum number of columns in the zero segment (page-zero) on this node. Accepts either an integer or a byte string.
+      #  oneOf:
+      #    - type: string
+      #    - type: integer
+      #      format: int32
+      #  x-has-default: true
+      #  default: 5000
 
   Errors:
     type: object

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Enterprise Analytics Request REST API
-  version: '2.0'
+  version: '2.1'
   description: |
     This API enables you to run Enterprises Analytics Service requests and set request-level parameters.
 
