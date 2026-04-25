@@ -2396,21 +2396,6 @@ function createNewCollection() {
             });
       }
     }
-  function getIngestionTooltip(shadow) {
-      let result = "";
-      if (shadow.seqnoLag) {
-        result += shadow.seqnoLag + " seqno lag";
-      }
-      if (shadow.itemsQueued) {
-        if (result.length > 0)
-          result += "<br>";
-        result += shadow.itemsQueued + " items queued";
-      }
-      if (result.length > 0) {
-        return "<em class=\"text-smaller\">" + result + "</em>";
-      }
-      return "";
-  }
 
     function initializeKafkaDataset() {
       return {

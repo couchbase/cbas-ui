@@ -516,7 +516,7 @@ licenses/APL2.txt.
                 </div>
               </div>
         </div>
-  
+
               <!-- Show datasets grouped by Link, the Local link always come first -->
               <div ng-repeat="link in qc.getLinksInDataverse(dataverse.DataverseName)" ng-if="qc.getDatasetsInLink(dataverse,link).length > 0 || qc.showEmptyScopes()">
                 <div class="row margin-left-half margin-right-half margin-top-half">
@@ -528,7 +528,7 @@ licenses/APL2.txt.
                         {{link.DVName}}.
                       </span>{{link.LinkName}}
                     </h6>
-  
+
                     <span ng-if="link.LinkName == 'Local'" class="label neutral margin-right-quarter">
                       cb local
                     </span>
@@ -586,7 +586,7 @@ licenses/APL2.txt.
                            ng-class="{warning : shadow.remaining === qc.datasetDisconnectedState}"></span>
                         {{shadow.id}}
                       </div>
-  
+
                     </div>
   <!-- expando section for details on each dataset -------------------------- -->
                     <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
@@ -733,11 +733,11 @@ licenses/APL2.txt.
                     </h6>
                   </span>
                 </div>
-  
+
                 <div ng-repeat="view in dataverse.views">
                   <div ng-init="view.expanded = false">
                     <div class="row margin-left-half margin-top-half">
-  
+
                       <div
                          class="disclosure padding-left-1 ellipsis"
                          ng-click="shadow.expanded = !shadow.expanded"
@@ -745,7 +745,7 @@ licenses/APL2.txt.
                         <span class="icon fa-eye text-smaller grayblue-2 margin-right-quarter"></span>
                         {{view.id}}
                       </div>
-  
+
                     </div>
                     <!-- expand section for view details -------------------------- -->
                     <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="shadow.expanded">
@@ -763,11 +763,11 @@ licenses/APL2.txt.
                       </p>
                     </div>
                   </div>
-  
+
                 </div>
-  
+
               </div>
-  
+
             </section>
             </div>
         </section>
