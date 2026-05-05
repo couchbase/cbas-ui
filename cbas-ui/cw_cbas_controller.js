@@ -171,7 +171,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.dropDataset = dropDataset;
     qc.dropView = dropView;
     qc.dropScope = dropScope;
-    qc.getIngestionTooltip = getIngestionTooltip;
     qc.dropDatabase = dropDatabase;
     qc.getDataverseInDatabase = getDataverseInDatabase;
     qc.getDatabaseScopeNames = databaseNamesToScopeNames;
