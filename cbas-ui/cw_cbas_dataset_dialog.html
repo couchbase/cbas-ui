@@ -292,6 +292,22 @@ licenses/APL2.txt.
                 placeholder="Optional WHERE clause to filter documents in the dataset. Do not include the 'WHERE' keyword. E.g.,&nbsp;&nbsp;`type` = 'beer'">
         </textarea>
       </div>
+
+      <div class="formrow margin-top-1 margin-bottom-0"
+           ng-if="options.is_new && !isExternalCollection(options.link_details.type)">
+        <label for="storage_format" class="inline">Storage Format</label>
+        <span class="fa-stack icon-info"
+              uib-tooltip-html="'Column: Best for analytical queries that access a few fields from a collection with many fields. Recommended as long as your collection has fewer than 4,000 unique JSON fields across all documents.<br/>Row: Best when queries retrieve entire documents. Ideal for collections with an unlimited or highly variable number of unique JSON fields across all documents in a collection.'"
+              tooltip-placement="auto right">
+          <span class="icon fa-circle-thin fa-stack-2x"></span>
+          <span class="icon fa-info fa-stack-1x"></span>
+        </span>
+        <br>
+        <select id="storage_format" ng-model="options.storageFormat" ng-disabled="!options.is_new" class="fix-width-2">
+          <option value="column">Column</option>
+          <option value="row">Row</option>
+        </select>
+      </div>
     </div>
 
     <div class="panel-footer">
