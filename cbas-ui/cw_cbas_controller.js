@@ -1582,6 +1582,16 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           schema_registry_url: "",
           schema_registry_api_key: "",
           schema_registry_api_secret: ""
+        },
+        http_link: {
+          auth_type: "anonymous",
+          username: "",
+          password: "",
+          bearer_token: "",
+          oauth_token_uri: "",
+          oauth_client_id: "",
+          oauth_client_secret: "",
+          oauth_allowed_scopes: ""
         }
       };
     }
@@ -1819,6 +1829,12 @@ function createNewCollection() {
         if (linkDialogScope.options.couchbase_link.client_key_passphrase.password) {
            linkDialogScope.options.couchbase_link.client_key_passphrase.password = "";
         }
+
+        // http
+        linkDialogScope.options.http_link.password = "";
+        linkDialogScope.options.http_link.bearer_token = "";
+        linkDialogScope.options.http_link.oauth_client_secret = "";
+
         linkDialogScope.errors = []
 
         setCouchbaseLinkFunctions(linkDialogScope);

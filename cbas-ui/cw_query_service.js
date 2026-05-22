@@ -2895,7 +2895,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     });;
   }
 
-  function formatKafkaLinkParams(options) {
+  function setKafkaLinkApiParams(options) {
     var params = {
       type: 'kafka'
     };
@@ -3076,9 +3076,29 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         formData.endpoint = scope.gcs_link.endpoint;
       }
     } else if (scope.link_type === "kafka") {
-      formData = formatKafkaLinkParams(scope);
+      formData = setKafkaLinkApiParams(scope);
+    } else if (scope.link_type === "http") {
+      formData = setHttpLinkApiParams(scope);
     }
 
+    return formData;
+  }
+
+  function setHttpLinkApiParams(scope) {
+    var formData = { type: scope.link_type };
+    if (scope.http_link.auth_type === "basic") {
+      formData.username = scope.http_link.username;
+      formData.password = scope.http_link.password;
+    } else if (scope.http_link.auth_type === "bearer") {
+      formData.bearerToken = scope.http_link.bearer_token;
+    } else if (scope.http_link.auth_type === "oauth2") {
+      formData.oauthTokenUri = scope.http_link.oauth_token_uri;
+      formData.oauthClientId = scope.http_link.oauth_client_id;
+      formData.oauthClientSecret = scope.http_link.oauth_client_secret;
+      if (scope.http_link.oauth_allowed_scopes) {
+        formData.oauthAllowedScopes = scope.http_link.oauth_allowed_scopes;
+      }
+    }
     return formData;
   }
 
@@ -3245,7 +3265,29 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       } else {
         scope.kafka_link.schema_registry_enable = false;
       }
+    } else if (apiData.type === "http") {
+      setHttpLinkDialogParams(apiData, scope);
     }
+  }
+
+  function setHttpLinkDialogParams(apiData, scope) {
+    if (apiData.username) {
+      scope.http_link.auth_type = "basic";
+      scope.http_link.username = apiData.username;
+    } else if (apiData.bearerToken) {
+      scope.http_link.auth_type = "bearer";
+    } else if (apiData.oauthTokenUri) {
+      scope.http_link.auth_type = "oauth2";
+      scope.http_link.oauth_token_uri = apiData.oauthTokenUri;
+      scope.http_link.oauth_client_id = apiData.oauthClientId;
+      scope.http_link.oauth_allowed_scopes = apiData.oauthAllowedScopes || "";
+    } else {
+      scope.http_link.auth_type = "anonymous";
+    }
+    // Sensitive fields are not returned by the API
+    scope.http_link.password = "";
+    scope.http_link.bearer_token = "";
+    scope.http_link.oauth_client_secret = "";
   }
 
   //
