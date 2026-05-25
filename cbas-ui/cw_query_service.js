@@ -55,6 +55,25 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.atLeast71 = mnPoolDefault.export.compat.atLeast71;
   cwQueryService.atLeast72 = mnPoolDefault.export.compat.atLeast72;
 
+  // Helper to check EA version from prodCompatVersion
+  function isAtLeastEA220() {
+    var prodVersion = mnPoolDefault.export.thisNode && mnPoolDefault.export.thisNode.prodCompatVersion;
+    if (!prodVersion) return false;
+    
+    // Extract version numbers, handling build metadata like "2.2.0-1213" and missing patch like "2.2"
+    var versionMatch = String(prodVersion).match(/^(\d+)\.(\d+)(?:\.(\d+))?/);
+    if (!versionMatch) return false;
+    
+    var version = [Number(versionMatch[1]), Number(versionMatch[2]), Number(versionMatch[3] || 0)];
+    var target = [2, 2, 0];
+    
+    for (var i = 0; i < 3; i++) {
+      if (version[i] < target[i]) return false;
+      if (version[i] > target[i]) return true;
+    }
+    return true;
+  }
+
   cwQueryService.dataWIPTooBigForUI = false;
   cwQueryService.lastProgressResult = 0;
   cwQueryService.isDataWIPTooBigForUI = function () {
@@ -149,6 +168,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   cwQueryService.awsRegions = [];
   cwQueryService.createLink = createLink;
+  cwQueryService.createCatalog = createCatalog;
   cwQueryService.editLink = editLink;
   cwQueryService.getAwsSupportedRegions = getAwsSupportedRegions;
   cwQueryService.getCachedLinkInfo = getCachedLinkInfo;
@@ -190,6 +210,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.filteredScopes = {};
   cwQueryService.dataverse_links = {};
   cwQueryService.global_links = [];
+  cwQueryService.catalogs = [];
   cwQueryService.links = [];
   cwQueryService.updateBuckets = updateBuckets;             // get list of buckets
   cwQueryService.getSchemaForBucket = getSchemaForBucket;   // get schema
@@ -1768,7 +1789,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     }
 
     cwQueryService.loadingBuckets = true;
-    var queryText = cwConstantsService.keyspaceQuery;
+    
+    // Use catalog-aware query for EA 2.2.0+
+    var atLeast220 = isAtLeastEA220();
+    var queryText = atLeast220
+      ? cwConstantsService.keyspaceQuery220
+      : cwConstantsService.keyspaceQuery;
+    
     // MDB doesn't like the ugly whitespace in the metadata query, normalize it now
     queryText = queryText.replace(/[ \n]+/g,' ');
     // run a query to get the dataverse, link, and dataset info from Metadata
@@ -1920,6 +1947,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.dataverse_links = {};
     Object.keys(cwQueryService.filteredScopes).forEach(key => delete cwQueryService.filteredScopes[key]);
     cwQueryService.global_links = [];
+    cwQueryService.catalogs = [];
     // thanks to an 'order by' clause, we can count on the dataverses to show up first, then links, then datasets
     if (data && data.results) {
       for (var i = 0; i < data.results.length; i++) {
@@ -1982,6 +2010,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           if (theLink.LinkType === "EXTERNAL" && theLink.extLinkType !== "KAFKA") theLink.IsActive = true; // external links can't be unlinked
           cwQueryService.global_links.push(theLink)
           addToken(record.Name, "link");
+        }
+        // catalogs
+        else if (record.isCatalog) {
+          var catalog = {
+            CatalogName: record.CatalogName,
+            CatalogType: record.CatalogType,
+            CatalogSource: record.CatalogSource,
+            LinkName: record.LinkName
+          };
+          cwQueryService.catalogs.push(catalog);
+          addToken(record.CatalogName, "catalog");
         }
         // datasets
         else if (record.isDataset) {
@@ -2857,6 +2896,44 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };
     return $http(request);
+  }
+
+  function createCatalog(catalogOptions) {
+    var params = convertCatalogDialogToQueryParams(catalogOptions);
+    return cwQueryService.executeQueryUtil(params, "ui_catalogs", false, false);
+  }
+
+  function convertCatalogDialogToQueryParams(options) {
+    var withOptions = [];
+    
+    // Add predefined catalog parameters
+    for (var key in options.catalog_params) {
+      if (options.catalog_params[key]) {
+        withOptions.push(`"${key}": "${options.catalog_params[key]}"`);
+      }
+    }
+    
+    // Add additional user-defined parameters
+    if (options.additionalParams && options.additionalParams.length > 0) {
+      options.additionalParams.forEach(function(param) {
+        if (param.name && param.value) {
+          withOptions.push(`"${param.name}": "${param.value}"`);
+        }
+      });
+    }
+
+    var sql = 'CREATE CATALOG `' + options.catalog_name + '` ' +
+              'TYPE Iceberg ' +
+              'SOURCE ' + options.catalog_source + ' ' +
+              'AT `' + options.catalog_link + '`';
+    
+    if (withOptions.length > 0) {
+      sql += ' WITH { ' + withOptions.join(', ') + ' }';
+    } else {
+      sql += ' WITH {}';
+    }
+    
+    return sql;
   }
 
   function getAwsSupportedRegions() {

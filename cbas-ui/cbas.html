@@ -349,12 +349,53 @@ licenses/APL2.txt.
                   </span>
 
                 </span>
-                <a ng-show="qc.validated.canAccessLinks()"
+                <a ng-show="qc.validated.canAccessLinks() && link.extLinkType != 'HTTP'"
                    title="Add new collection to link"
                    ng-click="qc.createNewDataset(link)"
                    class="text-fine nowrap margin-left-1">
                   + collection
                 </a>
+              </div>
+            </div>
+          </section>
+          <br>
+          <div ng-if="!qc.isGlobalLinks()" class="row margin-bottom-half">
+            <h4>Catalogs:</h4>
+            <a ng-show="qc.validated.canAccessLinks()"
+               title="Create new catalog"
+               ng-click="qc.createNewCatalog()"
+               class="text-fine nowrap margin-right-1">
+              + new catalog
+            </a>
+          </div>
+          <section ng-if="!qc.isGlobalLinks()">
+            <div ng-repeat="catalog in qc.getCatalogs()" ng-init="catalog.expanded = false">
+              <div class="row margin-left-half margin-top-half">
+                <div
+                  class="disclosure padding-left-1 ellipsis"
+                  ng-class="{disclosed : catalog.expanded}"
+                  ng-click="catalog.expanded = !catalog.expanded">
+                  <span class="icon fa-book text-smaller grayblue-2 margin-right-quarter"></span>
+                  {{catalog.CatalogName}}
+                </div>
+              </div>
+              <!-- expando section for catalog details -->
+              <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="catalog.expanded">
+                <p class="margin-bottom-half">
+                  <span class="text-smaller grayblack-3">Type:</span> {{catalog.CatalogType}}
+                </p>
+                <p class="margin-bottom-half" ng-if="catalog.CatalogSource">
+                  <span class="text-smaller grayblack-3">Source:</span> {{catalog.CatalogSource}}
+                </p>
+                <p class="margin-bottom-half" ng-if="catalog.LinkName">
+                  <span class="text-smaller grayblack-3">Link:</span> {{catalog.LinkName}}
+                </p>
+                <p>
+                  <a ng-click="qc.dropCatalog(catalog)"
+                     class="inline margin-bottom-half margin-top-half">
+                    drop catalog
+                  </a>
+                </p>
               </div>
             </div>
           </section>
@@ -366,14 +407,6 @@ licenses/APL2.txt.
                ng-click="qc.createNewDatabase()"
                class="text-fine nowrap margin-right-1">
               + database
-            </a>
-          </div>
-          <div class="row margin-bottom-half" style="justify-content: flex-end; display: flex;">
-            <a ng-show="qc.validated.canAccessLinks()"
-               title="Create standalone collection"
-               ng-click="qc.createNewCollection()"
-               class="text-fine nowrap margin-right-1">
-              + standalone collection
             </a>
           </div>
           <section
@@ -416,6 +449,7 @@ licenses/APL2.txt.
               <div ng-init="dataverse.expanded = false">
                 <div
                     class="disclosure padding-left-1 ellipsis row"
+                    ng-class="{disclosed : dataverse.expanded}"
                     style="align-items: center; gap: 4px; display: flex; justify-content: space-between;"
                     ng-click="dataverse.expanded = !dataverse.expanded"
                 >
@@ -432,6 +466,13 @@ licenses/APL2.txt.
                         </a>
                       </div>
                     </div>
+                  </div>
+                  <div>
+                    <a title="Create standalone collection"
+                       ng-click="qc.createNewCollection(database, dataverse); $event.stopPropagation()"
+                       class="text-fine nowrap margin-right-1">
+                      + standalone collection
+                    </a>
                   </div>
                 </div>
               </div>
@@ -601,7 +642,7 @@ licenses/APL2.txt.
                     </span>
 
                   </span>
-                  <a ng-show="qc.validated.canAccessLinks()"
+                  <a ng-show="qc.validated.canAccessLinks() && link.extLinkType != 'HTTP'"
                      title="Add new collection to link"
                      ng-click="qc.createNewDataset(link); $event.stopPropagation()"
                      class="text-fine nowrap margin-left-1">

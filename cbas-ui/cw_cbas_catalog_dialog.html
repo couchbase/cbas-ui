@@ -1,0 +1,266 @@
+<!--
+Copyright 2026-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<div class="dialog-med" style="width: 600px">
+  <div class="panel-header">
+    <h2 class="ellipsis margin-right-1">Create Catalog</h2>
+  </div>
+  <form class="forms" name="catalogForm">
+    <div class="panel-content">
+      <div class="error error-form" style="word-break: break-word">
+        <div ng-repeat="error in errors">
+          {{error}}
+        </div>
+      </div>
+
+      <!-- Catalog Name -->
+      <div class="formrow">
+        <label for="catalog_name">Catalog Name</label>
+        <input
+          ng-model="options.catalog_name"
+          id="catalog_name"
+          type="text"
+          autocorrect="off"
+          spellcheck="false"
+          autocapitalize="off"
+          required>
+      </div>
+
+      <!-- Catalog Type (always Iceberg) -->
+      <div class="formrow">
+        <label for="catalog_type">Catalog Type</label>
+        <input
+          disabled
+          value="Iceberg"
+          id="catalog_type"
+          type="text">
+      </div>
+
+      <!-- Catalog Source -->
+      <div class="formrow">
+        <label for="catalog_source">Catalog Source</label>
+        <select id="catalog_source" ng-model="options.catalog_source" required>
+          <option value="">-- Select Source --</option>
+          <option value="REST">REST</option>
+          <option value="AWS_GLUE">AWS Glue</option>
+          <option value="AWS_GLUE_REST">AWS Glue REST</option>
+          <option value="S3_TABLES">S3 Tables</option>
+          <option value="BIGLAKE_METASTORE">BigLake Metastore</option>
+          <option value="NESSIE">Nessie</option>
+          <option value="NESSIE_REST">Nessie REST</option>
+        </select>
+      </div>
+
+      <!-- Link Selection -->
+      <div class="formrow">
+        <label for="catalog_link">Link</label>
+        <select id="catalog_link" ng-model="options.catalog_link" required>
+          <option value="">-- Select Link --</option>
+          <option ng-repeat="link in getAvailableLinks()" value="{{link}}">{{link}}</option>
+        </select>
+      </div>
+
+      <!-- REST Parameters -->
+      <div ng-if="options.catalog_source == 'REST'">
+        <div class="formrow">
+          <label>URI</label>
+          <input
+            ng-model="options.catalog_params.uri"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+      </div>
+
+      <!-- AWS_GLUE Parameters (none) -->
+      <div ng-if="options.catalog_source == 'AWS_GLUE'">
+        <div class="formrow">
+          <p style="color: #999">No additional parameters required for AWS Glue</p>
+        </div>
+      </div>
+
+      <!-- AWS_GLUE_REST Parameters -->
+      <div ng-if="options.catalog_source == 'AWS_GLUE_REST'">
+        <div class="formrow">
+          <label>URI</label>
+          <input
+            ng-model="options.catalog_params.uri"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow">
+          <label>SigV4 Signing Region</label>
+          <input
+            ng-model="options.catalog_params.sigv4SigningRegion"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+      </div>
+
+      <!-- S3_TABLES Parameters -->
+      <div ng-if="options.catalog_source == 'S3_TABLES'">
+        <div class="formrow">
+          <label>Warehouse</label>
+          <input
+            ng-model="options.catalog_params.warehouse"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow">
+          <label>URI</label>
+          <input
+            ng-model="options.catalog_params.uri"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow">
+          <label>SigV4 Signing Name</label>
+          <input
+            ng-model="options.catalog_params.sigv4SigningName"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow">
+          <label>SigV4 Signing Region</label>
+          <input
+            ng-model="options.catalog_params.sigv4SigningRegion"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+      </div>
+
+      <!-- BIGLAKE_METASTORE Parameters -->
+      <div ng-if="options.catalog_source == 'BIGLAKE_METASTORE'">
+        <div class="formrow">
+          <label>URI</label>
+          <input
+            ng-model="options.catalog_params.uri"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow">
+          <label>Warehouse</label>
+          <input
+            ng-model="options.catalog_params.warehouse"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow">
+          <label>Quota Project ID</label>
+          <input
+            ng-model="options.catalog_params.quotaProjectId"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+      </div>
+
+      <!-- NESSIE Parameters -->
+      <div ng-if="options.catalog_source == 'NESSIE'">
+        <div class="formrow">
+          <label>URI</label>
+          <input
+            ng-model="options.catalog_params.uri"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+        <div class="formrow">
+          <label>Warehouse</label>
+          <input
+            ng-model="options.catalog_params.warehouse"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+      </div>
+
+      <!-- NESSIE_REST Parameters -->
+      <div ng-if="options.catalog_source == 'NESSIE_REST'">
+        <div class="formrow">
+          <label>URI</label>
+          <input
+            ng-model="options.catalog_params.uri"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            required>
+        </div>
+      </div>
+
+      <!-- Additional Parameters -->
+      <div class="formrow" style="margin-top: 20px;">
+        <label>Additional Parameters (Optional)</label>
+        <div ng-repeat="param in options.additionalParams track by $index" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+          <input
+            ng-model="param.name"
+            type="text"
+            placeholder="Parameter name"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            style="flex: 1;">
+          <input
+            ng-model="param.value"
+            type="text"
+            placeholder="Parameter value"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            style="flex: 1;">
+          <button type="button" class="outline" ng-click="deleteAdditionalParam($index)" style="min-width: 80px;">
+            Remove
+          </button>
+        </div>
+        <button type="button" class="outline" ng-click="addAdditionalParam()" style="margin-top: 8px;">
+          + Add Parameter
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <a ng-click="$dismiss('cancel')">Cancel</a>
+      <button ng-disabled="catalogForm.$invalid" type="submit" ng-click="submitCatalog()">Save</button>
+    </div>
+  </form>
+</div>
