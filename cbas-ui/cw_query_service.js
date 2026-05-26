@@ -169,6 +169,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.awsRegions = [];
   cwQueryService.createLink = createLink;
   cwQueryService.createCatalog = createCatalog;
+  cwQueryService.fetchIcebergNamespaces = fetchIcebergNamespaces;
+  cwQueryService.fetchIcebergTables = fetchIcebergTables;
   cwQueryService.editLink = editLink;
   cwQueryService.getAwsSupportedRegions = getAwsSupportedRegions;
   cwQueryService.getCachedLinkInfo = getCachedLinkInfo;
@@ -2896,6 +2898,20 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       data: convertDialogScopeToAPIdata(linkDialogScope),
     };
     return $http(request);
+  }
+
+  function fetchIcebergNamespaces(catalogName) {
+    if (!catalogName) {
+      return $q.reject(new Error("catalogName is required"));
+    }
+    return $http.get("/_p/cbas/api/v1/iceberg/catalog/" + encodeURIComponent(catalogName) + "/namespace");
+  }
+
+  function fetchIcebergTables(catalogName, namespace) {
+    if (!catalogName || !namespace) {
+      return $q.reject(new Error("catalogName and namespace are required"));
+    }
+    return $http.get("/_p/cbas/api/v1/iceberg/catalog/" + encodeURIComponent(catalogName) + "/namespace/" + encodeURIComponent(namespace) + "/table");
   }
 
   function createCatalog(catalogOptions) {

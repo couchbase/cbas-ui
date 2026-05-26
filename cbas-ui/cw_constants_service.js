@@ -297,6 +297,10 @@ ORDER BY
     return cwConstantsService.externalCollectionTypes.includes(type)
   };
 
+  cwConstantsService.isIcebergTable = function (shadow) {
+    return shadow['table-format'] === 'iceberg';
+  };
+
   cwConstantsService.requireTypeDefinition = function (format) {
     return ['csv', 'tsv'].includes(format);
   };

@@ -25,6 +25,7 @@ import cwCbasDatabaseDialogTemplate from "./cw_cbas_database_dialog.html";
 import cwCbasScopeDialogTemplate from "./cw_cbas_scope_dialog.html";
 import cwCbasCollectionDialogTemplate from "./cw_cbas_collections_dialog.html";
 import cwCbasCatalogDialogTemplate from "./cw_cbas_catalog_dialog.html";
+import cwCbasIcebergCollectionDialogTemplate from "./cw_cbas_iceberg_collection_dialog.html";
 
 import { FormControl, FormGroup }         from '@angular/forms';
 
@@ -98,6 +99,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.getDatasetsInLink = getDatasetsInLink;
     qc.getDatasetsInScope = getDatasetsInScope;
     qc.isGlobalLinks = isGlobalLinks;
+    qc.isIcebergTable = cwConstantsService.isIcebergTable;
 
     // some functions for handling query history, going backward and forward
 
@@ -167,6 +169,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.createNewScope = createNewScope;
     qc.createNewCollection = createNewCollection;
     qc.createNewCatalog = createNewCatalog;
+    qc.createNewIcebergCollection = createNewIcebergCollection;
     qc.editLink = editLink;
 
     qc.mapCollections = mapCollections;
@@ -1833,6 +1836,148 @@ function createNewCollection(database, dataverse) {
             document.getElementsByClassName('panel-header')[0].scrollIntoView(true);
           });
       };
+    }
+
+    function createNewIcebergCollection(catalog) {
+      const dialogScope = $rootScope.$new(true);
+
+      function filterDataversesByDatabase(dataverses, databaseName) {
+        return dataverses
+          .filter(dv => dv.DatabaseName === databaseName)
+          .map(dv => dv.DataverseName);
+      }
+
+      const initialDatabase = qc.databases[0]?.DatabaseName || "";
+
+      dialogScope.options = {
+        collection_name: "",
+        targetDatabase: initialDatabase,
+        targetScope: filterDataversesByDatabase(qc.dataverses, initialDatabase)[0] || "",
+        selectedCatalog: catalog.CatalogName,
+        selectedLink: "",
+        namespace: "",
+        namespaces: [],
+        tableName: "",
+        tables: [],
+        decimal_to_double: false,
+        timestamp_to_long: false,
+        time_to_int: false,
+        date_to_int: false,
+        format: "parquet",
+        timeTravelType: "",
+        timeTravelValue: "",
+        databases: qc.databases.map(db => db.DatabaseName),
+        dataverses: filterDataversesByDatabase(qc.dataverses, initialDatabase),
+        catalogs: cwQueryService.catalogs.map(c => c.CatalogName),
+      };
+
+      function fetchNamespaces(catalogName) {
+        dialogScope.options.namespaces = [];
+        dialogScope.options.namespace = "";
+        dialogScope.options.tables = [];
+        dialogScope.options.tableName = "";
+        dialogScope.errors = [];
+        if (!catalogName) { return; }
+        cwQueryService.fetchIcebergNamespaces(catalogName)
+          .then(function(resp) {
+            if (dialogScope.options.selectedCatalog !== catalogName) { return; }
+            dialogScope.options.namespaces = (resp.data || []).map(n => n.namespace);
+          }, function() {
+            if (dialogScope.options.selectedCatalog !== catalogName) { return; }
+            dialogScope.errors = ["Failed to load namespaces for catalog: " + catalogName];
+          });
+      }
+
+      function fetchTables(catalogName, namespace) {
+        dialogScope.options.tables = [];
+        dialogScope.options.tableName = "";
+        dialogScope.errors = [];
+        if (!catalogName || !namespace) { return; }
+        cwQueryService.fetchIcebergTables(catalogName, namespace)
+          .then(function(resp) {
+            if (dialogScope.options.selectedCatalog !== catalogName
+                || dialogScope.options.namespace !== namespace) { return; }
+            dialogScope.options.tables = (resp.data || [])
+              .map(t => t && t.table)
+              .filter(Boolean)
+              .map(table => table.split('.').pop());
+          }, function() {
+            if (dialogScope.options.selectedCatalog !== catalogName
+                || dialogScope.options.namespace !== namespace) { return; }
+            dialogScope.errors = ["Failed to load tables for namespace: " + namespace];
+          });
+      }
+
+      dialogScope.getAllLinks = function() {
+        const globalLinks = (cwQueryService.global_links || []).map(l => l.LinkName);
+        const dataverseLinks = [];
+        for (const dv in cwQueryService.dataverse_links) {
+          (cwQueryService.dataverse_links[dv] || []).forEach(l => {
+            if (!dataverseLinks.includes(l.LinkName)) { dataverseLinks.push(l.LinkName); }
+          });
+        }
+        return [...new Set([...globalLinks, ...dataverseLinks])];
+      };
+
+      const unwatchDb = dialogScope.$watch(
+        () => dialogScope.options.targetDatabase,
+        (newDb) => {
+          const dvs = filterDataversesByDatabase(qc.dataverses, newDb);
+          dialogScope.options.dataverses = dvs;
+          dialogScope.options.targetScope = dvs[0] || "";
+        }
+      );
+
+      const unwatchCatalog = dialogScope.$watch(
+        () => dialogScope.options.selectedCatalog,
+        (newCatalog) => fetchNamespaces(newCatalog)
+      );
+
+      const unwatchNamespace = dialogScope.$watch(
+        () => dialogScope.options.namespace,
+        (newNamespace) => fetchTables(dialogScope.options.selectedCatalog, newNamespace)
+      );
+
+      dialogScope.errors = [];
+      fetchNamespaces(catalog.CatalogName);
+
+      $uibModal.open({
+        template: cwCbasIcebergCollectionDialogTemplate,
+        scope: dialogScope
+      }).result.then(function success() {
+        const opts = dialogScope.options;
+        const withOptions = {
+          "table-format": "iceberg",
+          namespace: opts.namespace,
+          tableName: opts.tableName,
+          format: opts.format,
+          "decimal-to-double": opts.decimal_to_double,
+          "timestamp-to-long": opts.timestamp_to_long,
+          "time-to-int": opts.time_to_int,
+          "date-to-int": opts.date_to_int
+        };
+        if (opts.timeTravelType && opts.timeTravelValue) {
+          withOptions[opts.timeTravelType] = opts.timeTravelValue;
+        }
+        const queryText =
+          `CREATE EXTERNAL COLLECTION \`${opts.targetDatabase}\`.\`${opts.targetScope}\`.\`${opts.collection_name}\`` +
+          ` ON \`${opts.selectedCatalog}\`` +
+          ` AT \`${opts.selectedLink}\`` +
+          ` WITH ${JSON.stringify(withOptions)}`;
+
+        cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
+          .then(function success() {
+            qc.updateBuckets();
+          }, function error(resp) {
+            cwQueryService.showErrorDialog(errorRespToString(resp, "Error creating Iceberg collection: "));
+          });
+      }, function error() {})
+      .finally(function() {
+        unwatchDb();
+        unwatchCatalog();
+        unwatchNamespace();
+        dialogScope.$destroy();
+      });
     }
 
     // make a user-visible error message based on the many possible ways that errors can exist in an HTTP response

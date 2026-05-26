@@ -378,6 +378,10 @@ licenses/APL2.txt.
                   <span class="icon fa-book text-smaller grayblue-2 margin-right-quarter"></span>
                   {{catalog.CatalogName}}
                 </div>
+                <a ng-click="qc.createNewIcebergCollection(catalog); $event.stopPropagation()"
+                   class="text-fine nowrap margin-right-1">
+                  + collection
+                </a>
               </div>
               <!-- expando section for catalog details -->
               <div class="margin-bottom-half margin-left-3 text-smallish" ng-show="catalog.expanded">
@@ -507,13 +511,15 @@ licenses/APL2.txt.
                   </span>
                       </p>
                       <p ng-show="shadow.external" class="margin-bottom-half">
-                        Container:<br>
-                        {{shadow.container}}.{{shadow.bucketName}}
+                        <span ng-if="qc.isIcebergTable(shadow)">Catalog: {{shadow.catalogName}}</span>
+                        <span ng-if="!qc.isIcebergTable(shadow)">Container: {{shadow.container}}.{{shadow.bucketName}}</span>
                         <span ng-show="shadow.definition">|</span> {{shadow.definition}}
-                        <span ng-show="shadow.format">({{shadow.format}})</span>
                       </p>
-                      <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
-                      <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
+                      <p ng-show="shadow.external && shadow.format" class="margin-bottom-half">
+                        Format: {{shadow.format}}
+                      </p>
+                      <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.external && !shadow.indexes.length">no indexes</span>
+                      <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && !shadow.external && shadow.indexes.length > 0">
                         Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                         <span ng-repeat="idx in shadow.indexes">
                           {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
@@ -671,13 +677,15 @@ licenses/APL2.txt.
                         <span ng-show="shadow.filter">|</span> {{shadow.filter}}
                       </p>
                       <p ng-show="shadow.external" class="margin-bottom-half">
-                        Container:<br>
-                        {{shadow.container}}.{{shadow.bucketName}}
+                        <span ng-if="qc.isIcebergTable(shadow)">Catalog: {{shadow.catalogName}}</span>
+                        <span ng-if="!qc.isIcebergTable(shadow)">Container: {{shadow.container}}.{{shadow.bucketName}}</span>
                         <span ng-show="shadow.definition">|</span> {{shadow.definition}}
-                        <span ng-show="shadow.format">({{shadow.format}})</span>
                       </p>
-                      <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
-                      <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && shadow.indexes.length > 0">
+                      <p ng-show="shadow.external && shadow.format" class="margin-bottom-half">
+                        Format: {{shadow.format}}
+                      </p>
+                      <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.external && !shadow.indexes.length">no indexes</span>
+                      <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && !shadow.external && shadow.indexes.length > 0">
                         Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                         <span ng-repeat="idx in shadow.indexes">
                           {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
@@ -745,13 +753,15 @@ licenses/APL2.txt.
                       <span ng-show="shadow.filter">|</span> {{shadow.filter}}
                     </p>
                     <p ng-show="shadow.external" class="margin-bottom-half">
-                      Container:<br>
-                      {{shadow.container}}.{{shadow.bucketName}}
+                      <span ng-if="qc.isIcebergTable(shadow)">Catalog: {{shadow.catalogName}}</span>
+                      <span ng-if="!qc.isIcebergTable(shadow)">Container: {{shadow.container}}.{{shadow.bucketName}}</span>
                       <span ng-show="shadow.definition">|</span> {{shadow.definition}}
-                      <span ng-show="shadow.format">({{shadow.format}})</span>
                     </p>
-                    <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.indexes.length">no indexes</span>
-                    <p class="margin-bottom-0" ng-show="link.LinkType != 'EXTERNAL' && link.extLinkType != 'KAFKA' && shadow.indexes.length > 0">
+                    <p ng-show="shadow.external && shadow.format" class="margin-bottom-half">
+                      Format: {{shadow.format}}
+                    </p>
+                    <span ng-if="link.LinkType != 'EXTERNAL' && !shadow.external && !shadow.indexes.length">no indexes</span>
+                    <p class="margin-bottom-0" ng-show="link.LinkType != 'EXTERNAL' && !shadow.external && link.extLinkType != 'KAFKA' && shadow.indexes.length > 0">
                       Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                       <div class="query-context cursor-pointer" ng-attr-title="{{idx.keys.join(', ')}}" ng-repeat="idx in shadow.indexes">
                         {{idx.IndexName}} {{idx.keys.join(', ')}}

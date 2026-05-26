@@ -1,0 +1,121 @@
+<!--
+Copyright 2026-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<div class="dialog-med">
+  <div class="panel-header">
+    <h2 class="ellipsis margin-right-1">Add Iceberg Collection</h2>
+  </div>
+  <form class="forms" name="icebergCollectionForm">
+    <div class="panel-content">
+      <div class="error error-form">
+        <div ng-repeat="error in errors">
+          Attention: {{error}}
+        </div>
+      </div>
+
+      <div class="formrow">
+        <label>Collection Name</label>
+        <input ng-model="options.collection_name" type="text" autocorrect="off"
+               spellcheck="false" autocapitalize="off" required>
+      </div>
+
+      <div class="formrow">
+        <label for="db">Database</label>
+        <select id="db" ng-model="options.targetDatabase" required
+                class="inline fix-width-3 margin-right-quarter">
+          <option ng-repeat="item in options.databases" value="{{item}}">{{item}}</option>
+        </select>
+        <label for="scope">Scope</label>
+        <select id="scope" ng-model="options.targetScope" required
+                class="inline fix-width-3 margin-right-quarter">
+          <option ng-repeat="item in options.dataverses" value="{{item}}">{{item}}</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <label for="iceberg_catalog">Catalog</label>
+        <select id="iceberg_catalog" ng-model="options.selectedCatalog" required class="fix-width-4">
+          <option ng-repeat="name in options.catalogs" value="{{name}}">{{name}}</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <label for="iceberg_namespace">Namespace</label>
+        <select id="iceberg_namespace" ng-model="options.namespace" required class="fix-width-4">
+          <option value="">-- Select Namespace --</option>
+          <option ng-repeat="ns in options.namespaces" value="{{ns}}">{{ns}}</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <label for="iceberg_table">Table Name</label>
+        <select id="iceberg_table" ng-model="options.tableName" required class="fix-width-4">
+          <option value="">-- Select Table --</option>
+          <option ng-repeat="t in options.tables" value="{{t}}">{{t}}</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <input ng-model="options.decimal_to_double" type="checkbox" id="decimal_to_double" name="decimal_to_double">
+        <label for="decimal_to_double">Decimal to Double</label>
+      </div>
+
+      <div class="formrow">
+        <input ng-model="options.timestamp_to_long" type="checkbox" id="timestamp_to_long" name="timestamp_to_long">
+        <label for="timestamp_to_long">Timestamp to Long</label>
+      </div>
+
+      <div class="formrow">
+        <input ng-model="options.time_to_int" type="checkbox" id="time_to_int" name="time_to_int">
+        <label for="time_to_int">Time to Int</label>
+      </div>
+
+      <div class="formrow">
+        <input ng-model="options.date_to_int" type="checkbox" id="date_to_int" name="date_to_int">
+        <label for="date_to_int">Date to Int</label>
+      </div>
+
+      <div class="formrow">
+        <label for="iceberg_link">Link</label>
+        <select id="iceberg_link" ng-model="options.selectedLink" required class="fix-width-4">
+          <option value="">-- Select Link --</option>
+          <option ng-repeat="link in getAllLinks()" value="{{link}}">{{link}}</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <label for="iceberg_format">Format</label>
+        <select id="iceberg_format" ng-model="options.format" class="fix-width-4">
+          <option value="parquet">Parquet</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <label for="time_travel_type">Time Travel</label>
+        <select id="time_travel_type" ng-model="options.timeTravelType" class="fix-width-4">
+          <option value="">-- None --</option>
+          <option value="snapshotId">Snapshot ID</option>
+          <option value="snapshotTimestamp">Snapshot Timestamp</option>
+        </select>
+      </div>
+
+      <div class="formrow" ng-show="options.timeTravelType">
+        <label for="time_travel_value">{{options.timeTravelType === 'snapshotId' ? 'Snapshot ID' : 'Snapshot Timestamp'}}</label>
+        <input id="time_travel_value" ng-model="options.timeTravelValue" type="text" autocorrect="off"
+               spellcheck="false" autocapitalize="off">
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <a ng-click="$dismiss('cancel')">Cancel</a>
+      <button ng-disabled="icebergCollectionForm.$invalid" type="submit" ng-click="$close('ok')">Save</button>
+    </div>
+  </form>
+</div>
