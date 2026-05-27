@@ -3,7 +3,7 @@ info:
   title: Enterprise Analytics Request REST API
   version: '2.1'
   description: |
-    This API enables you to run Enterprises Analytics Service requests and set request-level parameters.
+    This API enables you to run Enterprise Analytics Service requests and set request-level parameters.
 
 servers:
   - url: '{scheme}://{host}:{port}'
@@ -160,6 +160,27 @@ components:
           Maximum time to spend on the request before timing out.
           The format includes an amount and a unit: `ns`, `us`, `ms`, `s`, `m`, or `h`.
           The default is `""` (no timeout).
+      mode:
+        type: string
+        x-has-default: true
+        default: immediate
+        description: >
+          The execution mode of the request.
+          If `immediate`, the request is executed and the result is returned immediately.
+          If `async`, the request is executed asynchronously and the client can retrieve the result later.
+          All `async` requests can be viewed using the function `open_requests()`. The status and result of an `async`
+          request can be retrieved using the endpoints described in [Request Status](request-status.yaml) and [Request Result](request-result.yaml).
+        enum:
+          - immediate
+          - async
+      result-ttl:
+        type: string
+        x-has-default: true
+        default: ""
+        description: >
+          Maximum time to retain the result of an async request.
+          The format includes an amount and a unit: `ns`, `us`, `ms`, `s`, `m`, or `h`.
+          The default is `""` (use system default).
       args:
         type: array
         description: An array of positional parameter values.
@@ -230,6 +251,11 @@ components:
             type: string
             format: UUID
             description: A unique identifier for the response.
+          handle:
+            type: string
+            description: >
+              A handle that can be used to retrieve the status or result of an `async` request.
+              Present only when the request is executed in `async` mode.
           clientContextID:
             type: string
             description: |-
@@ -248,14 +274,7 @@ components:
               An object can be any JSON value.
             items: {}
           status:
-            type: string
-            description: The status of the request.
-            enum:
-              - success
-              - running
-              - failed
-              - timeout
-              - fatal
+            $ref: "#/components/schemas/RequestStatus"
           errors:
             type: array
             description: >
@@ -349,6 +368,14 @@ components:
         description: >
           The total time taken for the request,
           that is the time from when the request was received until the results were returned.
+      compileTime:
+        type: string
+        description: >
+          The time taken to compile the request.
+      queueWaitTime:
+        type: string
+        description: >
+          The time the request spent waiting in the queue before execution.
       executionTime:
         type: string
         description: >
@@ -382,6 +409,18 @@ components:
         format: int64
         description: Number of processed tuples during query execution.
 
+  RequestStatus:
+    title: Request Status
+    type: string
+    description: The status of the request.
+    enum:
+      - success
+      - queued
+      - running
+      - failed
+      - timeout
+      - fatal
+
  parameters:
   ReadOnlyParameters:
     name: body
@@ -408,8 +447,13 @@ components:
     content:
       application/json:
         schema:
-          $ref: "#/components/schemas/Responses"
-
+          allOf:
+            - $ref: "#/components/schemas/Responses"
+            - type: object
+              properties:
+                status:
+                  type: string
+                  default: fatal
   Unauthorized:
     description: >
       Unauthorized.
@@ -417,7 +461,13 @@ components:
     content:
       application/json:
         schema:
-          $ref: "#/components/schemas/Responses"
+          allOf:
+            - $ref: "#/components/schemas/Responses"
+            - type: object
+              properties:
+                status:
+                  type: string
+                  default: fatal
 
  securitySchemes:
   AnalyticsManageAnalyticsAccess:

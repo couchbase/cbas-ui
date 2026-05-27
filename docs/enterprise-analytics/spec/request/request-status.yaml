@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Analytics Request Status REST API
+  version: '2.2'
+  description: |
+    This API enables you to get the status of an asynchronous request.
+
+servers:
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8095"
+        description: |-
+          The Enterprise Analytics Service REST port.
+          Use `18095` for secure access.
+        enum:
+          - "8095"
+          - "18095"
+
+paths:
+  /api/v1/request/status/{request_id}/{job_id}:
+    get:
+      operationId: get_request_status
+      summary: Request Status
+      description: >
+        Enables you to get the status of a request that was executed in `async` mode.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/JobId"
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+components:
+
+  parameters:
+    RequestId:
+      name: request_id
+      in: path
+      required: true
+      description: The unique identifier of the request.
+      schema:
+        type: string
+        format: UUID
+    JobId:
+      name: job_id
+      in: path
+      required: true
+      description: The identifier of the job associated with the request.
+      schema:
+        type: string
+
+  schemas:
+    StatusResponse:
+      title: Status Response
+      type: object
+      properties:
+        status:
+          $ref: "request.yaml#/components/schemas/RequestStatus"
+        handle:
+          type: string
+          description: >
+            A handle that can be used to retrieve the result of the request.
+            Present only when the request has compiled successfully.
+        resultCount:
+          type: integer
+          format: unsigned
+          description: The total number of objects in the results.
+        partitions:
+          type: array
+          description: >
+            An array of result partitions.
+            Each partition represents a portion of the result that can be retrieved independently.
+          items:
+            type: object
+            properties:
+              handle:
+                type: string
+                description: A handle that can be used to retrieve the result of this partition.
+              resultCount:
+                type: integer
+                format: unsigned
+                description: The number of objects in this partition.
+        resultSetOrdered:
+          type: boolean
+          description: >
+            Whether the result set is ordered.
+            If `false`, the order of results across partitions is not guaranteed.
+        errors:
+          type: array
+          description: >
+            An array of error objects.
+            Present only if 1 or more errors are encountered during processing of the request.
+          items:
+            $ref: "request.yaml#/components/schemas/ResponsesCommonErrors"
+        warnings:
+          type: array
+          description: |-
+            An array of warning objects.
+            Present only if 1 or more warnings are encountered during processing of the request.
+          items:
+            $ref: "request.yaml#/components/schemas/ResponsesCommonWarnings"
+        metrics:
+          allOf:
+            - $ref: "request.yaml#/components/schemas/ResponsesCommonYardsticks"
+            - $ref: "request.yaml#/components/schemas/ResponsesLocalYardsticks"
+        createdAt:
+          type: string
+          format: date-time
+          description: The timestamp when the request was created.
+
+  responses:
+    OK:
+      description: The operation was successful.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/StatusResponse"
+
+    BadRequest:
+        description: >
+            Bad request.
+            The request is invalid, for example the request ID or job ID is missing or their format is invalid.
+
+    Unauthorized:
+      description: >
+        Unauthorized.
+        The user name or password may be incorrect.
+
+    NotFound:
+      description: >
+        Not found.
+        The specified request ID or job ID does not exist, or the result has expired.
+
+  securitySchemes:
+    AnalyticsManageAnalyticsAccess:
+      type: http
+      scheme: basic
+      description: |-
+        Users must have one of the following RBAC roles:
+
+        * Full Admin
+        * Cluster Admin
+        * Enterprise Analytics Admin
+        * Enterprise Analytics Access
+
