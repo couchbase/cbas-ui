@@ -101,6 +101,12 @@ licenses/APL2.txt.
             required>
         </div>
         <div class="formrow">
+          <label>SigV4 Signing Name</label>
+          <select ng-model="options.catalog_params.sigv4SigningName" required>
+            <option value="glue">glue</option>
+          </select>
+        </div>
+        <div class="formrow">
           <label>SigV4 Signing Region</label>
           <input
             ng-model="options.catalog_params.sigv4SigningRegion"
@@ -136,13 +142,10 @@ licenses/APL2.txt.
         </div>
         <div class="formrow">
           <label>SigV4 Signing Name</label>
-          <input
-            ng-model="options.catalog_params.sigv4SigningName"
-            type="text"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off"
-            required>
+          <select ng-model="options.catalog_params.sigv4SigningName" required>
+            <option value="glue">glue</option>
+            <option value="s3tables">s3tables</option>
+          </select>
         </div>
         <div class="formrow">
           <label>SigV4 Signing Region</label>

@@ -1882,9 +1882,11 @@ function createNewCollection(database, dataverse) {
           .then(function(resp) {
             if (dialogScope.options.selectedCatalog !== catalogName) { return; }
             dialogScope.options.namespaces = (resp.data || []).map(n => n.namespace);
-          }, function() {
+          }, function(resp) {
             if (dialogScope.options.selectedCatalog !== catalogName) { return; }
-            dialogScope.errors = ["Failed to load namespaces for catalog: " + catalogName];
+            var errors = resp && resp.data && resp.data.errors;
+            var msg = errors && errors.length && errors[0].msg;
+            dialogScope.errors = [msg || "Failed to load namespaces for catalog: " + catalogName];
           });
       }
 
@@ -1901,10 +1903,12 @@ function createNewCollection(database, dataverse) {
               .map(t => t && t.table)
               .filter(Boolean)
               .map(table => table.split('.').pop());
-          }, function() {
+          }, function(resp) {
             if (dialogScope.options.selectedCatalog !== catalogName
                 || dialogScope.options.namespace !== namespace) { return; }
-            dialogScope.errors = ["Failed to load tables for namespace: " + namespace];
+            var errors = resp && resp.data && resp.data.errors;
+            var msg = errors && errors.length && errors[0].msg;
+            dialogScope.errors = [msg || "Failed to load tables for namespace: " + namespace];
           });
       }
 
