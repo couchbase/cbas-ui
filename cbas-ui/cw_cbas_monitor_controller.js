@@ -82,6 +82,19 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
     return(qmc.options().completed_sort_by == field && !qmc.options().completed_sort_reverse);
   };
 
+  qmc.update_open_sort = function(field) {
+    if (qmc.options().open_sort_by == field)
+      qmc.options().open_sort_reverse = !qmc.options().open_sort_reverse;
+    else
+      qmc.options().open_sort_by = field;
+  };
+  qmc.show_up_caret_open = function(field) {
+    return(qmc.options().open_sort_by == field && qmc.options().open_sort_reverse);
+  };
+  qmc.show_down_caret_open = function(field) {
+    return(qmc.options().open_sort_by == field && !qmc.options().open_sort_reverse);
+  };
+
   //
   // cancel a running query
   //
@@ -160,6 +173,7 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
     switch (cwQueryService.getMonitoringSelectedTab()) {
     case 1: result = qmc.monitoring.active_updated; break
     case 2: result = qmc.monitoring.completed_updated; break;
+    case 3: result = qmc.monitoring.open_updated; break;
     }
 
     if (is(Date, result)) {
@@ -239,6 +253,8 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
       cwQueryService.updateQueryMonitoring(1);
     if (qmc.monitoring.completed_updated == "never")
       cwQueryService.updateQueryMonitoring(2);
+    if (qmc.monitoring.open_updated == "never")
+      cwQueryService.updateQueryMonitoring(3);
 
     // start auto-updating if necessary
 

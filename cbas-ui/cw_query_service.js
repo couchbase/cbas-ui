@@ -89,6 +89,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     active_sort_reverse: true,
     completed_sort_by: 'elapsedTime',
     completed_sort_reverse: true,
+    open_sort_by: 'elapsedTime',
+    open_sort_reverse: true,
     prepared_sort_by: 'elapsedTime',
     prepared_sort_reverse: true
   };
@@ -116,9 +118,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.monitoring = {
     active_requests: active_requests,
     completed_requests: completed_requests,
+    open_requests: open_requests,
 
     active_updated: active_updated,
     completed_updated: completed_updated,
+    open_updated: open_updated,
   };
 
   cwQueryService.updateQueryMonitoring = updateQueryMonitoring;
@@ -130,8 +134,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   var defaultProxyTimeout = 1800; // default ns_server proxy timeout in seconds
   var active_requests = [];
   var completed_requests = [];
+  var open_requests = [];
   var active_updated = "never"; // last update time
   var completed_updated = "never"; // last update time
+  var open_updated = "never"; // last update time
 
 
   // access to our most recent query result, and functions to traverse the history
@@ -2774,6 +2780,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       case 2:
         url = cwConstantsService.completedRequestsURL;
         break;
+      case 3:
+        url = cwConstantsService.openRequestsURL;
+        break;
       default:
         return;
     }
@@ -2812,6 +2821,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               cwQueryService.monitoring.completed_requests = result;
               cwQueryService.monitoring.completed_updated = new Date();
               break;
+            case 3:
+              cwQueryService.monitoring.open_requests = result;
+              cwQueryService.monitoring.open_updated = new Date();
+              break;
           }
 
 
@@ -2846,6 +2859,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             case 2:
               cwQueryService.monitoring.completed_requests = [{statement: error}];
               cwQueryService.monitoring.completed_updated = new Date();
+              break;
+            case 3:
+              cwQueryService.monitoring.open_requests = [{statement: error}];
+              cwQueryService.monitoring.open_updated = new Date();
               break;
           }
 

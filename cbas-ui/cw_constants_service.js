@@ -46,6 +46,9 @@ function getCwConstantsService() {
   // URL to use to get completed queries
   cwConstantsService.completedRequestsURL = "../_p/cbas/api/v1/completed_requests";
 
+  // URL to use to get open queries
+  cwConstantsService.openRequestsURL = "../_p/cbas/api/v1/open_requests";
+
   // URL to get user visible buckets
   cwConstantsService.clusterBucketsURL = "../pools/default/buckets";
 
