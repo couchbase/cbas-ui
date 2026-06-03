@@ -1803,7 +1803,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     var queryText = atLeast220
       ? cwConstantsService.keyspaceQuery220
       : cwConstantsService.keyspaceQuery;
-    
+
     // MDB doesn't like the ugly whitespace in the metadata query, normalize it now
     queryText = queryText.replace(/[ \n]+/g,' ');
     // run a query to get the dataverse, link, and dataset info from Metadata
@@ -1821,7 +1821,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       .catch(function (err) {
         console.error("Error: ", err);
         var error = "Failed to fetch server metadata.";
-        error = error + "\nTry refreshing to fetch the metadata.";
+        error = error + "<br>Try refreshing to fetch the metadata.";
         cwQueryService.buckets.length = 0;
         cwQueryService.shadows.length = 0;
         cwQueryService.clusterBuckets.length = 0;

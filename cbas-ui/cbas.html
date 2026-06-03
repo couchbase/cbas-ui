@@ -294,10 +294,9 @@ licenses/APL2.txt.
       </a>
     </div>
     <div mn-spinner="qc.qqs.loadingBuckets">
-      <div ng-if="qc.qqs.bucket_errors">
+      <div ng-if="qc.qqs.bucket_errors" class="text-center" style="width: 100%; text-align: center;">
         <br>
-        <p style="white-space:pre-wrap;" class="text-small">
-          {{qc.qqs.bucket_errors}}
+        <p class="text-small" ng-bind-html="qc.qqs.bucket_errors">
         </p>
       </div>
       <div ng-if="!qc.qqs.bucket_errors">
