@@ -107,7 +107,8 @@ licenses/APL2.txt.
             <option>json</option>
             <option>csv</option>
             <option>tsv</option>
-            <option ng-if="showParquet(options.link_details.type)">parquet</option>
+            <option>parquet</option>
+            <option>avro</option>
           </select>
         </div>
 
@@ -127,10 +128,53 @@ licenses/APL2.txt.
           <label for="decimal_to_double">Parse JSON string</label>
         </div>
 
+        <div class="formrow"
+             ng-if="options.external_dataset.format == 'avro'"
+             ng-click="options.toggle_avro_decimal_to_double()">
+          <input ng-model="options.external_dataset.decimal_to_double" type="checkbox"
+                 name="decimal_to_double">
+          <label for="decimal_to_double">Decimal to Double</label>
+        </div>
+
+        <div class="formrow"
+             ng-if="options.external_dataset.format == 'avro'"
+             ng-click="options.toggle_avro_timestamp_to_long()">
+          <input ng-model="options.external_dataset.timestamp_to_long" type="checkbox"
+                 name="timestamp_to_long">
+          <label for="timestamp_to_long">Timestamp to Long</label>
+        </div>
+
+        <div class="formrow"
+             ng-if="options.external_dataset.format == 'avro'"
+             ng-click="options.toggle_avro_time_to_long()">
+          <input ng-model="options.external_dataset.time_to_long" type="checkbox"
+                 name="time_to_long">
+          <label for="time_to_long">Time to Long</label>
+        </div>
+
+        <div class="formrow"
+             ng-if="options.external_dataset.format == 'avro'"
+             ng-click="options.toggle_avro_date_to_int()">
+          <input ng-model="options.external_dataset.date_to_int" type="checkbox"
+                 name="date_to_int">
+          <label for="date_to_int">Date to Int</label>
+        </div>
+
+        <div class="formrow" ng-if="options.external_dataset.format == 'avro'">
+          <label style="display: inline-block">Timezone</label>
+          <span class="fa-stack icon-info"
+                uib-tooltip='If provided, displays UTC-adjusted datetime fields in this timezone. Use a timezone ID like America/New_York or an offset like GMT+05:30.'>
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <input ng-model="options.external_dataset.timezone" type="text" autocorrect="off"
+                 spellcheck="false" autocapitalize="off">
+        </div>
+
         <div class="formrow" ng-if="options.external_dataset.format == 'parquet'">
           <label style="display: inline-block">Timezone</label>
           <span class="fa-stack icon-info"
-                uib-tooltip='Timezone to convert `datetime` types to'>
+                uib-tooltip='If provided, displays UTC-adjusted datetime fields in this timezone. Use a timezone ID like America/New_York or an offset like GMT+05:30.'>
             <span class="icon fa-circle-thin fa-stack-2x"></span>
             <span class="icon fa-info fa-stack-1x"></span>
           </span>

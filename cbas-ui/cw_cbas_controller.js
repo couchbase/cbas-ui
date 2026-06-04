@@ -1863,6 +1863,7 @@ function createNewCollection(database, dataverse) {
         timestamp_to_long: false,
         time_to_int: false,
         date_to_int: false,
+        timezone: "",
         format: "parquet",
         timeTravelType: "",
         timeTravelValue: "",
@@ -1960,6 +1961,9 @@ function createNewCollection(database, dataverse) {
           "time-to-int": opts.time_to_int,
           "date-to-int": opts.date_to_int
         };
+        if (opts.timezone) {
+          withOptions["timezone"] = opts.timezone;
+        }
         if (opts.timeTravelType && opts.timeTravelValue) {
           withOptions[opts.timeTravelType] = opts.timeTravelValue;
         }
@@ -2129,6 +2133,22 @@ function createNewCollection(database, dataverse) {
     dataset_options.toggle_parse_json_string = function() {
           dataset_options.external_dataset.parse_json_string = !dataset_options.external_dataset.parse_json_string;
         }
+
+    dataset_options.toggle_avro_decimal_to_double = function() {
+      dataset_options.external_dataset.decimal_to_double = !dataset_options.external_dataset.decimal_to_double;
+    }
+
+    dataset_options.toggle_avro_timestamp_to_long = function() {
+      dataset_options.external_dataset.timestamp_to_long = !dataset_options.external_dataset.timestamp_to_long;
+    }
+
+    dataset_options.toggle_avro_time_to_long = function() {
+      dataset_options.external_dataset.time_to_long = !dataset_options.external_dataset.time_to_long;
+    }
+
+    dataset_options.toggle_avro_date_to_int = function() {
+      dataset_options.external_dataset.date_to_int = !dataset_options.external_dataset.date_to_int;
+    }
 
     // called when MapDialog first comes up, want latest list of buckets
     dataset_options.update_buckets = function() {
@@ -2360,16 +2380,6 @@ function createNewCollection(database, dataverse) {
       datasetDialogScope.options = dataset_options;
       datasetDialogScope.isExternalCollection = cwConstantsService.isExternalCollection;
       datasetDialogScope.requireTypeDefinition = cwConstantsService.requireTypeDefinition;
-      datasetDialogScope.showParquet = function(linkType) {
-        // check if link type supports parquet
-        var supported = cwConstantsService.isParquetSupported(linkType);
-        if (!supported) {
-          return false;
-        }
-
-        // developer preview is required, check if it is enabled
-        return qc.isDeveloperPreview();
-      }
 
       // bring up the dialog
       $uibModal.open({
@@ -2421,6 +2431,15 @@ function createNewCollection(database, dataverse) {
             if (dataset_options.external_dataset.format == 'parquet') {
               queryText += ', "decimal-to-double": ' + dataset_options.external_dataset.decimal_to_double;
               queryText += ', "parse-json-string": ' + dataset_options.external_dataset.parse_json_string;
+              queryText += ', "timezone": "' + dataset_options.external_dataset.timezone + '"';
+            }
+
+            // avro related properties
+            if (dataset_options.external_dataset.format == 'avro') {
+              queryText += ', "decimal-to-double": ' + dataset_options.external_dataset.decimal_to_double;
+              queryText += ', "timestamp-to-long": ' + dataset_options.external_dataset.timestamp_to_long;
+              queryText += ', "time-to-long": ' + dataset_options.external_dataset.time_to_long;
+              queryText += ', "date-to-int": ' + dataset_options.external_dataset.date_to_int;
               queryText += ', "timezone": "' + dataset_options.external_dataset.timezone + '"';
             }
 
@@ -2715,6 +2734,9 @@ function createNewCollection(database, dataverse) {
         decimal_to_double: false,
         parse_json_string: true,
         timezone: "",
+        timestamp_to_long: false,
+        time_to_long: false,
+        date_to_int: false,
         inline_type_def: "",
         null_value: "",
         include: "",
