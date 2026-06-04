@@ -47,6 +47,8 @@ paths:
       description: Returns information about all links
       tags:
         - Multiple Links
+      parameters:
+        - $ref: "#/components/parameters/CommonTypeQuery"
       security:
         - AnalyticsManage: []
         - DescribeLink: []
@@ -83,6 +85,7 @@ paths:
                 - $ref: "#/components/schemas/RequestCreateCouchbase"
                 - $ref: "#/components/schemas/RequestCreateS3"
                 - $ref: "#/components/schemas/RequestCreateAzureBlob"
+                - $ref: "#/components/schemas/RequestCreateHttp"
               #  - $ref: "#/components/schemas/RequestCreateGCS"
               # discriminator:
               #   propertyName: type
@@ -151,6 +154,7 @@ paths:
                 - $ref: "#/components/schemas/RequestEditCouchbase"
                 - $ref: "#/components/schemas/RequestEditS3"
                 - $ref: "#/components/schemas/RequestEditAzureBlob"
+                - $ref: "#/components/schemas/RequestEditHttp"
 #                 - $ref: "#/components/schemas/RequestEditGCS"
               # discriminator:
               #   propertyName: type
@@ -209,6 +213,7 @@ components:
         - couchbase
         - s3
         - azureblob
+        - http
         #- gcs
     in: query
     required: false
@@ -231,10 +236,12 @@ components:
       * `couchbase`: A link to a remote Couchbase cluster.
       * `s3`: A link to the Amazon S3 service.
       * `azureblob`: A link to the Azure Blob Storage service.
+      * `http`: A link to an HTTP service.
     enum:
       - couchbase
       - s3
       - azureblob
+      - http
       #- gcs
 
   CommonTypeEdit:
@@ -247,6 +254,7 @@ components:
       - couchbase
       - s3
       - azureblob
+      - http
       #- gcs
 
   # Workaround for OpenApi Generator. Should have separate parameters for Couchbase and Azure.
@@ -292,6 +300,12 @@ components:
       - $ref: "#/components/schemas/RequestCreateAll"
       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
 
+  RequestCreateHttp:
+    title: Create HTTP Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestCreateAll"
+      - $ref: "#/components/schemas/RequestSpecificHttp"
+
 #   RequestCreateGCS:
 #     title: Create GCS Link Request
 #     allOf:
@@ -321,6 +335,12 @@ components:
     allOf:
       - $ref: "#/components/schemas/RequestEditAll"
       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
+
+  RequestEditHttp:
+    title: Edit HTTP Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestEditAll"
+      - $ref: "#/components/schemas/RequestSpecificHttp"
 
 #   RequestEditGCS:
 #     title: Edit GCS Link Request
@@ -569,6 +589,67 @@ components:
           For Azure Blob links only.
           If set to `true`, SSL verification is disabled.
 
+  RequestSpecificHttp:
+    title: HTTP Specific Request
+    type: object
+    properties:
+      endpoint:
+        type: string
+        description: The endpoint URI of the HTTP service.
+      username:
+        type: string
+        description: >
+          The username for basic authentication.
+          Required when using basic authentication.
+          Must be provided together with `password`.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      password:
+        type: string
+        description: >
+          The password for basic authentication.
+          Required when using basic authentication.
+          Must be provided together with `username`.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      bearerToken:
+        type: string
+        description: >
+          The bearer token for bearer token authentication.
+          Cannot be combined with `username`, `password`, or OAuth2 parameters.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      oauthTokenUri:
+        type: string
+        description: >
+          The OAuth2 token URI.
+          Required for OAuth2 authentication.
+          Must be provided together with `oauthClientId` and `oauthClientSecret`.
+          Cannot be combined with `bearerToken`, `username`, or `password`.
+      oauthClientId:
+        type: string
+        description: >
+          The OAuth2 client ID.
+          Required for OAuth2 authentication.
+          Must be provided together with `oauthTokenUri` and `oauthClientSecret`.
+      oauthClientSecret:
+        type: string
+        description: >
+          The OAuth2 client secret.
+          Required for OAuth2 authentication.
+          Must be provided together with `oauthTokenUri` and `oauthClientId`.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      oauthAllowedScopes:
+        type: string
+        description: >
+          The allowed OAuth2 scopes.
+          Optional when using OAuth2 authentication.
+
 #   RequestSpecificGCS:
 #     title: GCS Specific Request
 #     type: object
@@ -605,6 +686,7 @@ components:
         couchbase: "#/components/schemas/ResponseCouchbase"
         s3: "#/components/schemas/ResponseS3"
         azureblob: "#/components/schemas/ResponseAzureBlob"
+        http: "#/components/schemas/ResponseHttp"
         #gcs: "#/components/schemas/ResponseGCS"
     required:
       - name
@@ -624,10 +706,12 @@ components:
           * `couchbase`: A link to a remote Couchbase cluster.
           * `s3`: A link to the Amazon S3 service.
           * `azureblob`: A link to the Azure Blob Storage service.
+          * `http`: A link to an HTTP service.
         enum:
           - couchbase
           - s3
           - azureblob
+          - http
           #- gcs
 
   ResponseCouchbase:
@@ -992,6 +1076,93 @@ components:
 #               If not set, this property returns `null`.
 #             x-has-example: true
 #             example: myTenantID
+
+  ResponseHttp:
+    title: HTTP Response
+    description: These properties are returned for HTTP links.
+    allOf:
+      - $ref: "#/components/schemas/ResponseAll"
+      - $ref: "#/components/schemas/ResponseHttpSpecific"
+
+  ResponseHttpSpecific:
+        title: HTTP Specific Response
+        type: object
+        required:
+          - bearerToken
+          - oauthAllowedScopes
+          - oauthClientId
+          - oauthClientSecret
+          - oauthTokenUri
+          - password
+          - username
+        properties:
+          bearerToken:
+            type: string
+            nullable: true
+            description: >
+              The bearer token.
+              This is redacted for the sake of security.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          endpoint:
+            type: string
+            nullable: true
+            description: >
+              The endpoint URI of the HTTP service.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: https://my.endpoint.uri
+          oauthAllowedScopes:
+            type: string
+            nullable: true
+            description: >
+              The allowed OAuth2 scopes.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          oauthClientId:
+            type: string
+            nullable: true
+            description: >
+              The OAuth2 client ID.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          oauthClientSecret:
+            type: string
+            nullable: true
+            description: >
+              The OAuth2 client secret.
+              This is redacted for the sake of security.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          oauthTokenUri:
+            type: string
+            nullable: true
+            description: >
+              The OAuth2 token URI.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          password:
+            type: string
+            nullable: true
+            description: >
+              The password used for basic authentication.
+              This is redacted for the sake of security.
+              If not set, this property returns `null`.
+            x-has-example: true
+            example: <redacted sensitive entry>
+          username:
+            type: string
+            nullable: true
+            description: >
+              The username used for basic authentication.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
 
 #   ResponseGCS:
 #     title: GCS Response
