@@ -312,6 +312,46 @@ licenses/APL2.txt.
 
         <div class="formrow">
           <input
+              id="s3_override_checksum_behavior"
+              ng-model="options.s3_link.override_checksum_behavior"
+              type="checkbox">
+          <label for="s3_override_checksum_behavior" style="margin-right:0">Override Checksum Behavior</label>
+          <span
+              class="fa-stack icon-info"
+              uib-tooltip="By default, new links are configured to use the SDK default checksum behavior. Override this if your S3-compatible storage provider requires a specific checksum behavior."
+              tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+        </div>
+
+        <div class="checkbox-list formrow" ng-if="options.s3_link.override_checksum_behavior" style="padding-left: 20px;">
+          <div>
+            <input
+              type="radio"
+              value="when_required"
+              id="for_checksum_when_required"
+              ng-model="options.s3_link.checksum_behavior">
+            <label
+              for="for_checksum_when_required"
+              class="checkbox">
+              When Required
+            </label>
+            <input
+              type="radio"
+              value="when_supported"
+              id="for_checksum_when_supported"
+              ng-model="options.s3_link.checksum_behavior">
+            <label
+              for="for_checksum_when_supported"
+              class="checkbox">
+              When Supported
+            </label>
+          </div>
+        </div>
+
+        <div class="formrow">
+          <input
             id="s3_disable_ssl_verify"
             ng-model="options.s3_link.disable_ssl_verify"
             type="checkbox">

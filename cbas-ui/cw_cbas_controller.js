@@ -1560,6 +1560,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           assumed_role_credentials: "instanceprofile",
           auth_type: "anonymous",
           path_style_addressing: false,
+          override_checksum_behavior: false,
+          checksum_behavior: "when_required",
         },
         azure_link: {
           account_name: "",
