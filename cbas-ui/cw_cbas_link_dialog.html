@@ -352,6 +352,96 @@ licenses/APL2.txt.
 
         <div class="formrow">
           <input
+                  id="s3_override_input_stream_type"
+                  ng-model="options.s3_link.override_input_stream_type"
+                  type="checkbox">
+          <label for="s3_override_input_stream_type" style="margin-right:0">Override Input Stream Type</label>
+          <span
+                  class="fa-stack icon-info"
+                  uib-tooltip="By default, new links are configured to use the SDK's default input stream type behavior. Override this if your S3-compatible storage provider requires a specific input stream type."
+                  tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+        </div>
+
+        <div class="checkbox-list formrow" ng-if="options.s3_link.override_input_stream_type" style="padding-left: 20px;">
+          <div>
+            <input
+                    type="radio"
+                    value="classic"
+                    id="for_input_stream_type_classic"
+                    ng-model="options.s3_link.input_stream_type">
+            <label
+                    for="for_input_stream_type_classic"
+                    class="checkbox">
+              Classic
+            </label>
+            <input
+                    type="radio"
+                    value="analytics"
+                    id="for_input_stream_type_analytics"
+                    ng-model="options.s3_link.input_stream_type">
+            <label
+                    for="for_input_stream_type_analytics"
+                    class="checkbox">
+              Analytics
+            </label>
+          </div>
+        </div>
+
+        <div class="formrow">
+          <input
+                  id="s3_override_change_detection_mode"
+                  ng-model="options.s3_link.override_change_detection_mode"
+                  type="checkbox">
+          <label for="s3_override_change_detection_mode" style="margin-right:0">Override Change Detection Mode</label>
+          <span
+                  class="fa-stack icon-info"
+                  uib-tooltip="By default, new links are configured to use the SDK's default change detection mode behavior. Override this if your S3-compatible storage provider requires a specific change detection mode."
+                  tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+        </div>
+
+        <div class="checkbox-list formrow" ng-if="options.s3_link.override_change_detection_mode" style="padding-left: 20px;">
+          <div>
+            <input
+                    type="radio"
+                    value="none"
+                    id="for_change_detection_mode_none"
+                    ng-model="options.s3_link.change_detection_mode">
+            <label
+                    for="for_change_detection_mode_none"
+                    class="checkbox">
+              None
+            </label>
+            <input
+                    type="radio"
+                    value="client"
+                    id="for_change_detection_mode_client"
+                    ng-model="options.s3_link.change_detection_mode">
+            <label
+                    for="for_change_detection_mode_client"
+                    class="checkbox">
+              Client
+            </label>
+            <input
+                    type="radio"
+                    value="server"
+                    id="for_change_detection_mode_server"
+                    ng-model="options.s3_link.change_detection_mode">
+            <label
+                    for="for_change_detection_mode_server"
+                    class="checkbox">
+              Server
+            </label>
+          </div>
+        </div>
+
+        <div class="formrow">
+          <input
             id="s3_disable_ssl_verify"
             ng-model="options.s3_link.disable_ssl_verify"
             type="checkbox">

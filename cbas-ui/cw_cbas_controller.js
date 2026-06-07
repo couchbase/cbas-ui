@@ -1562,6 +1562,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           path_style_addressing: false,
           override_checksum_behavior: false,
           checksum_behavior: "when_required",
+          override_input_stream_type: false,
+          input_stream_type: "classic",
+          override_change_detection_mode: false,
+          change_detection_mode: "none",
         },
         azure_link: {
           account_name: "",

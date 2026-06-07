@@ -3123,6 +3123,18 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         formData.checksumBehavior = "sdk_default";
       }
 
+      if (scope.s3_link.override_input_stream_type) {
+        formData.inputStreamType = scope.s3_link.input_stream_type;
+      } else {
+        formData.inputStreamType = "sdk_default";
+      }
+
+      if (scope.s3_link.override_change_detection_mode) {
+        formData.changeDetectionMode = scope.s3_link.change_detection_mode;
+      } else {
+        formData.changeDetectionMode = "sdk_default";
+      }
+
       if (scope.s3_link.endpoint) {
           formData.serviceEndpoint = scope.s3_link.endpoint;
       }
@@ -3316,6 +3328,14 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           apiData.checksumBehavior !== "sdk_default";
       scope.s3_link.checksum_behavior = scope.s3_link.override_checksum_behavior
           ? apiData.checksumBehavior : "when_required";
+      scope.s3_link.override_input_stream_type = !!apiData.inputStreamType &&
+          apiData.inputStreamType !== "sdk_default";
+      scope.s3_link.input_stream_type = scope.s3_link.override_input_stream_type
+          ? apiData.inputStreamType : "classic";
+      scope.s3_link.override_change_detection_mode = !!apiData.changeDetectionMode &&
+          apiData.changeDetectionMode !== "sdk_default";
+      scope.s3_link.change_detection_mode = scope.s3_link.override_change_detection_mode
+          ? apiData.changeDetectionMode : "none";
       scope.s3_link.disable_ssl_verify = apiData.disableSslVerify;
       scope.s3_link.endpoint = apiData.serviceEndpoint;
       scope.s3_link.access_key_id = apiData.accessKeyId;
