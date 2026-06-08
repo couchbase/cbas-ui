@@ -85,8 +85,8 @@ paths:
                 - $ref: "#/components/schemas/RequestCreateCouchbase"
                 - $ref: "#/components/schemas/RequestCreateS3"
                 - $ref: "#/components/schemas/RequestCreateAzureBlob"
+                - $ref: "#/components/schemas/RequestCreateGCS"
                 - $ref: "#/components/schemas/RequestCreateHttp"
-              #  - $ref: "#/components/schemas/RequestCreateGCS"
               # discriminator:
               #   propertyName: type
               #   mapping:
@@ -154,8 +154,8 @@ paths:
                 - $ref: "#/components/schemas/RequestEditCouchbase"
                 - $ref: "#/components/schemas/RequestEditS3"
                 - $ref: "#/components/schemas/RequestEditAzureBlob"
+                - $ref: "#/components/schemas/RequestEditGCS"
                 - $ref: "#/components/schemas/RequestEditHttp"
-#                 - $ref: "#/components/schemas/RequestEditGCS"
               # discriminator:
               #   propertyName: type
               #   mapping:
@@ -213,8 +213,8 @@ components:
         - couchbase
         - s3
         - azureblob
+        - gcs
         - http
-        #- gcs
     in: query
     required: false
     description: >
@@ -236,13 +236,14 @@ components:
       * `couchbase`: A link to a remote Couchbase cluster.
       * `s3`: A link to the Amazon S3 service.
       * `azureblob`: A link to the Azure Blob Storage service.
+      * `gcs`: A link to the Google Cloud Storage service.
       * `http`: A link to an HTTP service.
     enum:
       - couchbase
       - s3
       - azureblob
+      - gcs
       - http
-      #- gcs
 
   CommonTypeEdit:
     title: Edit Request Type
@@ -254,8 +255,8 @@ components:
       - couchbase
       - s3
       - azureblob
+      - gcs
       - http
-      #- gcs
 
   # Workaround for OpenApi Generator. Should have separate parameters for Couchbase and Azure.
   CommonClientCertificate:
@@ -300,17 +301,17 @@ components:
       - $ref: "#/components/schemas/RequestCreateAll"
       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
 
+  RequestCreateGCS:
+    title: Create GCS Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestCreateAll"
+      - $ref: "#/components/schemas/RequestSpecificGCS"
+
   RequestCreateHttp:
     title: Create HTTP Link Request
     allOf:
       - $ref: "#/components/schemas/RequestCreateAll"
       - $ref: "#/components/schemas/RequestSpecificHttp"
-
-#   RequestCreateGCS:
-#     title: Create GCS Link Request
-#     allOf:
-#       - $ref: "#/components/schemas/RequestCreateAll"
-#       - $ref: "#/components/schemas/RequestSpecificGCS"
 
   RequestEditAll:
     type: object
@@ -336,17 +337,17 @@ components:
       - $ref: "#/components/schemas/RequestEditAll"
       - $ref: "#/components/schemas/RequestSpecificAzureBlob"
 
+  RequestEditGCS:
+    title: Edit GCS Link Request
+    allOf:
+      - $ref: "#/components/schemas/RequestEditAll"
+      - $ref: "#/components/schemas/RequestSpecificGCS"
+
   RequestEditHttp:
     title: Edit HTTP Link Request
     allOf:
       - $ref: "#/components/schemas/RequestEditAll"
       - $ref: "#/components/schemas/RequestSpecificHttp"
-
-#   RequestEditGCS:
-#     title: Edit GCS Link Request
-#     allOf:
-#       - $ref: "#/components/schemas/RequestEditAll"
-#       - $ref: "#/components/schemas/RequestSpecificGCS"
 
   RequestSpecificCouchbase:
     title: Couchbase Specific Request
@@ -589,6 +590,38 @@ components:
           For Azure Blob links only.
           If set to `true`, SSL verification is disabled.
 
+  RequestSpecificGCS:
+    title: GCS Specific Request
+    type: object
+    properties:
+      endpoint:
+        $ref: "#/components/schemas/CommonEndpoint"
+      jsonCredentials:
+        type: string
+        description: >
+          For Google Cloud Storage links only.
+          The JSON credentials of the link.
+
+
+          This parameter is not allowed if `applicationDefaultCredentials` is provided.
+      applicationDefaultCredentials:
+        type: boolean
+        description: |-
+          For Google Cloud Storage links only.
+          If set to `true`, the link uses Google Application Default Credentials for authentication.
+
+      # The following property is implemented but not yet supported for general use:
+#       impersonateServiceAccount:
+#         type: string
+#         description: >
+#           For Google Cloud Storage links only.
+#           The service account to impersonate.
+      disableSslVerify:
+        type: boolean
+        description: >
+          For Google Cloud Storage links only.
+          If set to `true`, SSL verification is disabled.
+
   RequestSpecificHttp:
     title: HTTP Specific Request
     type: object
@@ -650,32 +683,6 @@ components:
           The allowed OAuth2 scopes.
           Optional when using OAuth2 authentication.
 
-#   RequestSpecificGCS:
-#     title: GCS Specific Request
-#     type: object
-#     properties:
-#       endpoint:
-#         $ref: "#/components/schemas/CommonEndpoint"
-#         # type: string
-#         # description: For Google Cloud Storage links, this is the endpoint URI.
-#       jsonCredentials:
-#         type: string
-#         description: >
-#           For Google Cloud Storage links only.
-#           The JSON credentials of the link.
-
-
-#           This parameter is not allowed if `applicationDefaultCredentials` is provided.
-#       applicationDefaultCredentials:
-#         type: string
-#         enum:
-#           - 'true'
-#         description: |-
-#           For Google Cloud Storage links only.
-#           If present, indicates that the link should use the Google Application Default Credentials for authenticating.
-
-        # FIXME: This parameter may only have the value `"true"`.
-
   ResponseAll:
     title: Links
     description: These properties are common to all links.
@@ -686,8 +693,8 @@ components:
         couchbase: "#/components/schemas/ResponseCouchbase"
         s3: "#/components/schemas/ResponseS3"
         azureblob: "#/components/schemas/ResponseAzureBlob"
+        gcs: "#/components/schemas/ResponseGCS"
         http: "#/components/schemas/ResponseHttp"
-        #gcs: "#/components/schemas/ResponseGCS"
     required:
       - name
       - type
@@ -706,13 +713,14 @@ components:
           * `couchbase`: A link to a remote Couchbase cluster.
           * `s3`: A link to the Amazon S3 service.
           * `azureblob`: A link to the Azure Blob Storage service.
+          * `gcs`: A link to the Google Cloud Storage service.
           * `http`: A link to an HTTP service.
         enum:
           - couchbase
           - s3
           - azureblob
+          - gcs
           - http
-          #- gcs
 
   ResponseCouchbase:
     title: Couchbase Response
@@ -1077,6 +1085,62 @@ components:
 #             x-has-example: true
 #             example: myTenantID
 
+  ResponseGCS:
+    title: GCS Response
+    description: These properties are returned for Google Cloud Storage links.
+    allOf:
+      - $ref: "#/components/schemas/ResponseAll"
+      - $ref: "#/components/schemas/ResponseGCSSpecific"
+
+  ResponseGCSSpecific:
+    title: GCS Specific Response
+    type: object
+    required:
+      - applicationDefaultCredentials
+      - endpoint
+      - jsonCredentials
+    properties:
+      applicationDefaultCredentials:
+        type: boolean
+        nullable: true
+        description: >
+          If `true`, the link uses Google Application Default Credentials for authentication.
+          If not set, this property returns `null`.
+        x-has-example: true
+        example: true
+      disableSslVerify:
+        type: boolean
+        description: >
+          Whether SSL verification is disabled.
+        x-has-example: true
+        example: false
+      endpoint:
+        type: string
+        nullable: true
+        description: >
+          The endpoint URI.
+          If not set, this property returns `null`.
+        x-has-example: true
+        example: 'https://storage.googleapis.com'
+      # The following property is implemented but not yet supported for general use:
+      #           impersonateServiceAccount:
+      #             type: string
+      #             nullable: true
+      #             description: >
+      #               The service account to impersonate.
+      #               If not set, this property returns `null`.
+      #             x-has-example: false
+      #             example: null
+      jsonCredentials:
+        type: string
+        nullable: true
+        description: >
+          The JSON credentials of the link.
+          This is redacted for the sake of security.
+          If not set, this property returns `null`.
+        x-has-example: true
+        example: <redacted sensitive entry>
+
   ResponseHttp:
     title: HTTP Response
     description: These properties are returned for HTTP links.
@@ -1163,48 +1227,6 @@ components:
               If not set, this property returns `null`.
             x-has-example: false
             example: null
-
-#   ResponseGCS:
-#     title: GCS Response
-#     description: These properties are returned for Google Cloud Storage links.
-#     allOf:
-#       - $ref: "#/components/schemas/ResponseAll"
-#       - $ref: "#/components/schemas/ResponseGCSSpecific"
-
-#   ResponseGCSSpecific:
-#         title: GCS Specific Response
-#         type: object
-#         required:
-#           - applicationDefaultCredentials
-#           - endpoint
-#           - jsonCredentials
-#         properties:
-#           applicationDefaultCredentials:
-#             type: string
-#             nullable: true
-#             enum:
-#               - 'true'
-#             description: >
-#               If present, indicates that the link should use the Google Application Default Credentials for authenticating.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: true
-#           endpoint:
-#             type: string
-#             nullable: true
-#             description: >
-#               The endpoint URI.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: 'https://storage.googleapis.com'
-#           jsonCredentials:
-#             type: string
-#             nullable: true
-#             description: >
-#               The JSON credentials of the link.
-#               If not set, this property returns `null`.
-#             x-has-example: true
-#             example: <redacted sensitive entry>
 
   Wrong:
     title: Errors

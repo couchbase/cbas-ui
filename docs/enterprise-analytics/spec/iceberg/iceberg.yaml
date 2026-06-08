@@ -1,0 +1,314 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Analytics Iceberg REST API
+  version: '2.2'
+  description: |-
+    This API enables you to browse Iceberg catalogs and metadata used by Enterprise Analytics.
+
+servers:
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8095"
+        description: |-
+          The Enterprise Analytics Service REST port.
+          Use `18095` for secure access.
+        enum:
+          - "8095"
+          - "18095"
+
+tags:
+  - name: Iceberg
+    description: Operations for listing Iceberg catalogs, namespaces, tables, and snapshots.
+
+paths:
+  /api/v1/iceberg/catalog:
+    get:
+      operationId: list_iceberg_catalogs
+      summary: List Catalogs
+      description: Returns all Iceberg catalogs created in Enterprise Analytics.
+      tags:
+        - Iceberg
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an array of Iceberg catalog names.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CatalogEntry"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/iceberg/catalog/{catalogName}/namespace:
+    get:
+      operationId: list_iceberg_namespaces
+      summary: List Namespaces
+      description: Returns all namespaces in the specified Iceberg catalog.
+      tags:
+        - Iceberg
+      parameters:
+        - $ref: "#/components/parameters/CatalogName"
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an array of namespace names.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NamespaceEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/iceberg/catalog/{catalogName}/namespace/{namespace}/table:
+    get:
+      operationId: list_iceberg_tables
+      summary: List Tables
+      description: Returns all iceberg tables in the specified namespace.
+      tags:
+        - Iceberg
+      parameters:
+        - $ref: "#/components/parameters/CatalogName"
+        - $ref: "#/components/parameters/Namespace"
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an array of table names.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TableEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/v1/iceberg/snapshot/{databaseName}/{scopeName}/{collectionName}:
+    get:
+      operationId: list_iceberg_snapshots
+      summary: List Snapshots
+      description: >
+        Returns snapshots for the specified iceberg table (Enterprise Analytics iceberg collection).
+      tags:
+        - Iceberg
+      parameters:
+        - $ref: "#/components/parameters/DatabaseName"
+        - $ref: "#/components/parameters/ScopeName"
+        - $ref: "#/components/parameters/CollectionName"
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          description: >
+            Success.
+            Returns an array of snapshots for the Iceberg table.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SnapshotEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  parameters:
+    CatalogName:
+      name: catalogName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The Iceberg catalog name.
+    Namespace:
+      name: namespace
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The Iceberg namespace. URL-encode special characters.
+    DatabaseName:
+      name: databaseName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The Analytics database name.
+    ScopeName:
+      name: scopeName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The Analytics scope name.
+    CollectionName:
+      name: collectionName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The Analytics external collection name.
+
+  schemas:
+    CatalogEntry:
+      type: object
+      required:
+        - catalog
+      properties:
+        catalog:
+          type: string
+          description: Iceberg catalog name.
+
+    NamespaceEntry:
+      type: object
+      required:
+        - namespace
+      properties:
+        namespace:
+          type: string
+          description: Iceberg namespace name.
+
+    TableEntry:
+      type: object
+      required:
+        - table
+      properties:
+        table:
+          type: string
+          description: Iceberg table name.
+
+    SnapshotEntry:
+      type: object
+      required:
+        - id
+        - timestamp_ms
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Iceberg snapshot identifier.
+        timestamp_ms:
+          type: integer
+          format: int64
+          description: Snapshot timestamp in Unix epoch milliseconds.
+
+    Wrong:
+      title: Errors
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: An error message.
+
+  responses:
+    BadRequest:
+      description: >
+        Bad request.
+        The URI or parameters are malformed, or the resource is not a supported Iceberg target.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Wrong"
+
+    Unauthorized:
+      description: >
+        Unauthorized.
+        The user name or password may be incorrect.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Wrong"
+
+    NotFound:
+      description: >
+        Not found.
+        The path may be incorrect, or the catalog/collection does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Wrong"
+
+    ServiceUnavailable:
+      description: >
+        Service unavailable.
+        The Analytics cluster is not in ACTIVE state.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Wrong"
+
+    InternalServerError:
+      description: >
+        Internal Server Error.
+        Unexpected processing error while fetching Iceberg metadata.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Wrong"
+
+  securitySchemes:
+    AnalyticsManageAnalyticsAccess:
+      type: http
+      scheme: basic
+      description: |-
+        Users must have one of the following RBAC roles:
+
+        * Full Admin
+        * Cluster Admin
+        * Enterprise Analytics Admin
+        * Enterprise Analytics Access
