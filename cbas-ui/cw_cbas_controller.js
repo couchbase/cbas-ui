@@ -1589,7 +1589,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         kafka_link: {
           vendor: "CONFLUENT",
           bootstrap_servers: "",
-          confluent_auth: "",
+          confluent_auth: "PLAIN",
           username: "",
           password: "",
           confluent_tls_enable: true,
