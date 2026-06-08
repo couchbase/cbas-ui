@@ -3120,19 +3120,19 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (scope.s3_link.override_checksum_behavior) {
         formData.checksumBehavior = scope.s3_link.checksum_behavior;
       } else {
-        formData.checksumBehavior = "sdk_default";
+        formData.checksumBehavior = "";
       }
 
       if (scope.s3_link.override_input_stream_type) {
         formData.inputStreamType = scope.s3_link.input_stream_type;
       } else {
-        formData.inputStreamType = "sdk_default";
+        formData.inputStreamType = "";
       }
 
       if (scope.s3_link.override_change_detection_mode) {
         formData.changeDetectionMode = scope.s3_link.change_detection_mode;
       } else {
-        formData.changeDetectionMode = "sdk_default";
+        formData.changeDetectionMode = "";
       }
 
       if (scope.s3_link.endpoint) {
@@ -3324,16 +3324,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       }
       scope.s3_link.cross_region = apiData.crossRegion;
       scope.s3_link.path_style_addressing = apiData.pathStyleAddressing;
-      scope.s3_link.override_checksum_behavior = !!apiData.checksumBehavior &&
-          apiData.checksumBehavior !== "sdk_default";
+      scope.s3_link.override_checksum_behavior = !!apiData.checksumBehavior;
       scope.s3_link.checksum_behavior = scope.s3_link.override_checksum_behavior
           ? apiData.checksumBehavior : "when_required";
-      scope.s3_link.override_input_stream_type = !!apiData.inputStreamType &&
-          apiData.inputStreamType !== "sdk_default";
+      scope.s3_link.override_input_stream_type = !!apiData.inputStreamType;
       scope.s3_link.input_stream_type = scope.s3_link.override_input_stream_type
           ? apiData.inputStreamType : "classic";
-      scope.s3_link.override_change_detection_mode = !!apiData.changeDetectionMode &&
-          apiData.changeDetectionMode !== "sdk_default";
+      scope.s3_link.override_change_detection_mode = !!apiData.changeDetectionMode;
       scope.s3_link.change_detection_mode = scope.s3_link.override_change_detection_mode
           ? apiData.changeDetectionMode : "none";
       scope.s3_link.disable_ssl_verify = apiData.disableSslVerify;

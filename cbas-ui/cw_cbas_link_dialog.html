@@ -329,7 +329,7 @@ licenses/APL2.txt.
           <label for="s3_override_checksum_behavior" style="margin-right:0">Override Checksum Behavior</label>
           <span
               class="fa-stack icon-info"
-              uib-tooltip="By default, new links are configured to use the SDK default checksum behavior. Override this if your S3-compatible storage provider requires a specific checksum behavior."
+              uib-tooltip="Overrides the default AWS SDK checksum behavior. Required if your S3-compatible storage provider is not compatible with the default checksum behavior."
               tooltip-placement="auto right">
             <span class="icon fa-circle-thin fa-stack-2x"></span>
             <span class="icon fa-info fa-stack-1x"></span>
@@ -369,7 +369,7 @@ licenses/APL2.txt.
           <label for="s3_override_input_stream_type" style="margin-right:0">Override Input Stream Type</label>
           <span
                   class="fa-stack icon-info"
-                  uib-tooltip="By default, new links are configured to use the SDK's default input stream type behavior. Override this if your S3-compatible storage provider requires a specific input stream type."
+                  uib-tooltip="Overrides the default Hadoop-AWS input stream type. This is typically required to optimize performance or prevent timeouts when querying Parquet or Delta formats hosted on certain S3-compatible storage providers."
                   tooltip-placement="auto right">
             <span class="icon fa-circle-thin fa-stack-2x"></span>
             <span class="icon fa-info fa-stack-1x"></span>
@@ -409,7 +409,7 @@ licenses/APL2.txt.
           <label for="s3_override_change_detection_mode" style="margin-right:0">Override Change Detection Mode</label>
           <span
                   class="fa-stack icon-info"
-                  uib-tooltip="By default, new links are configured to use the SDK's default change detection mode behavior. Override this if your S3-compatible storage provider requires a specific change detection mode."
+                  uib-tooltip="Overrides the default Hadoop-AWS default change detection mode. This is typically required to optimize performance or prevent timeouts when querying Parquet or Delta formats hosted on certain S3-compatible storage providers."
                   tooltip-placement="auto right">
             <span class="icon fa-circle-thin fa-stack-2x"></span>
             <span class="icon fa-info fa-stack-1x"></span>
