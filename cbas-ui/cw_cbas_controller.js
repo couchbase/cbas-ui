@@ -1614,6 +1614,26 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     }
     var linkDialogScope = $rootScope.$new(true);
     linkDialogScope.isDeveloperPreview = qc.isDeveloperPreview;
+    linkDialogScope.s3EndpointIsIpLiteral = false;
+
+    linkDialogScope.isIpLiteralEndpoint = function(endpoint) {
+      if (!endpoint) return false;
+      try {
+        var url = new URL(endpoint);
+        var host = url.hostname.replace(/^\[|\]$/g, '');
+        return /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || host.includes(':');
+      } catch (e) {
+        return false;
+      }
+    };
+
+    linkDialogScope.$watch('options.s3_link.endpoint', function(val) {
+      linkDialogScope.s3EndpointIsIpLiteral = linkDialogScope.isIpLiteralEndpoint(val);
+      if (linkDialogScope.s3EndpointIsIpLiteral) {
+        linkDialogScope.options.s3_link.path_style_addressing = true;
+      }
+    });
+
     linkDialogScope.change_encryption = function() {
       if (!linkDialogScope.options.couchbase_link.demand_encryption)
         linkDialogScope.options.couchbase_link.encryption_type = "none";

@@ -306,8 +306,19 @@ licenses/APL2.txt.
           <input
               id="s3_path_style_addressing"
               ng-model="options.s3_link.path_style_addressing"
+              ng-disabled="s3EndpointIsIpLiteral"
               type="checkbox">
-          <label for="s3_path_style_addressing" style="margin-right:0">Path-Style Addressing</label>
+          <label for="s3_path_style_addressing" style="margin-right:0">Use Path-Style Addressing</label>
+          <span
+              class="fa-stack icon-info"
+              uib-tooltip="Path-style URLs look like https://s3.example.com/bucket-name/key, while virtual-hosted-style URLs look like https://bucket-name.s3.example.com/key. Some S3-compatible storage services require path-style addressing. When the endpoint is an IP address, path-style is always used automatically by the SDK."
+              tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <span ng-if="s3EndpointIsIpLiteral" style="margin-left: 4px; font-size: smaller; color: #888;">
+            (always enabled for IP address endpoints)
+          </span>
         </div>
 
         <div class="formrow">
