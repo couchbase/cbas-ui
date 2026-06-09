@@ -1566,6 +1566,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           input_stream_type: "classic",
           override_change_detection_mode: false,
           change_detection_mode: "none",
+          certificates: [""],
         },
         azure_link: {
           account_name: "",
@@ -1627,11 +1628,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       }
     };
 
+    linkDialogScope.s3EndpointIsHttp = false;
+
     linkDialogScope.$watch('options.s3_link.endpoint', function(val) {
       linkDialogScope.s3EndpointIsIpLiteral = linkDialogScope.isIpLiteralEndpoint(val);
       if (linkDialogScope.s3EndpointIsIpLiteral) {
         linkDialogScope.options.s3_link.path_style_addressing = true;
       }
+      linkDialogScope.s3EndpointIsHttp = val && val.toLowerCase().startsWith('http://');
     });
 
     linkDialogScope.change_encryption = function() {
@@ -2659,6 +2663,18 @@ function createNewCollection(database, dataverse) {
           linkDialogScope.options.couchbase_link.certificates = [""];
         } else {
           linkDialogScope.options.couchbase_link.certificates.splice(index, 1);
+        }
+      };
+
+      linkDialogScope.addS3Certificate = function() {
+        linkDialogScope.options.s3_link.certificates.push("");
+      };
+
+      linkDialogScope.removeS3Certificate = function(index) {
+        if (linkDialogScope.options.s3_link.certificates.length == 1) {
+          linkDialogScope.options.s3_link.certificates = [""];
+        } else {
+          linkDialogScope.options.s3_link.certificates.splice(index, 1);
         }
       };
 

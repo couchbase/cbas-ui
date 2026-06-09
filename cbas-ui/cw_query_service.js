@@ -3139,6 +3139,19 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           formData.serviceEndpoint = scope.s3_link.endpoint;
       }
 
+      // Include certificates if any non-empty ones are provided; send empty if endpoint is blank, http://, or SSL verify disabled
+      var endpointIsHttp = scope.s3_link.endpoint && scope.s3_link.endpoint.toLowerCase().startsWith('http://');
+      if (!scope.s3_link.endpoint || endpointIsHttp || scope.s3_link.disable_ssl_verify) {
+        formData.certificates = JSON.stringify([]);
+      } else {
+        var nonEmptyCerts = scope.s3_link.certificates.filter(function(cert) {
+          return cert && cert.trim() !== "";
+        });
+        if (nonEmptyCerts.length > 0) {
+          formData.certificates = JSON.stringify(nonEmptyCerts);
+        }
+      }
+
       if (scope.s3_link.auth_type === "accesskeys") {
           if (scope.s3_link.access_key_id) {
             formData.accessKeyId = scope.s3_link.access_key_id;
@@ -3335,6 +3348,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           ? apiData.changeDetectionMode : "none";
       scope.s3_link.disable_ssl_verify = apiData.disableSslVerify;
       scope.s3_link.endpoint = apiData.serviceEndpoint;
+      scope.s3_link.certificates = (apiData.certificates && apiData.certificates.length > 0)
+          ? apiData.certificates.slice() : [""];
       scope.s3_link.access_key_id = apiData.accessKeyId;
       scope.s3_link.secret_access_key = "";
       scope.s3_link.session_token = "";

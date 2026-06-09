@@ -286,6 +286,181 @@ licenses/APL2.txt.
         </div>
 
         <div class="formrow">
+          <label class="inline">Endpoint</label>
+          <span
+             class="fa-stack icon-info"
+             uib-tooltip="Optional. Specify a custom endpoint URL when using S3-compatible storage, private endpoints, or VPC endpoints. Leave blank to use the default AWS S3 endpoint for the configured region."
+             tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <input
+            ng-model="options.s3_link.endpoint"
+            ng-pattern="/^https?:\/\/(\[[^\]]+\]|[a-zA-Z0-9._-]+)(:\d+)?(\/.*)?$/"
+            type="text"
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            name="s3_endpoint">
+          <div class="error error-form" ng-show="linkForm.s3_endpoint.$error.pattern">
+            Endpoint must be a valid URL including the scheme (e.g. https://s3.example.com).
+          </div>
+        </div>
+
+        <div class="formrow" ng-if="options.s3_link.endpoint && !options.s3_link.disable_ssl_verify && !s3EndpointIsHttp">
+          <label class="inline">Endpoint Certificate(s)</label>
+          <span
+             class="fa-stack icon-info"
+             uib-tooltip="Optional. One or more PEM-encoded certificates to trust when connecting to the storage endpoint. Multiple certificates can be provided to support rotation. Useful for self-signed or internal CA certificates."
+             tooltip-placement="auto right">
+            <span class="icon fa-circle-thin fa-stack-2x"></span>
+            <span class="icon fa-info fa-stack-1x"></span>
+          </span>
+          <div class="row" ng-repeat="certificate in options.s3_link.certificates track by $index">
+            <textarea
+               rows="3"
+               class="monospaced certificate-props ng-binding"
+               style="word-break: break-word;max-width: 480px"
+               autocorrect="off"
+               autocompleterg="off"
+               spellcheck="false"
+               ng-model="options.s3_link.certificates[$index]"
+               placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----">
+            </textarea>
+            <div style="width: 30px">
+              <button type="button" ng-if="options.s3_link.certificates.length > 1" class="outline btn-small" title="Remove this certificate." ng-click="removeS3Certificate($index)">-</button>
+              <button type="button" class="outline btn-small margin-left-0" title="Add a new certificate." ng-click="addS3Certificate()">+</button>
+            </div>
+          </div>
+        </div>
+
+        <label>Authentication Method</label>
+        <div class="formrow">
+          <select id="aws_auth_type" ng-model="options.s3_link.auth_type" required>
+            <option value="anonymous">Anonymous (No credentials/authentication)</option>
+            <option value="accesskeys">Access Keys</option>
+            <option value="instanceprofile">Instance Profile</option>
+            <option value="crossaccounttrust">Cross Account Trust</option>
+          </select>
+        </div>
+        <div ng-if="options.s3_link.auth_type == 'accesskeys'">
+          <div class="formrow">
+            <label>Access Key ID</label>
+            <input
+              ng-model="options.s3_link.access_key_id"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              required>
+          </div>
+          <div class="formrow">
+            <label>Secret Access Key</label>
+            <input
+              ng-model="options.s3_link.secret_access_key"
+              autocorrect="off"
+              spellcheck="false"
+              mn-autocomplete-off
+              type="password"
+              name="secret_s3_key"
+              autocomplete="one-time-code"
+              required>
+          </div>
+          <div class="formrow">
+            <label>Session Token</label>
+            <input
+              ng-model="options.s3_link.session_token"
+              autocorrect="off"
+              spellcheck="false"
+              mn-autocomplete-off
+              type="password"
+              name="s3_session_token"
+              autocomplete="one-time-code">
+          </div>
+        </div>
+        <div ng-if="options.s3_link.auth_type == 'crossaccounttrust'">
+          <div class="formrow">
+            <label>Assumed Role ARN</label>
+            <input
+              ng-model="options.s3_link.role_arn"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              required>
+          </div>
+          <div class="formrow">
+            <label>External ID</label>
+            <input
+              ng-model="options.s3_link.external_id"
+              type="text"
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off">
+          </div>
+          <div class="formrow">
+            <label>Credentials Used To Assume Role</label>
+            <div>
+              <input
+                type="radio"
+                value="accesskeys"
+                id="for_assumed_role_access_keys"
+                ng-model="options.s3_link.assumed_role_credentials"
+                required>
+              <label
+                for="for_assumed_role_access_keys"
+                class="checkbox">
+                Access Keys
+              </label>
+              <input
+                type="radio"
+                value="instanceprofile"
+                id="for_assumed_role_instance_profile"
+                ng-model="options.s3_link.assumed_role_credentials"
+                required>
+              <label
+                for="for_assumed_role_instance_profile"
+                class="checkbox">
+                Instance Profile
+              </label>
+            </div>
+            <div ng-if="options.s3_link.assumed_role_credentials == 'accesskeys'">
+              <div class="formrow">
+                <label>Access Key ID</label>
+                <input
+                  ng-model="options.s3_link.access_key_id"
+                  type="text"
+                  autocorrect="off"
+                  spellcheck="false"
+                  autocapitalize="off"
+                  required>
+              </div>
+              <div class="formrow">
+                <label>Secret Access Key</label>
+                <input
+                  ng-model="options.s3_link.secret_access_key"
+                  autocorrect="off"
+                  spellcheck="false"
+                  mn-autocomplete-off
+                  type="password"
+                  name="secret_s3_key"
+                  autocomplete="one-time-code"
+                  required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formrow">
+          <label
+             class="disclosure inline"
+             ng-class="{disclosed: showAdvancedS3}"
+             ng-click="showAdvancedS3 = !showAdvancedS3">
+            Advanced
+          </label>
+        </div>
+        <div ng-show="showAdvancedS3" class="indent-1-5">
+        <div class="formrow">
           <input
            id="s3_cross_region"
            ng-model="options.s3_link.cross_region"
@@ -451,139 +626,13 @@ licenses/APL2.txt.
           </div>
         </div>
 
-        <div class="formrow">
+        <div class="formrow" ng-if="!s3EndpointIsHttp">
           <input
             id="s3_disable_ssl_verify"
             ng-model="options.s3_link.disable_ssl_verify"
             type="checkbox">
           <label for="s3_disable_ssl_verify" style="margin-right:0">Disable SSL Verify</label>
         </div>
-
-        <div class="formrow">
-          <label>Endpoint</label>
-          <input
-            ng-model="options.s3_link.endpoint"
-            type="text"
-            autocorrect="off"
-            spellcheck="false"
-            autocapitalize="off">
-        </div>
-
-        <label>Authentication Method</label>
-        <div class="formrow">
-          <select id="aws_auth_type" ng-model="options.s3_link.auth_type" required>
-            <option value="anonymous">Anonymous (No credentials/authentication)</option>
-            <option value="accesskeys">Access Keys</option>
-            <option value="instanceprofile">Instance Profile</option>
-            <option value="crossaccounttrust">Cross Account Trust</option>
-          </select>
-        </div>
-        <div ng-if="options.s3_link.auth_type == 'accesskeys'">
-          <div class="formrow">
-            <label>Access Key ID</label>
-            <input
-              ng-model="options.s3_link.access_key_id"
-              type="text"
-              autocorrect="off"
-              spellcheck="false"
-              autocapitalize="off"
-              required>
-          </div>
-          <div class="formrow">
-            <label>Secret Access Key</label>
-            <input
-              ng-model="options.s3_link.secret_access_key"
-              autocorrect="off"
-              spellcheck="false"
-              mn-autocomplete-off
-              type="password"
-              name="secret_s3_key"
-              autocomplete="one-time-code"
-              required>
-          </div>
-          <div class="formrow">
-            <label>Session Token</label>
-            <input
-              ng-model="options.s3_link.session_token"
-              autocorrect="off"
-              spellcheck="false"
-              mn-autocomplete-off
-              type="password"
-              name="s3_session_token"
-              autocomplete="one-time-code">
-          </div>
-        </div>
-        <div ng-if="options.s3_link.auth_type == 'crossaccounttrust'">
-          <div class="formrow">
-            <label>Assumed Role ARN</label>
-            <input
-              ng-model="options.s3_link.role_arn"
-              type="text"
-              autocorrect="off"
-              spellcheck="false"
-              autocapitalize="off"
-              required>
-          </div>
-          <div class="formrow">
-            <label>External ID</label>
-            <input
-              ng-model="options.s3_link.external_id"
-              type="text"
-              autocorrect="off"
-              spellcheck="false"
-              autocapitalize="off">
-          </div>
-          <div class="formrow">
-            <label>Credentials Used To Assume Role</label>
-            <div>
-              <input
-                type="radio"
-                value="accesskeys"
-                id="for_assumed_role_access_keys"
-                ng-model="options.s3_link.assumed_role_credentials"
-                required>
-              <label
-                for="for_assumed_role_access_keys"
-                class="checkbox">
-                Access Keys
-              </label>
-              <input
-                type="radio"
-                value="instanceprofile"
-                id="for_assumed_role_instance_profile"
-                ng-model="options.s3_link.assumed_role_credentials"
-                required>
-              <label
-                for="for_assumed_role_instance_profile"
-                class="checkbox">
-                Instance Profile
-              </label>
-            </div>
-            <div ng-if="options.s3_link.assumed_role_credentials == 'accesskeys'">
-              <div class="formrow">
-                <label>Access Key ID</label>
-                <input
-                  ng-model="options.s3_link.access_key_id"
-                  type="text"
-                  autocorrect="off"
-                  spellcheck="false"
-                  autocapitalize="off"
-                  required>
-              </div>
-              <div class="formrow">
-                <label>Secret Access Key</label>
-                <input
-                  ng-model="options.s3_link.secret_access_key"
-                  autocorrect="off"
-                  spellcheck="false"
-                  mn-autocomplete-off
-                  type="password"
-                  name="secret_s3_key"
-                  autocomplete="one-time-code"
-                  required>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
