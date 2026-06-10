@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Cluster Settings REST API
-  version: '2.1'
+  version: '2.2'
   description: |
     This API enables you to view or set cluster-level Enterprise Analytics settings.
 
@@ -76,9 +76,11 @@ components:
           The storage scheme (provider) to use. Supported values:
           - `s3` — AWS S3 or an S3-compatible storage service.
           - `azblob` — Azure Blob Storage.
+          - `gs` — Google Cloud Storage.
         enum:
           - s3
           - azblob
+          - gs
         x-has-example: true
         example: s3
       blobStorageBucket:

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Enterprise Analytics Configuration REST API
-  version: '2.1'
+  version: '2.2'
   description: |
     This API enables you to configure Enterprise Analytics Service.
 
