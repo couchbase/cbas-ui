@@ -103,6 +103,30 @@ paths:
         "404":
           $ref: '#/components/responses/NotFound'
 
+  /api/v1/open_requests:
+    get:
+      operationId: open_requests
+      summary: Open Requests
+      description: >
+        Gets a list of all open requests. Open requests include the active requests and the completed `async` requests
+        until they are explicitly discarded or reach their TTL.
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          description: >
+            Success. Returns a list of all open requests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Request"
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
   /api/v1/status/service:
     get:
       operationId: service_status
@@ -696,7 +720,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Active Requests](#operation/return_active_requests), [Request Cancellation](#operation/cancel_request), [Completed Requests](#operation/completed_requests), and [Ingestion Status](#operation/ingestion_status) operations, users must have one of the following RBAC roles:
+      For the [Active Requests](#operation/return_active_requests), [Request Cancellation](#operation/cancel_request), [Completed Requests](#operation/completed_requests), [Open Requests](#operation/open_requests), and [Ingestion Status](#operation/ingestion_status) operations, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin

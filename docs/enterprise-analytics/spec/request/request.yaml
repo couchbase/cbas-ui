@@ -78,6 +78,67 @@ paths:
         "401":
           $ref: '#/components/responses/Unauthorized'
 
+  /api/v1/request/status/{request_id}/{job_id}:
+    get:
+      operationId: get_request_status
+      summary: Request Status
+      description: >
+        Enables you to get the status of a request that was executed in `async` mode.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/JobId"
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          $ref: '#/components/responses/StatusOK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/request/result/{request_id}/{job_id}:
+    get:
+      operationId: get_request_result
+      summary: Retrieve Request Result
+      description: >
+        Enables you to retrieve the result of a request that was executed in `async` mode.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/JobId"
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "200":
+          $ref: '#/components/responses/ResultOK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: delete_request_result
+      summary: Discard Request Result
+      description: >
+        Enables you to discard the result of a request that was executed in `async` mode.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/JobId"
+      security:
+        - AnalyticsManageAnalyticsAccess: []
+      responses:
+        "202":
+          $ref: '#/components/responses/Deleted'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
 components:
 
  schemas:
@@ -169,7 +230,7 @@ components:
           If `immediate`, the request is executed and the result is returned immediately.
           If `async`, the request is executed asynchronously and the client can retrieve the result later.
           All `async` requests can be viewed using the function `open_requests()`. The status and result of an `async`
-          request can be retrieved using the endpoints described in [Request Status](request-status.yaml) and [Request Result](request-result.yaml).
+          request can be retrieved using the endpoints described in [Request Status](#operation/get_request_status) and [Retrieve Request Result](#operation/get_request_result).
         enum:
           - immediate
           - async
@@ -421,6 +482,87 @@ components:
       - timeout
       - fatal
 
+  StatusResponse:
+    title: Status Response
+    type: object
+    properties:
+      status:
+        $ref: "#/components/schemas/RequestStatus"
+      handle:
+        type: string
+        description: >
+          A handle that can be used to retrieve the result of the request.
+          Present only when the request has compiled successfully.
+      resultCount:
+        type: integer
+        format: unsigned
+        description: The total number of objects in the results.
+      partitions:
+        type: array
+        description: >
+          An array of result partitions.
+          Each partition represents a portion of the result that can be retrieved independently.
+        items:
+          type: object
+          properties:
+            handle:
+              type: string
+              description: A handle that can be used to retrieve the result of this partition.
+            resultCount:
+              type: integer
+              format: unsigned
+              description: The number of objects in this partition.
+      resultSetOrdered:
+        type: boolean
+        description: >
+          Whether the result set is ordered.
+          If `false`, the order of results across partitions is not guaranteed.
+      errors:
+        type: array
+        description: >
+          An array of error objects.
+          Present only if 1 or more errors are encountered during processing of the request.
+        items:
+          $ref: "#/components/schemas/ResponsesCommonErrors"
+      warnings:
+        type: array
+        description: |-
+          An array of warning objects.
+          Present only if 1 or more warnings are encountered during processing of the request.
+        items:
+          $ref: "#/components/schemas/ResponsesCommonWarnings"
+      metrics:
+        allOf:
+          - $ref: "#/components/schemas/ResponsesCommonYardsticks"
+          - $ref: "#/components/schemas/ResponsesLocalYardsticks"
+      createdAt:
+        type: string
+        format: date-time
+        description: The timestamp when the request was created.
+
+  ResultResponse:
+    title: Result Response
+    type: object
+    properties:
+      results:
+        type: array
+        description: >
+          An array of all the objects returned by the query.
+          An object can be any JSON value.
+        items:
+          type: object
+      metrics:
+        allOf:
+          - $ref: "#/components/schemas/ResponsesCommonYardsticks"
+          - $ref: "#/components/schemas/ResponsesLocalYardsticks"
+      profile:
+        type: object
+        description: An object containing the query profile, if requested.
+      createdAt:
+        type: string
+        format: date-time
+        description: The timestamp when the request was created.
+
  parameters:
   ReadOnlyParameters:
     name: body
@@ -431,6 +573,21 @@ components:
     description: Specify the parameters in the query URL in URL-encoded format.
     schema:
       $ref: "#/components/schemas/Parameters"
+  RequestId:
+    name: request_id
+    in: path
+    required: true
+    description: The unique identifier of the request.
+    schema:
+      type: string
+      format: UUID
+  JobId:
+    name: job_id
+    in: path
+    required: true
+    description: The identifier of the job associated with the request.
+    schema:
+      type: string
 
  responses:
   OK:
@@ -439,6 +596,23 @@ components:
       application/json:
         schema:
           $ref: "#/components/schemas/Responses"
+
+  StatusOK:
+    description: The operation was successful.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/StatusResponse"
+
+  ResultOK:
+    description: The operation was successful.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/ResultResponse"
+
+  Deleted:
+    description: The operation was accepted.
 
   BadRequest:
     description: >
@@ -468,6 +642,11 @@ components:
                 status:
                   type: string
                   default: fatal
+
+  NotFound:
+    description: >
+      Not found.
+      The specified request ID or job ID does not exist, or the result has expired.
 
  securitySchemes:
   AnalyticsManageAnalyticsAccess:
