@@ -421,6 +421,30 @@ components:
 
 
           You should URL-encode this parameter to escape any special characters.
+      certificates:
+        type: string
+        description: >
+          For Couchbase links only.
+          The content of the target cluster root certificate(s), as an alternative to `certificate`.
+          May contain multiple certificates, separated by new lines, to support certificate rotation.
+
+
+          You should URL-encode this parameter to escape any special characters.
+      clientKeyPassphrase:
+        type: string
+        description: >
+          For Couchbase links only.
+          A JSON object describing how to obtain the passphrase used to decrypt an encrypted client key.
+      httpsOpts:
+        type: string
+        description: >
+          For Couchbase links only.
+          A JSON object configuring TLS verification (`verifyPeer`, `verifyHostname`) for links with full encryption.
+      preventRedirects:
+        type: boolean
+        description: >
+          For Couchbase links only.
+          If set to `true`, the link is prevented from following redirects to the target cluster's active nodes.
 
   RequestSpecificS3:
     title: S3 Specific Request
@@ -483,10 +507,7 @@ components:
           Used together with `roleArn`.
           If `roleArn` is provided and `externalId` is not, one is automatically generated and returned in the response.
       crossRegion:
-        type: string
-        enum:
-          - 'true'
-          - 'false'
+        type: boolean
         description: >
           For S3 links only.
           If set to `true`, allows the link to access S3 buckets in regions other than the one specified by `region`.
@@ -497,10 +518,7 @@ components:
           For S3 links only.
           The Amazon S3 service endpoint.
       pathStyleAddressing:
-        type: string
-        enum:
-          - 'true'
-          - 'false'
+        type: boolean
         description: >
           For S3 links only.
           If set to `true`, uses path-style addressing for S3 requests instead of virtual-hosted-style.
@@ -510,6 +528,40 @@ components:
         description: >
           For S3 links only.
           If set to `true`, SSL verification is disabled.
+      certificates:
+        type: string
+        description: >
+          For S3 links only.
+          One or more PEM-encoded certificates to trust when connecting to an S3-compatible endpoint.
+
+          You should URL-encode this parameter to escape any special characters.
+      checksumBehavior:
+        type: string
+        enum:
+          - when_required
+          - when_supported
+        description: >
+          For S3 links only.
+          Controls when the client sends additional integrity checksums on requests, primarily for
+          S3-compatible storage. `when_required` only sends a checksum when the service requires one;
+          `when_supported` sends one whenever the service supports it.
+      inputStreamType:
+        type: string
+        enum:
+          - classic
+          - analytics
+        description: >
+          For S3 links only.
+          The S3 input-stream implementation to use when reading objects.
+      changeDetectionMode:
+        type: string
+        enum:
+          - server
+          - client
+          - none
+        description: >
+          For S3 links only.
+          The change-detection mode used when reading objects (`none` disables change detection).
 
   RequestSpecificAzureBlob:
     title: Azure Blob Specific Request
@@ -604,11 +656,14 @@ components:
 
 
           This parameter is not allowed if `applicationDefaultCredentials` is provided.
+      # NOTE: documented as the intended boolean. The service currently accepts only the string
+      # "true" (and rejects false); this will be aligned to a real boolean. See MB-72371.
       applicationDefaultCredentials:
         type: boolean
         description: |-
           For Google Cloud Storage links only.
-          If set to `true`, the link uses Google Application Default Credentials for authentication.
+          If `true`, the link uses Google Application Default Credentials for authentication.
+          Cannot be combined with `jsonCredentials`.
 
       # The following property is implemented but not yet supported for general use:
 #       impersonateServiceAccount:
@@ -626,9 +681,11 @@ components:
     title: HTTP Specific Request
     type: object
     properties:
-      endpoint:
-        type: string
-        description: The endpoint URI of the HTTP service.
+      # endpoint is not currently settable via the create/alter API (it is not collected as a
+      # request parameter, so it is silently ignored); see MB-72370.
+      # endpoint:
+      #   type: string
+      #   description: The endpoint URI of the HTTP service.
       username:
         type: string
         description: >
@@ -733,19 +790,19 @@ components:
         title: Couchbase Specific Response
         type: object
         required:
+          - active
           - activeHostname
           - bootstrapAlternateAddress
           - bootstrapHostname
-          - certificate
-          - clientCertificate
-          - clientKey
           - clusterCompatibility
           - encryption
-          - nodes
-          - password
-          - username
-          - uuid
+          - trustedCAsURIVersion
         properties:
+          active:
+            type: boolean
+            description: Whether the link is currently active (connected).
+            x-has-example: true
+            example: true
           activeHostname:
             type: string
             description: The remote hostname.
@@ -761,15 +818,13 @@ components:
             description: The provided (bootstrap) hostname.
             x-has-example: true
             example: remoteHostName:8091
-          certificate:
-            type: string
-            nullable: true
+          certificates:
+            type: array
+            items:
+              type: string
             description: >
-              The content of the target cluster root certificate.
-              Only set for links with full encryption.
-              If not set, this property returns `null`.
-            x-has-example: false
-            example: null
+              The content of the target cluster root certificate(s).
+              Only present for links with full encryption; may contain multiple certificates to support rotation.
           clientCertificate:
             type: string
             nullable: true
@@ -788,11 +843,29 @@ components:
               If not set, this property returns `null`.
             x-has-example: false
             example: null
+          clientKeyPassphrase:
+            type: object
+            nullable: true
+            description: >
+              Describes how the passphrase used to decrypt an encrypted client key is obtained
+              (for example, a `plain` passphrase or one fetched from a `rest` endpoint).
+              Sensitive values within (such as a plain `password`) are redacted.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
           clusterCompatibility:
             type: integer
             description: For internal use only.
             x-has-example: true
             example: 393221
+          clusterUuid:
+            type: string
+            nullable: true
+            description: >
+              The UUID of the target cluster.
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
           encryption:
             type: string
             x-desc-name: encryption
@@ -806,6 +879,21 @@ components:
               - none
               - half
               - full
+          httpsOpts:
+            type: object
+            description: >
+              The TLS verification options used for links with full encryption.
+            properties:
+              verifyPeer:
+                type: boolean
+                description: Whether the target cluster's certificate is verified.
+                x-has-example: true
+                example: true
+              verifyHostname:
+                type: boolean
+                description: Whether the target cluster's hostname is verified against its certificate.
+                x-has-example: true
+                example: true
           nodes:
             type: array
             description: An array of objects, each of which contains information about a node in the target cluster.
@@ -821,6 +909,17 @@ components:
               If not set, this property returns `null`.
             x-has-example: true
             example: <redacted sensitive entry>
+          preventRedirects:
+            type: boolean
+            description: >
+              Whether the link is prevented from following redirects to the target cluster's active nodes.
+            x-has-example: true
+            example: true
+          trustedCAsURIVersion:
+            type: integer
+            description: For internal use only.
+            x-has-example: true
+            example: -1
           username:
             type: string
             nullable: true
@@ -830,12 +929,6 @@ components:
               If not set, this property returns `null`.
             x-has-example: true
             example: remote.user
-          uuid:
-            type: string
-            format: UUID
-            description: A UUID uniquely identifying the link.
-            x-has-example: true
-            example: 6331e2a390125b662f7bcfd63ecb3a73
 
   ResponseCouchbaseSpecificNode:
               type: object
@@ -905,13 +998,8 @@ components:
         title: S3 Specific Response
         type: object
         required:
-          - accessKeyId
-          - crossRegion
-          - instanceProfile
           - region
-          - secretAccessKey
           - serviceEndpoint
-          - sessionToken
         properties:
           accessKeyId:
             type: string
@@ -921,10 +1009,39 @@ components:
               If not set, this property returns `null`.
             x-has-example: true
             example: myAccessKey
+          certificates:
+            type: array
+            items:
+              type: string
+            description: >
+              PEM-encoded certificates trusted when connecting to an S3-compatible endpoint.
+              Only present when configured.
+          changeDetectionMode:
+            type: string
+            nullable: true
+            description: >
+              The change-detection mode used when reading objects (`server`, `client`, or `none`).
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
+          checksumBehavior:
+            type: string
+            nullable: true
+            description: >
+              When the client sends additional integrity checksums (`when_required` or `when_supported`).
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
           crossRegion:
             type: boolean
             description: >
               Whether the link can access S3 buckets in regions other than the configured region.
+            x-has-example: true
+            example: false
+          disableSslVerify:
+            type: boolean
+            description: >
+              Whether SSL verification is disabled.
             x-has-example: true
             example: false
           externalId:
@@ -936,6 +1053,14 @@ components:
               If not set, this property returns `null`.
             x-has-example: false
             example: null
+          inputStreamType:
+            type: string
+            nullable: true
+            description: >
+              The S3 input-stream implementation in use (`classic` or `analytics`).
+              If not set, this property returns `null`.
+            x-has-example: false
+            example: null
           instanceProfile:
             type: string
             nullable: true
@@ -944,6 +1069,12 @@ components:
               If not set, this property returns `null`.
             x-has-example: false
             example: null
+          pathStyleAddressing:
+            type: boolean
+            description: >
+              Whether path-style addressing is used for S3 requests instead of virtual-hosted-style.
+            x-has-example: true
+            example: false
           region:
             type: string
             description: The Amazon S3 region.
@@ -998,6 +1129,7 @@ components:
         required:
           - accountKey
           - accountName
+          - disableSslVerify
           - endpoint
           - sharedAccessSignature
         properties:
@@ -1095,17 +1227,13 @@ components:
   ResponseGCSSpecific:
     title: GCS Specific Response
     type: object
-    required:
-      - applicationDefaultCredentials
-      - endpoint
-      - jsonCredentials
     properties:
+      # NOTE: documented as the intended boolean. The service currently returns the string
+      # "true" (omitted when unset) rather than a JSON boolean. See MB-72371.
       applicationDefaultCredentials:
         type: boolean
-        nullable: true
         description: >
-          If `true`, the link uses Google Application Default Credentials for authentication.
-          If not set, this property returns `null`.
+          Whether the link uses Google Application Default Credentials for authentication.
         x-has-example: true
         example: true
       disableSslVerify:
@@ -1151,14 +1279,6 @@ components:
   ResponseHttpSpecific:
         title: HTTP Specific Response
         type: object
-        required:
-          - bearerToken
-          - oauthAllowedScopes
-          - oauthClientId
-          - oauthClientSecret
-          - oauthTokenUri
-          - password
-          - username
         properties:
           bearerToken:
             type: string
@@ -1169,14 +1289,15 @@ components:
               If not set, this property returns `null`.
             x-has-example: true
             example: <redacted sensitive entry>
-          endpoint:
-            type: string
-            nullable: true
-            description: >
-              The endpoint URI of the HTTP service.
-              If not set, this property returns `null`.
-            x-has-example: true
-            example: https://my.endpoint.uri
+          # endpoint cannot currently be set via the API, so it is always null in responses; see MB-72370.
+          # endpoint:
+          #   type: string
+          #   nullable: true
+          #   description: >
+          #     The endpoint URI of the HTTP service.
+          #     If not set, this property returns `null`.
+          #   x-has-example: true
+          #   example: https://my.endpoint.uri
           oauthAllowedScopes:
             type: string
             nullable: true

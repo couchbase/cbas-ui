@@ -3207,6 +3207,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
     } else if (scope.link_type === "gcs") {
         if (scope.gcs_link.auth_type === "applicationdefaultcredentials") {
+          // MB-72371: applicationDefaultCredentials should be a boolean (like disableSslVerify), but the
+          // service currently only accepts the string "true". Send the boolean once MB-72371 is fixed.
           formData.applicationDefaultCredentials = "true"
         }
         else if (scope.gcs_link.auth_type === "jsoncredentials") {
