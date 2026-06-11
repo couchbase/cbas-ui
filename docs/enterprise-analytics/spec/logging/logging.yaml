@@ -1,0 +1,258 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Analytics Logging REST API
+  version: '2.2'
+  description: |
+    This API enables you to view and modify the log levels of individual Enterprise Analytics loggers at runtime,
+    without restarting the service.
+
+    Changes made through this API are applied immediately, broadcast to all active nodes in the cluster, and
+    persisted so that they survive node restarts. They override the default log level configured by the
+    `logLevel` service-level parameter (see the [Configuration REST API][1]) for the affected loggers.
+
+    The root logger cannot be modified through this API.
+
+    [1]: /enterprise-analytics/current/analytics-rest-config/index.html
+
+servers:
+  - url: '{scheme}://{host}:{port}'
+    description: The URL scheme, host, and port are as follows.
+    variables:
+      scheme:
+        default: http
+        description: |-
+          The URL scheme.
+          Use `https` for secure access.
+        enum:
+          - http
+          - https
+      host:
+        default: localhost
+        description: The host name or IP address of a node.
+      port:
+        default: "8095"
+        description: |-
+          The Enterprise Analytics Service REST port.
+          Use `18095` for secure access.
+        enum:
+          - "8095"
+          - "18095"
+
+paths:
+  /api/v1/cluster/logging:
+    get:
+      operationId: get_loggers
+      summary: View Configured Loggers
+      description: >
+        Returns the loggers that have been explicitly configured (i.e., whose level differs from that of their
+        parent logger), along with their current levels.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          description: Success. Returns the configured loggers and their levels.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loggers'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: put_loggers
+      summary: Modify Logger Levels
+      description: >
+        Sets the log level for one or more loggers. Any logger included in the request that does not yet exist
+        is created. The root logger (empty name) cannot be modified.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Loggers'
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      operationId: delete_loggers
+      summary: Reset All Loggers
+      description: >
+        Restores all loggers to their default configuration, discarding any levels previously set through this API.
+        The default level is determined by the `logLevel` service-level parameter.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/cluster/logging/all:
+    get:
+      operationId: get_all_loggers
+      summary: List Available Loggers
+      description: >
+        Returns the names of all known loggers, one per line, as plain text.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          description: Success. Returns a newline-delimited list of logger names.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                org.apache.hyracks
+                org.apache.asterix
+                com.couchbase.analytics
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/cluster/logging/{logger}:
+    parameters:
+      - $ref: '#/components/parameters/Logger'
+    get:
+      operationId: get_logger
+      summary: View Logger Level
+      description: >
+        Returns the current effective log level of the specified logger, as plain text.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          description: Success. Returns the logger's current level.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Level'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: put_logger
+      summary: Modify Logger Level
+      description: >
+        Sets the log level for the specified logger, creating it if it does not yet exist.
+        The root logger cannot be modified.
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              $ref: '#/components/schemas/Level'
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      operationId: delete_logger
+      summary: Reset Logger Level
+      description: >
+        Removes the level previously set for the specified logger through this API, so that it reverts to
+        inheriting its level from its parent logger. The root logger cannot be modified.
+      security:
+        - AnalyticsManage: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OK'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+ parameters:
+  Logger:
+    name: logger
+    in: path
+    required: true
+    description: The name of the logger.
+    schema:
+      type: string
+    example: com.couchbase.analytics
+
+ schemas:
+  Level:
+    type: string
+    description: |
+      A log level. Common values, from least to most verbose, are:
+      `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, `ALL`.
+    example: DEBUG
+
+  Logger:
+    type: object
+    required:
+      - name
+      - level
+    properties:
+      name:
+        type: string
+        description: The name of the logger.
+        example: com.couchbase.analytics
+      level:
+        $ref: '#/components/schemas/Level'
+
+  Loggers:
+    type: object
+    required:
+      - loggers
+    properties:
+      loggers:
+        type: array
+        description: The list of loggers and their levels.
+        items:
+          $ref: '#/components/schemas/Logger'
+
+  Errors:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: string
+        description: An error message.
+
+ responses:
+  OK:
+    description: The operation was successful.
+
+  BadRequest:
+    description: >
+      Bad request.
+      The request was malformed, the level was invalid, or an attempt was made to modify the root logger.
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Errors'
+
+  Unauthorized:
+    description: >
+      Unauthorized.
+      The user name or password may be incorrect.
+    content:
+      application/json:
+        schema:
+          type: object
+
+ securitySchemes:
+  AnalyticsManage:
+    type: http
+    scheme: basic
+    description: |-
+      Users must have one of the following RBAC roles:
+
+      * Full Admin
+      * Cluster Admin
+      * Enterprise Analytics Admin

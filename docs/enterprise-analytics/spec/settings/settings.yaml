@@ -104,7 +104,7 @@ components:
       blobStorageAnonymousAuth:
         type: boolean
         description: |
-          Applies only when `blobStorageScheme` is `s3`.
+          Applies when `blobStorageScheme` is `s3` or `gs`. Not supported when `blobStorageScheme` is `azblob`.
           If `true`, the storage bucket will be accessed without any credentials (anonymous access).
           See also `blobStorageAccessKeyId` and `blobStorageSecretAccessKey` for static credentials,
           or omit all credential fields to use the Standard Credential Chain.
@@ -149,6 +149,7 @@ components:
         items:
           type: string
         description: |
+          Applies only when `blobStorageScheme` is `s3`.
           One or more PEM-encoded certificates to trust when connecting to the blob storage endpoint.
           Only required if the endpoint is signed by a certificate authority (CA) other than a well-known public CA
           (e.g., for self-signed or private/internal CA certificates).
@@ -175,11 +176,33 @@ components:
           Optional. Applies only when `blobStorageScheme` is `s3`.
           The Secret Access Key for static credential authentication. If provided, must be supplied together with `blobStorageAccessKeyId`.
           If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
-          This value is masked as `***` in logs and when returned from the API for security reasons.
+          On input, supply the actual secret value. In logs and in responses from the API this value is masked as `***` for security reasons.
 
           **Available from Enterprise Analytics 2.1.1.**
         x-has-example: true
-        example: "***"
+        example: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      blobStorageChecksumBehavior:
+        type: string
+        description: |
+          Applies only when `blobStorageScheme` is `s3`.
+          Controls when the client sends additional integrity checksums on object uploads. Supported values:
+          - `when_required` — only send a checksum when the storage service requires one.
+          - `when_supported` — send a checksum whenever the storage service supports it.
+
+          Useful for S3-compatible storage services that do not fully support the default checksum behavior.
+        enum:
+          - when_required
+          - when_supported
+        x-has-example: true
+        example: when_required
+      blobStorageAzureClientId:
+        type: string
+        description: |
+          Applies only when `blobStorageScheme` is `azblob`.
+          The client ID of the user-assigned managed identity to use when authenticating to Azure Blob Storage.
+          If omitted, the default Azure credential chain is used.
+        x-has-example: true
+        example: 00000000-0000-0000-0000-000000000000
       numStoragePartitions:
         type: integer
         minimum: 1
@@ -187,6 +210,44 @@ components:
         description: Specifies the number of partitions that will be used when storing the data in the blob storage bucket.
         x-has-example: true
         example: 128
+      skipValidation:
+        type: boolean
+        description: |
+          If `true`, skips validation of the supplied settings, including the connectivity test against the
+          configured blob storage. Intended for advanced or automated provisioning scenarios; in normal use
+          the settings are validated before being applied.
+        x-has-example: true
+        example: false
+
+  SettingsResponse:
+    description: |
+      The current cluster-level Analytics settings.
+      `blobStorageSecretAccessKey` is masked as `***` when present.
+      The `warnings` array is included on modify operations that produce non-fatal warnings (for example, when SSL verification is disabled or an insecure HTTP endpoint is configured).
+    allOf:
+      - $ref: "#/components/schemas/Settings"
+      - type: object
+        properties:
+          warnings:
+            type: array
+            description: Non-fatal warnings produced while applying the settings.
+            items:
+              $ref: "#/components/schemas/Warning"
+
+  Warning:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: A numeric code identifying the warning.
+        example: 21999
+      msg:
+        type: string
+        description: A human-readable description of the warning.
+        example: Disabling SSL verification in a production environment is highly insecure and exposes the system to serious risks, including Man-in-the-Middle (MITM) attacks
+      retriable:
+        type: boolean
+        description: Whether the operation that produced the warning can be retried.
 
 
  responses:
@@ -195,7 +256,7 @@ components:
     content:
       application/json:
         schema:
-          $ref: "#/components/schemas/Settings"
+          $ref: "#/components/schemas/SettingsResponse"
 
   BadRequest:
     description: >

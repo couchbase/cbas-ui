@@ -242,6 +242,20 @@ components:
         type: boolean
         x-has-default: true
         default: false
+      cloudAccessAttemptTimeoutSeconds:
+        description: >
+          How long (in seconds) to wait for each cloud access attempt before timing out and retrying. (0 == wait forever)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 30
+      cloudAccessPreemptiveRefreshBeforeExpirySeconds:
+        description: >
+          How soon (in seconds) before the current cloud access expires to attempt to refresh the access. (0 == no preemptive refresh)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 3
       cloudAccessPreemptiveRefreshIntervalSeconds:
         description: >
           The interval (in seconds) at which to attempt to preemptively verify cloud access.
@@ -250,6 +264,14 @@ components:
         format: int32
         x-has-default: true
         default: 30
+      cloudAccessPreemptiveRefreshSuspendAfterIdleSeconds:
+        description: >
+          How long (in seconds) preemptive cloud access refreshes should continue while no access checks are required.
+          Once this idle period has elapsed, preemptive access checks are suspended until they are needed again. (0 == never suspend)
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 60
       cloudAccessRefreshHaltTimeoutSeconds:
         description: The length of time (in seconds) before the process will halt on failure to verify cloud access. (0 == wait forever)
         type: integer
@@ -469,17 +491,6 @@ components:
         format: int32
         x-has-default: true
         default: -1
-      compilerExtractCommonExpressionLimit:
-        description: |-
-          The maximum number of common expressions to extract.
-
-          **Available from Enterprise Analytics 2.1.1.**
-          The default is `100` for clusters provisioned from 2.1.1 onwards.
-          Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
-        type: integer
-        format: int32
-        x-has-default: true
-        default: 100
       compilerExternalFieldPushdown:
         description: Enable pushdown of field accesses to the external data-scan operator.
         type: boolean
@@ -493,6 +504,17 @@ components:
             format: int32
         x-has-default: true
         default: "8 KiB"
+      compilerExtractCommonExpressionLimit:
+        description: |-
+          The maximum number of common expressions to extract.
+
+          **Available from Enterprise Analytics 2.1.1.**
+          The default is `100` for clusters provisioned from 2.1.1 onwards.
+          Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 100
       compilerFramesize:
         description: The page size for computation. Accepts either an integer number of bytes or a byte string (e.g. `32KiB`).
         oneOf:
@@ -509,6 +531,19 @@ components:
             format: int64
         x-has-default: true
         default: "32 MiB"
+      compilerHdfsSplitParallelism:
+        description: |-
+          The number of threads to use for generating file splits for HDFS files.
+
+          **Default:** the number of available processors on the node (computed at startup).
+        type: integer
+        format: int32
+        x-has-default: false
+      compilerIndexCovering:
+        description: Enable/disable index-only (covering) query plans.
+        type: boolean
+        x-has-default: true
+        default: true
       compilerJoinmemory:
         description: The memory budget for a join operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `32MiB`).
         oneOf:
@@ -583,6 +618,11 @@ components:
         format: int32
         x-has-default: true
         default: 0
+      compilerParquetFilesplits:
+        description: Enable/disable Parquet file splits.
+        type: boolean
+        x-has-default: true
+        default: false
       compilerQueryplanshape:
         description: Set the mode for forcing the shape of the query plan (e.g., `zigzag`, `leftdeep`, `rightdeep`).
         type: string
@@ -594,6 +634,11 @@ components:
         format: int32
         x-has-default: true
         default: 5
+      compilerSortParallel:
+        description: Enables/disables full parallel sort.
+        type: boolean
+        x-has-default: true
+        default: true
       compilerSortmemory:
         description: The memory budget for a sort operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `32MiB`).
         oneOf:
@@ -602,11 +647,6 @@ components:
             format: int64
         x-has-default: true
         default: "32 MiB"
-      compilerSortParallel:
-        description: Enables/disables full parallel sort.
-        type: boolean
-        x-has-default: true
-        default: false
       compilerWindowmemory:
         description: The memory budget for a window operator instance in a partition. Accepts either an integer number of bytes or a byte string (e.g. `32MiB`).
         oneOf:
@@ -721,6 +761,19 @@ components:
         format: int64
         x-has-default: true
         default: 300
+      frameProfilerByteBuckets:
+        description: |-
+          The frame-size histogram bucket boundaries, specified as byte values. Each entry accepts either an
+          integer number of bytes or a byte string (e.g. `32KiB`).
+
+          **Default:** `32 KiB`, `64 KiB`, `128 KiB`, `256 KiB`, `512 KiB`, `1 MiB`, `2 MiB`, `4 MiB`, `6 MiB`, `8 MiB`, `12 MiB`, `16 MiB`.
+        type: array
+        items:
+          oneOf:
+            - type: string
+            - type: integer
+              format: int64
+        x-has-default: false
       gcpImpersonateServiceAccountDuration:
         description: GCS impersonating service account duration in seconds. Range from 60 seconds (1 minute) to 3600 seconds (1 hour).
         type: integer
@@ -833,6 +886,15 @@ components:
         format: int32
         x-has-default: true
         default: 4194304
+      logLevel:
+        description: |-
+          The default logging level for the master and worker processes (e.g., `WARN`, `INFO`, `DEBUG`).
+          This applies to loggers that have not been explicitly configured via the
+          [Logging REST API](/enterprise-analytics/current/analytics-rest-logging/index.html),
+          which can override the level of individual loggers at runtime.
+        type: string
+        x-has-default: true
+        default: DEBUG
       maxActiveLinks:
         description: The maximum number of links that can be active at any given time.
         type: integer
@@ -857,6 +919,11 @@ components:
         format: int64
         x-has-default: true
         default: 209715200
+      metadataAuthorizationEnabled:
+        description: Whether authorization is applied when viewing metadata objects.
+        type: boolean
+        x-has-default: true
+        default: false
       metadataRegistrationTimeoutSecs:
         description: How long (in seconds) to wait for the metadata node to register with the cluster controller.
         type: integer
@@ -958,20 +1025,18 @@ components:
         format: int32
         x-has-default: true
         default: 1000
-      # async api is unsupported in 2.1
-      #resultSweepThreshold:
-      #  description: The duration (in milliseconds) after which the system will sweep for expired async query results.
-      #  type: integer
-      #  format: int64
-      #  x-has-default: true
-      #  default: 60000
-      # async api is unsupported in 2.1
-      #resultTtl:
-      #  description: Limits the amount of time results for asynchronous jobs should be retained by the system in milliseconds.
-      #  type: integer
-      #  format: int64
-      #  x-has-default: true
-      #  default: 86400000
+      resultSweepThreshold:
+        description: The interval (in milliseconds) at which the system sweeps for and cleans up expired asynchronous query results.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 60000
+      resultTtl:
+        description: Limits the amount of time (in milliseconds) that results for asynchronous jobs are retained by the system.
+        type: integer
+        format: int64
+        x-has-default: true
+        default: 3600000
       serializationReplacementsLogFrequency:
         description: The frequency (in seconds) at which to debug-log serialization replacements.
         type: integer
@@ -1146,6 +1211,21 @@ components:
         format: int32
         x-has-default: true
         default: 3600
+      vsizeFrameFactoryByKind:
+        description: |-
+          Per-job-kind variable-size frame factory provider mappings. Each entry is of the form
+          `<jobKind>:<providerIdentifier>`, where `jobKind` is the camel-case job kind name (e.g. `ingestion`, `userQuery`).
+          Job kinds with no entry use the `default` provider.
+        type: array
+        items:
+          type: string
+        x-has-default: false
+      vsizeFrameLazyReclamationTtlSeconds:
+        description: The number of seconds to retain an expanded frame before it is reclaimed when using lazy reclamation.
+        type: integer
+        format: int32
+        x-has-default: true
+        default: 10
 
 
   Node:
