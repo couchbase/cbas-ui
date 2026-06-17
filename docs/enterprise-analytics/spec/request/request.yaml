@@ -93,9 +93,9 @@ paths:
         "200":
           $ref: '#/components/responses/StatusOK'
         "400":
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/BadRequestStatusResult'
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/UnauthorizedStatusResult'
         "404":
           $ref: '#/components/responses/NotFound'
 
@@ -114,9 +114,9 @@ paths:
         "200":
           $ref: '#/components/responses/ResultOK'
         "400":
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/BadRequestStatusResult'
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/UnauthorizedStatusResult'
         "404":
           $ref: '#/components/responses/NotFound'
     delete:
@@ -133,9 +133,9 @@ paths:
         "202":
           $ref: '#/components/responses/Deleted'
         "400":
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/BadRequestStatusResult'
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/UnauthorizedStatusResult'
         "404":
           $ref: '#/components/responses/NotFound'
 
@@ -229,7 +229,8 @@ components:
           The execution mode of the request.
           If `immediate`, the request is executed and the result is returned immediately.
           If `async`, the request is executed asynchronously and the client can retrieve the result later.
-          All `async` requests can be viewed using the function `open_requests()`. The status and result of an `async`
+          All `async` requests can be viewed using the [Open Requests](admin.yaml#operation/open_requests) endpoint, or
+          going to the Open requests under the monitor page in UI workbench. The status and result of an `async`
           request can be retrieved using the endpoints described in [Request Status](#operation/get_request_status) and [Retrieve Request Result](#operation/get_request_result).
         enum:
           - immediate
@@ -642,6 +643,16 @@ components:
                 status:
                   type: string
                   default: fatal
+
+  BadRequestStatusResult:
+    description: >
+      Bad request.
+      A parameter has an incorrect value.
+
+  UnauthorizedStatusResult:
+    description: >
+      Unauthorized.
+      The user name or password may be incorrect.
 
   NotFound:
     description: >
