@@ -2553,7 +2553,7 @@ function createNewCollection(database, dataverse) {
           "Warning, this will drop the view: ",[view.databaseDisplayName + "." + view.dataverseDisplayName + "." + view.id])
         .then(function yes(resp) {
           if (resp == "ok") {
-            var queryText = "DROP VIEW "+ view.DatabaseName + '.' + view.DataverseName + '.`' + view.id + '`';
+            var queryText = "DROP VIEW `" + view.DatabaseName + '`.`' + view.DataverseName + '`.`' + view.id + '`';
 
             cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
               .then(function success() {
