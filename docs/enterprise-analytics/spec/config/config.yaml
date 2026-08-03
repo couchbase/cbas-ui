@@ -709,6 +709,19 @@ components:
         format: int64
         x-has-default: true
         default: 100
+      dcpIngestXattrs:
+        description: >
+          Whether to ingest document extended attributes (xattrs) received from KV via DCP into the `meta()`
+          record. Disabled by default: wide/sparse system xattrs (e.g. `_sync`) can otherwise produce very wide,
+          sparse meta schemas. Enable to ingest xattrs into `meta()`.
+
+
+          This is a service-wide setting, not per-collection. It takes effect for a collection when its link is
+          connected, so enable it before connecting the link. If it is enabled after a collection is already
+          ingesting, that collection's existing documents must be re-ingested for xattrs to appear in `meta()`.
+        type: boolean
+        x-has-default: true
+        default: false
       dcpMaxConnectionsPerKvNode:
         description: The maximum number of DCP connections to allow to each KV node for an ingestion (cluster-wide).
         type: integer
