@@ -116,9 +116,11 @@ FROM t.Derived.Record.Fields)) AS TypeString,
     SELECT idx.IndexName,
   idx.SearchKey,
   idx.SearchKeyElements,
-  idx.SearchKeyType
+  idx.SearchKeyType,
+  idx.IncludeFields
 FROM Metadata.\`Index\` AS idx
 WHERE idx.IsPrimary = FALSE
+AND idx.IndexStructure != 'SAMPLE'
 AND idx.DatabaseName = ds.DatabaseName
 AND idx.DatasetName = ds.DatasetName
 AND idx.DataverseName = ds.DataverseName) AS indexes,
@@ -196,9 +198,11 @@ FROM t.Derived.Record.Fields)) AS TypeString,
     SELECT idx.IndexName,
   idx.SearchKey,
   idx.SearchKeyElements,
-  idx.SearchKeyType
+  idx.SearchKeyType,
+  idx.IncludeFields
 FROM Metadata.\`Index\` AS idx
 WHERE idx.IsPrimary = FALSE
+AND idx.IndexStructure != 'SAMPLE'
 AND idx.DatabaseName = ds.DatabaseName
 AND idx.DatasetName = ds.DatasetName
 AND idx.DataverseName = ds.DataverseName) AS indexes,

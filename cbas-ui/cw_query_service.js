@@ -2103,6 +2103,22 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     }
   }
 
+  const indexKeySeparator = ", ";
+  // labels the fields carried by the index but not searchable, so they are told apart from the search keys
+  const indexIncludeLabel = "include";
+
+  // renders an index's fields as "(embedding) include (name, city)"
+  function formatIndexKeys(keys, includeKeys) {
+    if (keys.length === 0) {
+      return "";
+    }
+    let display = "(" + keys.join(indexKeySeparator) + ")";
+    if (includeKeys.length > 0) {
+      display += " " + indexIncludeLabel + " (" + includeKeys.join(indexKeySeparator) + ")";
+    }
+    return display;
+  }
+
   function constructIndexesKeys(dataset) {
     if (dataset.indexes && dataset.indexes.length > 0) {
       for (var i = 0; i < dataset.indexes.length; i++) {
@@ -2154,6 +2170,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
              }
            }
         }
+        // each IncludeFields element is an array of path elements
+        idx.includeKeys = (idx.IncludeFields || []).map(field => field.join('.'));
+        idx.keysDisplay = formatIndexKeys(idx.keys, idx.includeKeys);
       }
     }
   }

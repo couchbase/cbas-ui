@@ -521,7 +521,7 @@ licenses/APL2.txt.
                       <p class="margin-bottom-half" ng-show="link.LinkType != 'EXTERNAL' && !shadow.external && shadow.indexes.length > 0">
                         Index<span ng-show="shadow.indexes.length > 1">es</span>:<br>
                         <span ng-repeat="idx in shadow.indexes">
-                          {{idx.IndexName}} <span ng-repeat="key in idx.keys">({{key}})<br></span>
+                          {{idx.IndexName}} {{idx.keysDisplay}}<br>
                         </span>
                       </p>
                       <p ng-if="link.LinkType == 'EXTERNAL' && shadow.format != 'json'">
