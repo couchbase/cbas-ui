@@ -56,9 +56,14 @@ angular
             return;
           }
 
-          _valid = false;
-          _userHasAnyBuckets = false;
-          _userCanAccessStats = false;
+          // only the very first check starts from scratch. A re-check keeps the last
+          // known-good answer until the ping replies, so the workbench is not torn down
+          // and rebuilt every time something asks us to revalidate.
+          if (!_checked) {
+            _valid = false;
+            _userHasAnyBuckets = false;
+            _userCanAccessStats = false;
+          }
           _checked = true;
           _otherStatus = null;
           _otherError = null;
@@ -81,6 +86,8 @@ angular
               function error(resp) {
                 var data = resp.data, status = resp.status;
                 _valid = false;
+                _userHasAnyBuckets = false;
+                _userCanAccessStats = false;
                 _InProgress = false;
                 _otherStatus = status;
                 _otherError = data;
@@ -91,19 +98,19 @@ angular
           mnPermissions.check().then(function success() {
             var perms = mnPermissions.export.cluster;
             if (perms) {
-              if(perms.bucket["."] && perms.bucket["."].settings.read) {
-                 _userHasAnyBuckets = true;
-              }
+              _userHasAnyBuckets = !!(perms.bucket["."] && perms.bucket["."].settings.read);
               var analyticsAdmin = isAnalyticsAdmin(perms);
-              if ((perms.collection[".:.:."] && perms.collection[".:.:."].analytics && perms.collection[".:.:."].analytics.select) ||
-                  (perms.analytics && perms.analytics.manage)) {
-                _userCanAccessStats = true;
-              }
+              _userCanAccessStats = !!((perms.collection[".:.:."] && perms.collection[".:.:."].analytics && perms.collection[".:.:."].analytics.select) ||
+                                       (perms.analytics && perms.analytics.manage));
               if (true) {
                 _userCanAccessLinks = true;
               }
               _userCanAccessLinks = true;
             }
+          }, function error() {
+            // no answer means no rights: without this the previous answer would stand
+            _userHasAnyBuckets = false;
+            _userCanAccessStats = false;
           });
         }
 
