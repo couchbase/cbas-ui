@@ -498,6 +498,10 @@ licenses/APL2.txt.
                             ng-if="!shadow.LinkName"
                             ng-class="{'fa-folder-o': !shadow.LinkName}"></span>
                         {{shadow.id}}
+                        <span
+                            class="icon fa-bar-chart text-smaller grayblue-2 margin-left-quarter"
+                            ng-if="shadow.hasStatistics"
+                            title="Analyzed (sample collected)"></span>
                       </div>
                     </div>
     <!-- expando section for details on each dataset -------------------------- -->

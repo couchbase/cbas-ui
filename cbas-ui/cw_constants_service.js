@@ -124,6 +124,13 @@ AND idx.IndexStructure != 'SAMPLE'
 AND idx.DatabaseName = ds.DatabaseName
 AND idx.DatasetName = ds.DatasetName
 AND idx.DataverseName = ds.DataverseName) AS indexes,
+  EXISTS (
+    SELECT VALUE 1
+FROM Metadata.\`Index\` AS sampleIdx
+WHERE sampleIdx.IndexStructure = 'SAMPLE'
+AND sampleIdx.DatabaseName = ds.DatabaseName
+AND sampleIdx.DatasetName = ds.DatasetName
+AND sampleIdx.DataverseName = ds.DataverseName) AS hasStatistics,
   ds.ExternalDetails.Properties AS externalDetails
 FROM Metadata.\`Dataset\` AS ds LEFT
 JOIN Metadata.Datatype t ON ds.DatabaseName = t.DatabaseName AND ds.DataverseName = t.DataverseName
@@ -206,6 +213,13 @@ AND idx.IndexStructure != 'SAMPLE'
 AND idx.DatabaseName = ds.DatabaseName
 AND idx.DatasetName = ds.DatasetName
 AND idx.DataverseName = ds.DataverseName) AS indexes,
+  EXISTS (
+    SELECT VALUE 1
+FROM Metadata.\`Index\` AS sampleIdx
+WHERE sampleIdx.IndexStructure = 'SAMPLE'
+AND sampleIdx.DatabaseName = ds.DatabaseName
+AND sampleIdx.DatasetName = ds.DatasetName
+AND sampleIdx.DataverseName = ds.DataverseName) AS hasStatistics,
   ds.ExternalDetails.Properties AS externalDetails
 FROM Metadata.\`Dataset\` AS ds LEFT
 JOIN Metadata.Datatype t ON ds.DatabaseName = t.DatabaseName AND ds.DataverseName = t.DataverseName
@@ -276,7 +290,8 @@ ORDER BY
                                                      "CREATE ANALYTICS VIEW", "DROP ANALYTICS VIEW", "DROP LINK",
                                                      "CREATE OR REPLACE ANALYTICS VIEW", "CREATE DATABASE", "CREATE SCOPE",
                                                      "CREATE COLLECTION", "DROP DATABASE", "DROP SCOPE", "DROP COLLECTION",
-                                                     "CREATE VIEW", "CREATE OR REPLACE VIEW", "DROP VIEW"];
+                                                     "CREATE VIEW", "CREATE OR REPLACE VIEW", "DROP VIEW",
+                                                     "ANALYZE COLLECTION", "ANALYZE DATASET"];
 
   cwConstantsService.healthCheckURL = "../_p/cbas/api/v1/ping";
 
