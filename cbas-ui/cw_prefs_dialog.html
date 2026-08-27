@@ -15,6 +15,16 @@
            <span class="icon fa-info fa-stack-1x"></span>
         </span>
       </div>
+      <div class="formrow">
+        <input id="for-multi-statement" type="checkbox" ng-model="options.multi_statement">
+        <label for="for-multi-statement" class="checkbox inline margin-right-zero">Support Multiple Statements</label>
+        <span
+           class="fa-stack icon-info"
+           uib-tooltip="Runs every statement in the query editor, separated by semicolons, as a single request; these run in order and stop at the first failure.">
+           <span class="icon fa-circle-thin fa-stack-2x"></span>
+           <span class="icon fa-info fa-stack-1x"></span>
+        </span>
+      </div>
       <div class="formrow" ng-hide="mode == 'analytics'">
         <input id="for-auto-infer" type="checkbox" ng-model="options.auto_infer">
         <label for="for-auto-infer" class="checkbox inline margin-right-zero">Automatically infer bucket schemas</label>

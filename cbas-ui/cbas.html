@@ -130,31 +130,35 @@ licenses/APL2.txt.
         <div class="wb-result-summary">
           <span
              class="nowrap wb-result-status padding-right-half"
-             ng-class="{success: qc.status_success(), error: qc.status_fail()}">
+             ng-class="{success: qc.status_success(), error: qc.status_fail(), warning: qc.status_partial()}">
             {{qc.lastResult.status}}
           </span>
-          <span ng-if="qc.lastResult.elapsedTime" class="nowrap pipe">
-            elapsed: {{qc.lastResult.elapsedTime}}
-          </span>
-          <span ng-if="qc.lastResult.executionTime" class="nowrap pipe">
-            execution: {{qc.lastResult.executionTime}}
-          </span>
-          <span ng-if="qc.lastResult.compileTime" class="nowrap pipe">
-            compilation: {{qc.lastResult.compileTime}}
-          </span>          <span ng-if="qc.lastResult.queueWaitTime" class="nowrap pipe">
-            waiting in queue: {{qc.lastResult.queueWaitTime}}
-          </span>
-          <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects" class="nowrap pipe">
-            docs scanned: {{qc.lastResult.processedObjects}}
-          </span>
-          <span ng-if="qc.lastResult.resultCount" class="nowrap pipe">
-            docs returned: {{qc.lastResult.resultCount}}
-          </span>
-          <span ng-if="qc.lastResult.resultSize" class="nowrap pipe">
-            size: {{qc.lastResult.resultSize}} bytes
-          </span>
-          <span ng-if="qc.lastResult.warningCount == 0 || qc.lastResult.warningCount" class="nowrap pipe">
-            warnings: {{qc.lastResult.warningCount}}
+<!-- a multi-statement response reports its metrics per statement, so there are none to show here -->
+          <span ng-if="!qc.lastResult.statements">
+            <span ng-if="qc.lastResult.elapsedTime" class="nowrap pipe">
+              elapsed: {{qc.lastResult.elapsedTime}}
+            </span>
+            <span ng-if="qc.lastResult.executionTime" class="nowrap pipe">
+              execution: {{qc.lastResult.executionTime}}
+            </span>
+            <span ng-if="qc.lastResult.compileTime" class="nowrap pipe">
+              compilation: {{qc.lastResult.compileTime}}
+            </span>
+            <span ng-if="qc.lastResult.queueWaitTime" class="nowrap pipe">
+              waiting in queue: {{qc.lastResult.queueWaitTime}}
+            </span>
+            <span ng-if="qc.lastResult.processedObjects == 0 || qc.lastResult.processedObjects" class="nowrap pipe">
+              docs scanned: {{qc.lastResult.processedObjects}}
+            </span>
+            <span ng-if="qc.lastResult.resultCount" class="nowrap pipe">
+              docs returned: {{qc.lastResult.resultCount}}
+            </span>
+            <span ng-if="qc.lastResult.resultSize" class="nowrap pipe">
+              size: {{qc.lastResult.resultSize}} bytes
+            </span>
+            <span ng-if="qc.lastResult.warningCount == 0 || qc.lastResult.warningCount" class="nowrap pipe">
+              warnings: {{qc.lastResult.warningCount}}
+            </span>
           </span>
         </div>
 
@@ -180,7 +184,8 @@ licenses/APL2.txt.
 <!-- query results ------------------------------------------------------------>
     <div class="wb-results-header">
       <h4>Query Results
-        <a ng-click="qc.copyResultAsCSV()" title="Copy results in tabular format" class="margin-left-half">
+<!-- a batch of unrelated statements is not one table, so it has no CSV form -->
+        <a ng-if="!qc.lastResult.statements" ng-click="qc.copyResultAsCSV()" title="Copy results in tabular format" class="margin-left-half">
           <span class="icon fa-copy"></span>
         </a><a ng-if="qc.lastResult.metrics" ng-click="qc.copyMetrics()" title="Copy metrics JSON" style="margin-left: -8px;"
            tooltip-trigger="mouseenter"
@@ -235,11 +240,17 @@ licenses/APL2.txt.
       </div>
 
       <div class="wb-results-chart" ng-if="qc.isSelected(3)">
-        <qw-json-chart [subject]="qc.result_subject"></qw-json-chart>
+        <div class="text-smallish" style="padding: .5rem;" ng-if="qc.lastResult.statements">
+          Charts are not available for a multi-statement request.
+        </div>
+        <qw-json-chart ng-if="!qc.lastResult.statements" [subject]="qc.result_subject"></qw-json-chart>
       </div>
 
       <div class="wb-results-explain" ng-if="qc.isSelected(4)">
-        <qw-explain-viz [subject]="qc.result_subject"></qw-explain-viz>
+        <div class="text-smallish" style="padding: .5rem;" ng-if="qc.lastResult.statements">
+          The graphical plan is not available for a multi-statement request. Each statement's plan is shown under Plan Text.
+        </div>
+        <qw-explain-viz ng-if="!qc.lastResult.statements" [subject]="qc.result_subject"></qw-explain-viz>
       </div>
 
       <div class="wb-results-explain-text"
@@ -249,7 +260,10 @@ licenses/APL2.txt.
 
       <div class="wb-index-advice wb-results-advice" ng-if="qc.isSelected(6)">
         <h5 class="margin-bottom-half">Index Advisor</h5>
-        <div ng-if="qc.lastResult.isAdviseQuery">
+        <div class="text-smallish" ng-if="qc.lastResult.statements">
+          The Index Advisor is not available for a multi-statement request.
+        </div>
+        <div ng-if="!qc.lastResult.statements && qc.lastResult.isAdviseQuery">
           <div ng-if="qc.lastResult.adviceDetails.current.length">
             <div class="text-smallish margin-bottom-quarter">Index Currently Used</div>
             <pre class="text-smallish" style="white-space: pre-wrap; background: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 4px; padding: 0.5rem 0.75rem; margin: 0 0 .5rem 0;"
@@ -267,7 +281,7 @@ licenses/APL2.txt.
             No index recommendations returned for this query.
           </div>
         </div>
-        <div class="text-smallish" ng-if="!qc.lastResult.isAdviseQuery">
+        <div class="text-smallish" ng-if="!qc.lastResult.statements && !qc.lastResult.isAdviseQuery">
           Click Index Advisor to generate query index recommendations.
         </div>
       </div>

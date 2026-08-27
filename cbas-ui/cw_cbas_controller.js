@@ -126,6 +126,7 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     qc.status_success = cwQueryService.status_success;
     qc.status_fail = cwQueryService.status_fail;
+    qc.status_partial = cwQueryService.status_partial;
     qc.qqs = cwQueryService;
 
     //
@@ -779,6 +780,11 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
       var queryStr = qc.lastResult.query;
 
+      // a batch holds its plans rather than what it returned, so running one goes back to the results
+      if (!explainOnly && cwQueryService.realStatementCount(queryStr) > 1 &&
+          (qc.isSelected(3) || qc.isSelected(4) || qc.isSelected(5)))
+        qc.selectTab(1);
+
       //console.log("Running query: " + queryStr);
       // run the query and show a spinner
 
@@ -825,6 +831,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
       }
 
       var userQuery = qc.lastResult.query;
+      if (cwQueryService.realStatementCount(userQuery) > 1) {
+        qc.lastResult.isAdviseQuery = true;
+        qc.lastResult.adviceText = "The Index Advisor is not available for a multi-statement request.";
+        qc.lastResult.adviceDetails = {current: [], recommended: []};
+        qc.inputEditor.setReadOnly(false);
+        return;
+      }
+
       var adviseQuery = /^\s*advise/gmi.test(userQuery) ? userQuery : cwQueryService.addAdvise(userQuery);
       var promise = cwQueryService.executeQuery(adviseQuery, userQuery, cwQueryService.options, false, qc.lastResult.queryContext);
 
@@ -975,7 +989,8 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
             dialogScope.options.named_parameters[i].value =
               JSON.parse(dialogScope.options.named_parameters[i].value);
 
-        cwQueryService.options = dialogScope.options;
+        // mutate in place, so a reference to this object cannot go stale
+        _.assign(cwQueryService.options, dialogScope.options);
       });
 
     }

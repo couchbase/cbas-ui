@@ -228,6 +228,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.fetchingStats = false;
   cwQueryService.isAllowedMultiStatement = isAllowedMultiStatement;
   cwQueryService.addAdvise = addAdvise;
+  cwQueryService.realStatementCount = realStatementCount;
   cwQueryService.showEmptyScopes = true;
   cwQueryService.globalLinks = false;
 
@@ -248,9 +249,17 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
 
   cwQueryService.status_success = status_success;
   cwQueryService.status_fail = status_fail;
+  cwQueryService.status_partial = status_partial;
+
+  var partialSuccessStatus = "partial success";
 
   function status_success() {
     return (lastResult.status == 'success');
+  }
+
+  // some statements of a multi-statement request succeeded and at least one failed
+  function status_partial() {
+    return (lastResult.status == partialSuccessStatus);
   }
 
   function status_fail() {
@@ -271,7 +280,8 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     scan_consistency: "not_bounded",
     positional_parameters: [],
     named_parameters: [],
-    query_timeout: defaultProxyTimeout
+    query_timeout: defaultProxyTimeout,
+    multi_statement: true
   };
 
   // clone options so we can have a scratch copy for the dialog box
@@ -282,9 +292,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       scan_consistency: cwQueryService.options.scan_consistency,
       positional_parameters: cwQueryService.options.positional_parameters.slice(),
       named_parameters: cwQueryService.options.named_parameters.slice(),
-      query_timeout: cwQueryService.options.query_timeout
+      query_timeout: cwQueryService.options.query_timeout,
+      multi_statement: cwQueryService.options.multi_statement
     };
   };
+
+  // defaults for the options a saved set of preferences may predate
+  var defaultOptions = cwQueryService.clone_options();
 
   //
   // a few variables for keeping track of the doc editor
@@ -418,6 +432,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     this.adviceText = other.adviceText;
     this.isAdviseQuery = other.isAdviseQuery;
     this.adviceDetails = other.adviceDetails || {current: [], recommended: []};
+    this.statements = other.statements;
   };
 
   function extractIndexAdviceDetails(result) {
@@ -570,8 +585,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         currentQueryIndex = savedState.currentQueryIndex;
         pastQueries = savedState.pastQueries;
         cwQueryService.outputTab = savedState.outputTab;
-        if (savedState.options)
-          cwQueryService.options = savedState.options;
+        if (savedState.options) {
+          // mutated in place, as the controller holds a reference to this object
+          _.assign(cwQueryService.options, _.defaults(savedState.options, defaultOptions));
+        }
           //reset timings because we don't want to save this across sessions
           //it is expensive full accounting of all operators, not samples
           cwQueryService.options.timings = false;
@@ -1005,6 +1022,11 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     queryText = extractedQuery[1];
     var queryData = {statement: queryText};
 
+    // the server still answers a single real statement with the flat response
+    if (cwQueryService.options.multi_statement) {
+      queryData["multi-statement"] = true;
+    }
+
     if (cwConstantsService.sendCreds) {
       var credArray = [];
 
@@ -1241,6 +1263,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     lastResult.compileTime = null;
     lastResult.queueWaitTime = null;
     lastResult.metrics = null;
+    lastResult.statements = null;
 
     var pre_post_ms = new Date().getTime(); // when did we start?
 
@@ -1252,7 +1275,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     var queryIsPrepare = /^\s*prepare/gmi.test(queryText);
     var explain_promise;
 
-    if (!queryIsExplain && !queryIsPrepare && cwConstantsService.autoExplain) {
+    // not for a batch: "explain " + the text would explain the first statement and run the rest
+    if (!queryIsExplain && !queryIsPrepare && cwConstantsService.autoExplain
+        && realStatementCount(queryText) <= 1) {
 
       newResult.explainDone = false;
 
@@ -1377,8 +1402,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       newResult.explainResult = {};
       newResult.explainResultText = "";
     }
-    if (!queryIsExplain && explainOnly) {
-      queryText = addExplain(queryText);
+    // a batch is explained by compiling it, which runs nothing and still reports the plans
+    var compileOnly = false;
+    if (explainOnly) {
+      if (realStatementCount(queryText) > 1)
+        compileOnly = true;
+      else if (!queryIsExplain)
+        queryText = addExplain(queryText);
     }
 
     //console.log("submitting query: " + JSON.stringify(cwQueryService.currentQueryRequest));
@@ -1406,6 +1436,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       finishQuery();
       return;
     }
+    if (compileOnly) {
+      request.data["compile-only"] = true;
+    }
+
     var promise = $http(request)
       // SUCCESS!
       .then(function success(resp) {
@@ -1432,6 +1466,64 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               // make sure to only finish if the explain query is also done
               lastResult.copyIn(newResult);
               finishQuery();
+              return;
+            }
+
+            // the server answers a batch with one entry per statement instead of a flat result
+            if (data && _.isArray(data.statements)) {
+              // the request-level status stays "success" even when a statement failed
+              var hasFailedStatement = _.some(data.statements, function (s) {
+                return s.status && s.status !== "success";
+              });
+              newResult.status = hasFailedStatement ? partialSuccessStatus : data.status;
+              newResult.statements = data.statements;
+
+              // the warnings indicator reports these, tagged by statement; the results pane does not
+              var statementWarnings = [];
+              data.statements.forEach(function (s) {
+                if (_.isArray(s.warnings))
+                  s.warnings.forEach(function (warning) {
+                    statementWarnings.push({statementid: s.statement, warning: warning});
+                  });
+              });
+              if (statementWarnings.length > 0) {
+                newResult.warningCount = statementWarnings.length;
+                newResult.limitedWarningsCount = statementWarnings.length;
+                newResult.warnings = JSON.stringify(statementWarnings, null, 2);
+              }
+
+              // what each statement did; its plan and metrics are reported elsewhere
+              var cleanedStatements = _.map(data.statements, function (s) {
+                return {
+                  statementid: s.statement,
+                  status: s.status,
+                  results: s.results,
+                  errors: s.errors
+                };
+              });
+
+              var statementPlans = [];
+              data.statements.forEach(function (s) {
+                var plan = s.plans && s.plans.optimizedLogicalPlan;
+                if (plan)
+                  statementPlans.push({statementid: s.statement, plan: plan});
+              });
+              if (statementPlans.length > 0)
+                newResult.explainResultText = JSON.stringify(statementPlans, null, '  ');
+
+              newResult.data = cleanedStatements;
+              // an explain reports the plans it asked for, as a single-statement explain does
+              newResult.result = (explainOnly || queryIsExplain) && statementPlans.length > 0
+                ? newResult.explainResultText
+                : angular.toJson(cleanedStatements, true);
+
+              newResult.requestID = data.requestID;
+              newResult.queryDone = true;
+
+              if (newResult.explainDone) {
+                lastResult.copyIn(newResult);
+                finishQuery();
+              }
               return;
             }
 
@@ -2252,6 +2344,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       }
     }
     return queryText;
+  }
+
+  function realStatementCount(queryText) {
+    return queryText.split(";").filter(function (statement) {
+      var trimmed = statement.trim();
+      return trimmed.length > 0 && !isAllowedMultiStatement(trimmed);
+    }).length;
   }
 
   function hasPlanFormat(queryText, explainIndex, format) {
