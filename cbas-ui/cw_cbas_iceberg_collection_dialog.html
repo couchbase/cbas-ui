@@ -100,9 +100,22 @@ licenses/APL2.txt.
                spellcheck="false" autocapitalize="off">
       </div>
 
+      <div class="formrow" ng-if="catalogVendsCredentials()">
+        <input
+          id="iceberg_vended_credentials"
+          ng-model="options.vendedCredentials"
+          type="checkbox">
+        <label for="iceberg_vended_credentials">Vended Credentials</label>
+        <p class="text-smaller grayblack-3">
+          Take the storage credentials from the catalog instead of a link.
+        </p>
+      </div>
+
       <div class="formrow">
         <label for="iceberg_link">Link</label>
-        <select id="iceberg_link" ng-model="options.selectedLink" required class="fix-width-4">
+        <select id="iceberg_link" ng-model="options.selectedLink"
+                ng-required="!options.vendedCredentials"
+                ng-disabled="options.vendedCredentials" class="fix-width-4">
           <option value="">-- Select Link --</option>
           <option ng-repeat="link in getAllLinks()" value="{{link}}">{{link}}</option>
         </select>

@@ -2117,7 +2117,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
             CatalogName: record.CatalogName,
             CatalogType: record.CatalogType,
             CatalogSource: record.CatalogSource,
-            LinkName: record.LinkName
+            LinkName: record.LinkName,
+            // the property is stored as a string; treat anything but "true" as not vending
+            VendedCredentials: String(record.VendedCredentials).toLowerCase() === "true"
           };
           cwQueryService.catalogs.push(catalog);
           addToken(record.CatalogName, "catalog");
@@ -3059,8 +3061,13 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     
     // Add predefined catalog parameters
     for (var key in options.catalog_params) {
-      if (options.catalog_params[key]) {
-        withOptions.push(`"${key}": "${options.catalog_params[key]}"`);
+      var value = options.catalog_params[key];
+      // the region dropdown carries "Other" as an escape hatch; the real value is typed alongside it
+      if (key === "sigv4SigningRegion" && value === "Other") {
+        value = options.other_sigv4_region;
+      }
+      if (value) {
+        withOptions.push(`"${key}": "${value}"`);
       }
     }
     
@@ -3071,6 +3078,12 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           withOptions.push(`"${param.name}": "${param.value}"`);
         }
       });
+    }
+
+    // only emitted when on: the server treats an absent property as "not vending", and rejects the
+    // property outright on a source that cannot vend
+    if (options.vendedCredentials) {
+      withOptions.push('"vendedCredentials": "true"');
     }
 
     var sql = 'CREATE CATALOG `' + options.catalog_name + '` ' +

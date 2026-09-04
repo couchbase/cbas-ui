@@ -59,6 +59,16 @@ function getCwConstantsService() {
   // URL to use to get AWS supported regions
   cwConstantsService.awsRegionsURL = "../_p/cbas/api/v1/link/enum/s3/region";
 
+  // Catalog sources that can vend storage credentials. Vending is part of the Iceberg REST protocol, so a
+  // non-REST source can never offer it and the server rejects the property outright. Keep this in step with
+  // IcebergUtils#supportsVendedCredentials on the server.
+  // Iceberg credential vending is not exposed in the UI yet. While this is false the option is absent
+  // from both dialogs and nothing about the generated DDL changes; flip it to true to reveal it.
+  cwConstantsService.icebergVendingEnabled = false;
+
+  cwConstantsService.vendedCredentialsCatalogSources =
+    ["REST", "NESSIE_REST", "AWS_GLUE_REST", "S3_TABLES", "BIGLAKE_METASTORE"];
+
   // should we get passwords from the Couchbase server?
   cwConstantsService.getCouchbaseBucketPasswords = false;
 
@@ -263,6 +273,10 @@ SELECT
    FROM c.CatalogDetails.Properties As p
    WHERE p.Name = "name"
   )[0] AS LinkName, 
+  (SELECT VALUE p.\`Value\`
+   FROM c.CatalogDetails.Properties As p
+   WHERE p.Name = "vendedCredentials"
+  )[0] AS VendedCredentials, 
   TRUE AS isCatalog
 FROM Metadata.\`Catalog\` AS c) meta
 ORDER BY

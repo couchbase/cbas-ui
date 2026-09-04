@@ -1846,9 +1846,14 @@ function createNewCollection(database, dataverse) {
           uri: "",
           warehouse: "",
           sigv4SigningRegion: "",
-          sigv4SigningName: "",
+          // "glue" is valid for every source that shows this field, and both the Glue REST and the
+          // S3 Tables endpoints are signed as "glue"; an empty model would match no option and Angular
+          // would show a blank placeholder instead.
+          sigv4SigningName: "glue",
           quotaProjectId: ""
         },
+        other_sigv4_region: "",
+        vendedCredentials: false,
         additionalParams: []
       };
       createNewCatalogDialogScope.errors = [];
@@ -1856,6 +1861,56 @@ function createNewCollection(database, dataverse) {
       createNewCatalogDialogScope.getAvailableLinks = function() {
         return (cwQueryService.global_links || []).map(link => link.LinkName);
       };
+
+      // Read through rather than copying: the list is fetched asynchronously and the service replaces the
+      // array, so a copy taken when the dialog opened would stay empty.
+      createNewCatalogDialogScope.getAwsRegions = function() {
+        return cwQueryService.awsRegions || [];
+      };
+
+      // The signing region is almost always the region of the link the catalog is reached through, so
+      // preselect it. Re-runs whenever the link changes; a hand-picked value survives until then.
+      createNewCatalogDialogScope.$watch("options.catalog_link", function(linkName) {
+        if (!linkName) {
+          return;
+        }
+        var options = createNewCatalogDialogScope.options;
+        var info = (cwQueryService.links || []).find(l => l.name === linkName);
+        if (!info || !info.region) {
+          // a region is required of every S3 link, so this is a non-S3 link (an HTTP one for Nessie, say).
+          // Clear rather than keep: a region carried over from the previously selected link would sign with
+          // the wrong one, and the field is not shown for the sources those links serve anyway.
+          options.catalog_params.sigv4SigningRegion = "";
+          options.other_sigv4_region = "";
+          return;
+        }
+        if (createNewCatalogDialogScope.getAwsRegions().indexOf(info.region) >= 0) {
+          options.catalog_params.sigv4SigningRegion = info.region;
+          options.other_sigv4_region = "";
+        } else {
+          // not one of the listed regions -- keep it reachable through the "Other" escape hatch
+          options.catalog_params.sigv4SigningRegion = "Other";
+          options.other_sigv4_region = info.region;
+        }
+      });
+
+      // Credential vending is part of the Iceberg REST protocol, so only the REST-backed sources can offer
+      // it; the server rejects the property on any other source. Clearing the flag when the source changes
+      // keeps a hidden checkbox from silently leaving vending on.
+      createNewCatalogDialogScope.sourceCanVendCredentials = function() {
+        return cwConstantsService.icebergVendingEnabled
+          && cwConstantsService.vendedCredentialsCatalogSources
+            .indexOf(createNewCatalogDialogScope.options.catalog_source) >= 0;
+      };
+
+      createNewCatalogDialogScope.$watch("options.catalog_source", function() {
+        if (!createNewCatalogDialogScope.sourceCanVendCredentials()) {
+          createNewCatalogDialogScope.options.vendedCredentials = false;
+        }
+        // Only S3_TABLES offers "s3tables"; carrying that choice to a source whose select has only
+        // "glue" would leave the model matching no option, i.e. the blank placeholder again.
+        createNewCatalogDialogScope.options.catalog_params.sigv4SigningName = "glue";
+      });
 
       createNewCatalogDialogScope.addAdditionalParam = function() {
         createNewCatalogDialogScope.options.additionalParams.push({ name: "", value: "" });
@@ -1915,6 +1970,12 @@ function createNewCollection(database, dataverse) {
         databases: qc.databases.map(db => db.DatabaseName),
         dataverses: filterDataversesByDatabase(qc.dataverses, initialDatabase),
         catalogs: cwQueryService.catalogs.map(c => c.CatalogName),
+        // name -> whether that catalog vends, so the dialog can offer the option only where it applies
+        vendingCatalogs: cwQueryService.catalogs.reduce((acc, c) => {
+          acc[c.CatalogName] = !!c.VendedCredentials;
+          return acc;
+        }, {}),
+        vendedCredentials: false
       };
 
       function fetchNamespaces(catalogName) {
@@ -1978,9 +2039,22 @@ function createNewCollection(database, dataverse) {
         }
       );
 
+      // Whether the *selected* catalog vends. The checkbox is only offered for such a catalog, so switching
+      // to one that does not vend has to clear the choice -- otherwise a hidden checkbox would go on
+      // suppressing the link, and the statement would be built without an AT the server then rejects.
+      dialogScope.catalogVendsCredentials = function() {
+        return cwConstantsService.icebergVendingEnabled
+          && !!dialogScope.options.vendingCatalogs[dialogScope.options.selectedCatalog];
+      };
+
       const unwatchCatalog = dialogScope.$watch(
         () => dialogScope.options.selectedCatalog,
-        (newCatalog) => fetchNamespaces(newCatalog)
+        (newCatalog) => {
+          if (!dialogScope.catalogVendsCredentials()) {
+            dialogScope.options.vendedCredentials = false;
+          }
+          fetchNamespaces(newCatalog);
+        }
       );
 
       const unwatchNamespace = dialogScope.$watch(
@@ -2015,7 +2089,8 @@ function createNewCollection(database, dataverse) {
         const queryText =
           `CREATE EXTERNAL COLLECTION \`${opts.targetDatabase}\`.\`${opts.targetScope}\`.\`${opts.collection_name}\`` +
           ` ON \`${opts.selectedCatalog}\`` +
-          ` AT \`${opts.selectedLink}\`` +
+          // omitting AT is what tells the server to take the storage credentials from the catalog
+          (opts.vendedCredentials ? `` : ` AT \`${opts.selectedLink}\``) +
           ` WITH ${JSON.stringify(withOptions)}`;
 
         cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)

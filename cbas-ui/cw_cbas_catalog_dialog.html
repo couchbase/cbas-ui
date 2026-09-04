@@ -108,8 +108,16 @@ licenses/APL2.txt.
         </div>
         <div class="formrow">
           <label>SigV4 Signing Region</label>
+          <select ng-model="options.catalog_params.sigv4SigningRegion" required>
+            <option ng-repeat="region in getAwsRegions()" ng-value="region">{{region}}</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="formrow" ng-if="options.catalog_params.sigv4SigningRegion == 'Other'">
+          <label>Other Signing Region</label>
           <input
-            ng-model="options.catalog_params.sigv4SigningRegion"
+            ng-model="options.other_sigv4_region"
             type="text"
             autocorrect="off"
             spellcheck="false"
@@ -149,8 +157,16 @@ licenses/APL2.txt.
         </div>
         <div class="formrow">
           <label>SigV4 Signing Region</label>
+          <select ng-model="options.catalog_params.sigv4SigningRegion" required>
+            <option ng-repeat="region in getAwsRegions()" ng-value="region">{{region}}</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="formrow" ng-if="options.catalog_params.sigv4SigningRegion == 'Other'">
+          <label>Other Signing Region</label>
           <input
-            ng-model="options.catalog_params.sigv4SigningRegion"
+            ng-model="options.other_sigv4_region"
             type="text"
             autocorrect="off"
             spellcheck="false"
@@ -229,6 +245,18 @@ licenses/APL2.txt.
             autocapitalize="off"
             required>
         </div>
+      </div>
+
+      <!-- Credential Vending -->
+      <div class="formrow" ng-if="sourceCanVendCredentials()">
+        <input
+          id="catalog_vended_credentials"
+          ng-model="options.vendedCredentials"
+          type="checkbox">
+        <label for="catalog_vended_credentials">Vended Credentials</label>
+        <p class="text-smaller grayblack-3">
+          Let this catalog hand out storage credentials, so its collections can be created without a link.
+        </p>
       </div>
 
       <!-- Additional Parameters -->
