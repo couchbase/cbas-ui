@@ -14,9 +14,9 @@ licenses/APL2.txt.
 <!-- top row w/ title/time/pill selectors -->
     <div class="row">
       <h4 class="inline">
-        <span ng-if="qmc.isSelected(1)">Active Queries</span>
-        <span ng-if="qmc.isSelected(2)">Completed Queries</span>
-        <span ng-if="qmc.isSelected(3)">Open Queries</span>
+        <span ng-if="qmc.isSelected(1)">Active Requests</span>
+        <span ng-if="qmc.isSelected(2)">Completed Requests</span>
+        <span ng-if="qmc.isSelected(3)">Open Requests</span>
         <small>
           {{qmc.updatedTime()}}
           <span ng-if="qmc.get_update_flag()" class="loading"></span>
@@ -92,7 +92,7 @@ licenses/APL2.txt.
             {{result.users}}
           </span>
           <span class="cbui-table-cell flex-grow-1-5 wrap text-right">
-            <a ng-if="result.plan" ng-click="qmc.showPlan(result.plan); $event.stopPropagation()">plan&nbsp;</a>
+            <a ng-if="qmc.hasPlan(result)" ng-click="qmc.showPlan(result); $event.stopPropagation()">plan&nbsp;</a>
             <a ui-sref="app.admin.cbas.workbench({query: result.statement})" class="nowrap" ng-click="$event.stopPropagation()">
               Edit
             </a>
@@ -171,7 +171,7 @@ licenses/APL2.txt.
             {{result.users}}
           </span>
           <span class="cbui-table-cell flex-grow-half text-right">
-            <a ng-if="result.plan" ng-click="qmc.showPlan(result.plan); $event.stopPropagation()">plan&nbsp;</a>
+            <a ng-if="qmc.hasPlan(result)" ng-click="qmc.showPlan(result); $event.stopPropagation()">plan&nbsp;</a>
             <a ui-sref="app.admin.cbas.workbench({query: result.statement})" class="nowrap" ng-click="$event.stopPropagation()">
               edit
             </a>
@@ -244,7 +244,7 @@ licenses/APL2.txt.
             {{result.users}}
           </span>
           <span class="cbui-table-cell flex-grow-half text-right">
-            <a ng-if="result.plan" ng-click="qmc.showPlan(result.plan); $event.stopPropagation()">plan&nbsp;</a>
+            <a ng-if="qmc.hasPlan(result)" ng-click="qmc.showPlan(result); $event.stopPropagation()">plan&nbsp;</a>
             <a ui-sref="app.admin.cbas.workbench({query: result.statement})" class="nowrap" ng-click="$event.stopPropagation()">
               edit
             </a>

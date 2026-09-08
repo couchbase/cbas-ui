@@ -1,10 +1,12 @@
 <div class="dialog-lg">
   <div class="panel-header">
-    <h2>Query Plan</h2>
+    <h2>Query Plan<span ng-if="plans.length > 1">s</span></h2>
   </div>
 
   <div class="panel-content" style="height: 70vh; overflow-y: auto;">
-    <div class="formrow">
+    <div class="formrow" ng-repeat="planStr in plans">
+      <!-- the order the jobs ran in; a statement that runs no job contributes no plan -->
+      <div class="text-smallish margin-bottom-quarter" ng-if="plans.length > 1">Plan {{$index + 1}} of {{plans.length}}</div>
       <pre style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.4; overflow-x: auto; white-space: pre-wrap;">{{planStr}}</pre>
     </div>
   </div>

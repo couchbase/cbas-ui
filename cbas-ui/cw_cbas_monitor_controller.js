@@ -35,6 +35,7 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
   // requests details
   qmc.showRequestDetails = showRequestDetails;
   qmc.showPlan = showPlan;
+  qmc.hasPlan = hasPlan;
 
   // keep track of results from the server
   //
@@ -134,17 +135,40 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
   // show plan dialog
   //
 
-  function showPlan(plan) {
-    var dialogScope = $scope.$new(true);
-    if (typeof plan === 'string') {
-      try {
-        dialogScope.planStr = JSON.stringify(JSON.parse(plan), null, 2);
-      } catch (e) {
-        dialogScope.planStr = plan;
-      }
-    } else {
-      dialogScope.planStr = JSON.stringify(plan, null, 2);
+  // cheap enough for a digest: the plans themselves are only formatted when the dialog opens
+  function hasPlan(request) {
+    return !!request.plan || (Array.isArray(request.jobs) && request.jobs.some(function (job) {
+      return !!job.plan;
+    }));
+  }
+
+  // one plan per job that reported one
+  function requestPlans(request) {
+    var jobs = Array.isArray(request.jobs) ? request.jobs : [];
+    var plans = jobs.filter(function (job) {
+      return !!job.plan;
+    }).map(function (job) {
+      return formatPlan(job.plan);
+    });
+    // a single-job request reports its plan flat, with no jobs array
+    if (plans.length === 0 && request.plan)
+      plans.push(formatPlan(request.plan));
+    return plans;
+  }
+
+  function formatPlan(plan) {
+    if (typeof plan !== 'string')
+      return JSON.stringify(plan, null, 2);
+    try {
+      return JSON.stringify(JSON.parse(plan), null, 2);
+    } catch (e) {
+      return plan;
     }
+  }
+
+  function showPlan(request) {
+    var dialogScope = $scope.$new(true);
+    dialogScope.plans = requestPlans(request);
 
     $uibModal.open({
       template: cwPlanDetailsDialogTemplate,
