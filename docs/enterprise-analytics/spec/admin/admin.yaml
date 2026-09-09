@@ -597,37 +597,62 @@ components:
         description: How long the request has been running in seconds.
         x-has-example: true
         example: 0.126
+      error:
+        type: string
+        description: >
+          The error the request failed with.
+          Absent where it did not fail.
+          A request that ran several statements reports the error of the statement that failed.
+        x-has-example: true
+        example: "Cannot find analytics collection inventory"
       jobCreateTime:
         type: string
-        description: The date and time when the request's job was created.
+        description: >
+          The date and time when the request's first job was created.
         x-has-example: true
         example: 2024-05-28T19:47:02.512
+      jobEndTime:
+        type: string
+        description: >
+          The date and time the request's last job finished running.
+          Absent while any job of the request is still to finish.
+        x-has-example: true
+        example: 2024-05-28T19:47:02.631
       jobId:
         type: string
         description: >
           The request's job ID.
-          This value can be null if request did not run (for example, due to an error).
+          This value is null if the request did not run (for example, due to an error),
+          and null for a request that created more than one job,
+          no one of which identifies the request: those are listed in `jobs`.
         x-has-example: true
         example: JID:0.14
       jobQueueTime:
         type: number
-        description: How long the request's job has been in the queue waiting to run in seconds.
+        description: >
+          How long the request's jobs have been in the queue waiting to run, in seconds.
+          The total over them, which do not wait at the same time,
+          the statements of a request running one after another.
         x-has-example: true
         example: 0
       jobRequiredCPUs:
         type: integer
-        description: The number of CPU cores required to run this request.
+        description: >
+          The number of CPU cores required to run this request:
+          the most any one of its jobs required, they being run one at a time.
         x-has-example: true
         example: 1
       jobRequiredMemory:
         type: integer
         description: >
-          The RAM required to run this request in bytes.
+          The RAM required to run this request in bytes:
+          the most any one of its jobs required, they being run one at a time.
         x-has-example: true
         example: 34013184
       jobStartTime:
         type: string
-        description: The date and time the request's job began running.
+        description: >
+          The date and time the request's first job began running.
         x-has-example: true
         example: 2024-05-28T19:47:02.514
       jobStatus:
@@ -639,12 +664,31 @@ components:
           - FAILURE
           - FAILURE_BEFORE_EXECUTION
           - "null"
-        description: The state of the request's job.
+        description: >
+          The state of the request's jobs as one:
+          the failure, if any of them failed, and otherwise the least finished of them,
+          so that a request still doing something does not report itself terminated.
         x-has-example: true
         example: RUNNING
+      jobs:
+        type: array
+        description: >
+          The jobs of this request, in the order they were created: one for each statement that submitted one.
+          Every request reports this array, whether it created one job or several.
+          It is empty where the request created none, as a request of statements that submit no job does.
+
+
+          The fields outside it describe the request as a whole, so this is where a single job is described
+          on its own - the status of one statement of several, the plan it was compiled to, and the error it
+          failed with.
+        items:
+          $ref: '#/components/schemas/RequestJob'
       plan:
         type: string
-        description: The query plan for this request.  
+        description: >
+          The query plan for this request.
+          Reported where the request has a plan of its own; where several of its statements produced plans,
+          each is reported on its own job in `jobs`.
       node:
         type: string
         description: The node that received the request.
@@ -695,6 +739,78 @@ components:
         description: The unique identifier for this request.
         x-has-example: true
         example: 91f60338-a3e0-4163-9287-5e723fda29ef
+
+  RequestJob:
+    description: >
+      An object giving information about a single job of a request.
+      Each of these fields describes that job alone, where the field of the same name on the request
+      describes the request as a whole.
+    type: object
+    properties:
+      error:
+        type: string
+        description: The error this job failed with.  Absent where it did not fail.
+        x-has-example: true
+        example: "Cannot find analytics collection inventory"
+      jobCreateTime:
+        type: string
+        description: The date and time when this job was created.
+        x-has-example: true
+        example: 2024-05-28T19:47:02.512
+      jobEndTime:
+        type: string
+        description: The date and time this job finished running.  Absent while it is still to finish.
+        x-has-example: true
+        example: 2024-05-28T19:47:02.631
+      jobId:
+        type: string
+        description: This job's ID.
+        x-has-example: true
+        example: JID:0.14
+      jobQueueTime:
+        type: number
+        description: How long this job has been in the queue waiting to run in seconds.
+        x-has-example: true
+        example: 0
+      jobRequiredCPUs:
+        type: integer
+        description: The number of CPU cores required to run this job.
+        x-has-example: true
+        example: 1
+      jobRequiredMemory:
+        type: integer
+        description: The RAM required to run this job in bytes.
+        x-has-example: true
+        example: 34013184
+      jobStartTime:
+        type: string
+        description: The date and time this job began running.
+        x-has-example: true
+        example: 2024-05-28T19:47:02.514
+      jobStatus:
+        type: string
+        enum:
+          - PENDING
+          - RUNNING
+          - TERMINATED
+          - FAILURE
+          - FAILURE_BEFORE_EXECUTION
+          - "null"
+        description: The state of this job.
+        x-has-example: true
+        example: RUNNING
+      plan:
+        type: string
+        description: The query plan of the statement that submitted this job.
+      statement:
+        type: integer
+        description: >
+          The position, counting from 1, of the statement that submitted this job among the statements
+          the client sent.
+          Statements that submit no job leave a gap, so a job's position in the array does not identify
+          the statement it ran.
+        x-has-example: true
+        example: 2
 
  responses:
   Unauthorized:

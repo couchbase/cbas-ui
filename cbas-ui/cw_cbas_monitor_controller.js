@@ -114,13 +114,24 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
 
   function showRequestDetails(request) {
     var dialogScope = $scope.$new(true);
-    // Create a copy of the request object without $$hashKey and plan fields
+    // plans belong to the plan dialog, not to this one
     var filteredRequest = {};
     Object.keys(request).forEach(function(key) {
       if (key !== '$$hashKey' && key !== 'plan') {
         filteredRequest[key] = request[key];
       }
     });
+    if (Array.isArray(filteredRequest.jobs)) {
+      filteredRequest.jobs = filteredRequest.jobs.map(function(job) {
+        var filteredJob = {};
+        Object.keys(job).forEach(function(key) {
+          if (key !== 'plan') {
+            filteredJob[key] = job[key];
+          }
+        });
+        return filteredJob;
+      });
+    }
 
     dialogScope.requestJson = JSON.stringify(filteredRequest, null, 2);
 
@@ -150,7 +161,8 @@ function cwCbasMonitorController ($scope, $timeout, $uibModal, cwQueryService, v
     }).map(function (job) {
       return formatPlan(job.plan);
     });
-    // a single-job request reports its plan flat, with no jobs array
+    // the request's own plan, where none of its jobs reported one, and for a server that reports
+    // the plan of a single-job request flat alone
     if (plans.length === 0 && request.plan)
       plans.push(formatPlan(request.plan));
     return plans;
