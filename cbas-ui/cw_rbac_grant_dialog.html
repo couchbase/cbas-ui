@@ -1,0 +1,106 @@
+<!--
+Copyright 2026-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<div class="dialog-med">
+  <div class="panel-header">
+    <h2>Grant Privilege to {{options.granteeLabel}}</h2>
+  </div>
+  <form class="forms" name="rbacGrantForm">
+    <div class="panel-content">
+
+      <div class="formrow">
+        <label for="rbac_object_type">Applies To</label>
+        <select id="rbac_object_type" ng-model="options.objectType" required>
+          <option ng-repeat="type in objectTypes" value="{{type.key}}">{{type.label}}</option>
+        </select>
+      </div>
+
+      <div class="formrow">
+        <label>Privileges</label>
+        <div ng-repeat="privilege in privilegeOptions track by privilege.privilege">
+          <input
+             type="checkbox"
+             id="rbac_privilege_{{privilege.privilege.replace(' ', '_')}}"
+             ng-model="options.privileges[privilege.privilege]">
+          <label for="rbac_privilege_{{privilege.privilege.replace(' ', '_')}}">
+            {{privilege.label}}
+            <span class="text-smaller grayblack-3" ng-if="privilege.ddl">&mdash; on objects not yet created</span>
+          </label>
+        </div>
+        <div class="error error-field" ng-show="mixesForms()">
+          A privilege over objects that do not exist yet cannot be granted in the
+          same statement as one on an existing object. Grant them separately.
+        </div>
+      </div>
+
+      <div class="formrow">
+        <label for="rbac_target_kind">Scope</label>
+        <select id="rbac_target_kind" ng-model="options.targetKind" required>
+          <option ng-repeat="kind in targetOptions track by kind" value="{{kind}}">{{targetLabels[kind]}}</option>
+        </select>
+      </div>
+
+      <div class="formrow" ng-if="options.targetKind === 'DATABASE' || options.targetKind === 'SCOPE' ||
+                                  (options.targetKind === 'OBJECT')">
+        <label for="rbac_database">Database</label>
+        <select id="rbac_database" ng-model="options.target.database" required>
+          <option value="">-- Select Database --</option>
+          <option ng-repeat="database in databases" value="{{database}}">{{database}}</option>
+        </select>
+      </div>
+
+      <div class="formrow" ng-if="options.targetKind === 'SCOPE' || options.targetKind === 'OBJECT'">
+        <label for="rbac_scope">Scope</label>
+        <select id="rbac_scope" ng-model="options.target.scope" required>
+          <option value="">-- Select Scope --</option>
+          <option ng-repeat="scope in scopes" value="{{scope}}">{{scope}}</option>
+        </select>
+      </div>
+
+      <div class="formrow" ng-if="options.targetKind === 'OBJECT' || options.targetKind === 'NAME'">
+        <label for="rbac_object_name">Name</label>
+        <input
+           id="rbac_object_name"
+           ng-model="options.target.name"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off"
+           placeholder="Name"
+           required>
+      </div>
+
+      <div class="formrow" ng-if="options.targetKind === 'OBJECT' && options.objectType === 'FUNCTION'">
+        <label for="rbac_arity">Number of Arguments</label>
+        <input
+           id="rbac_arity"
+           ng-model="options.target.arity"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           placeholder="leave empty for any">
+        <div class="desc">
+          A function's identity includes how many arguments it takes, so a grant
+          on one overload does not cover another.
+        </div>
+      </div>
+
+      <div class="formrow" ng-if="statement()">
+        <label>Statement</label>
+        <pre id="rbac_grant_statement" class="text-smaller">{{statement()}}</pre>
+      </div>
+
+    </div>
+    <div class="panel-footer">
+      <a ng-click="$dismiss('cancel')">Cancel</a>
+      <button type="submit" ng-disabled="!isValid()" ng-click="$close('ok')">Grant</button>
+    </div>
+  </form>
+</div>

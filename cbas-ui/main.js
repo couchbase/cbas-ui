@@ -39,6 +39,40 @@ angular
       index: 3
     });
 
+    // Service RBAC, in the Security section beside Users & Groups. Service
+    // roles and privileges are the analytics engine's own, not ns_server's -
+    // the platform roles on Users & Groups decide who may reach the service at
+    // all, these decide what they may do inside it. They are administered
+    // alongside the users they are granted to, so the tab plugs into that nav
+    // rather than starting a section of its own.
+    //
+    // 'after' names the tab this one follows: the security nav marks its Users
+    // link mn-tab="users". Without a match the registry throws rather than
+    // appending, so the two have to be changed together.
+    mnPluggableUiRegistryProvider.registerConfig({
+      name: 'Service RBAC',
+      state: 'app.admin.security.analyticsRbac',
+      plugIn: 'securityTab',
+      after: 'users',
+      // Shown to anyone who may reach the service, not only to whoever may
+      // administer it. Two reasons, and the first is the important one:
+      //
+      // A service role can carry the right to administer service RBAC -
+      // sys_root and sys_security_admin both do - and a user holding one needs
+      // no platform role beyond the access that lets them reach the service at
+      // all. ns_server knows nothing of service roles, so no permission it can
+      // report distinguishes that user from any other; gating on manage locked
+      // them out of the only page that administers what they administer.
+      //
+      // And the page is worth opening read-only: what a user may do inside the
+      // service is otherwise discoverable only by writing SQL++ against the
+      // metadata by hand. The page decides for itself what to offer - see
+      // cwRbacController's canManage - so a viewer who may only look gets the
+      // tables without the actions.
+      ngShow: "rbac.cluster.analytics.access || rbac.cluster.analytics.manage",
+      index: 1
+    });
+
     mnPermissionsProvider.setBucketSpecific(function (name) {
       return [
         "cluster.collection[" + name + ":.:.].analytics!select", "cluster.analytics!manage"
@@ -56,6 +90,20 @@ class CbasUI {
             name: "app.admin.cbas.**",
             url: "/cbas",
             lazyLoad: mnLazyload(() => import('./cbas.js'), 'cwCbas')
+          }, {
+            name: "app.admin.security.analyticsRbac.**",
+            url: "/analyticsRbac",
+            // Stated here as well as on the state cbas_rbac.js registers.
+            // A future state's parent is worked out by dropping both the '**'
+            // and the segment before it, so this one's parent is
+            // app.admin.security and it inherits that state's permissions -
+            // which name the platform roles for users and security settings,
+            // neither of which has anything to do with reaching this service.
+            // The lazy-load hook runs before the permission hook, so today the
+            // inherited value is never the one checked; restating it means the
+            // two orders cannot disagree.
+            data: {permissions: "cluster.analytics.access || cluster.analytics.manage"},
+            lazyLoad: mnLazyload(() => import('./cbas_rbac.js'), 'cwCbasRbac')
           }]
         })
       ],

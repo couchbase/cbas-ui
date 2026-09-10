@@ -1,0 +1,334 @@
+<!--
+Copyright 2026-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<mn-element-cargo depot="actions">
+  <div class="header-controls">
+    <a ng-click="rbacCtl.refresh()">REFRESH</a>
+    <a ng-if="rbacCtl.canManage && !rbacCtl.unavailable"
+       ng-click="rbacCtl.addRole()">ADD SERVICE ROLE</a>
+  </div>
+</mn-element-cargo>
+
+<div class="margin-top-neg-half margin-left-neg-1">
+
+  <div class="error error-form margin-bottom-1" ng-if="rbacCtl.error">
+    {{rbacCtl.error}}
+  </div>
+
+  <div class="text-small grayblack-3 margin-bottom-1" ng-if="rbacCtl.notice">
+    {{rbacCtl.notice}}
+  </div>
+
+  <div class="zero-content margin-top-1" ng-if="rbacCtl.loading">
+    Loading roles and privileges&hellip;
+  </div>
+
+  <!-- Every row on this page is read with a query, so with the service
+       unreachable there is nothing to show and no action worth offering. Said
+       as a state of the page rather than as an error banner over empty tables,
+       which would read as a cluster with no roles in it. -->
+  <div class="zero-content margin-top-1" ng-if="!rbacCtl.loading && rbacCtl.unavailable">
+    The analytics service could not be reached, so its roles and privileges
+    cannot be shown. Nothing has changed &mdash; try REFRESH once the service is
+    available again.
+  </div>
+
+  <div ng-if="!rbacCtl.loading && !rbacCtl.unavailable">
+
+    <!-- ROLES ------------------------------------------------------------ -->
+    <h4 class="margin-bottom-half">Service Roles</h4>
+    <p class="text-small grayblack-3 margin-bottom-half">
+      Platform roles, on the Users &amp; Groups tab, decide who may reach this
+      service. The roles here decide what they may do once they are: which
+      databases, scopes, collections, views, links and functions. The exception
+      is a platform role that can manage this service &mdash; Full Admin and the
+      service's own admin role do both, and bypass these roles entirely.
+    </p>
+    <p class="text-small grayblack-3 margin-bottom-half" ng-if="!rbacCtl.canManage">
+      You are looking at this read-only. Changing it needs either a platform
+      role that can manage this service, or the Service Root or Service RBAC
+      Admin role here. The service decides what you may see, so this may not be
+      all of it.
+    </p>
+
+    <div class="row resp-sml margin-bottom-half">
+      <div
+         class="row"
+         mn-placeholder="filter by role name..."
+         mn-hide-button="true"
+         mn-search="rbacCtl.roleFilter">
+      </div>
+    </div>
+
+    <div class="cbui-table" ng-if="rbacCtl.roles.length">
+      <div class="cbui-table-header padding-left">
+        <span class="cbui-table-cell flex-grow-1-5">role</span>
+        <span class="cbui-table-cell flex-grow-half">type</span>
+        <span class="cbui-table-cell flex-grow-half">privileges</span>
+        <span class="cbui-table-cell flex-grow-half">granted to</span>
+        <span class="cbui-table-cell flex-grow-1-5"></span>
+      </div>
+
+      <section
+         class="has-hover"
+         ng-repeat="role in rbacCtl.roles | filter:{label: rbacCtl.roleFilter} track by role.name"
+         ng-click="rbacCtl.toggleRole(role)">
+        <div class="cbui-tablerow padding-left resp-sml">
+          <span class="cbui-table-cell flex-grow-1-5 wrap">
+            <span
+               class="relative"
+               tooltip-trigger="mouseenter"
+               tooltip-append-to-body="true"
+               tooltip-placement="auto top"
+               ng-click="$event.stopPropagation()"
+               uib-tooltip="{{rbacCtl.roleDescription(role.name)}}">
+              <span class="break-word" ng-if="role.displayName">{{role.displayName}}
+                <span class="grayblack-3">({{role.name}})</span></span>
+              <span class="break-word" ng-if="!role.displayName">{{role.name}}</span>
+            </span>
+          </span>
+          <span class="cbui-table-cell flex-grow-half">
+            <span ng-if="role.builtIn" class="label lt-blue">built-in</span>
+            <span ng-if="!role.builtIn" class="label neutral">custom</span>
+          </span>
+          <span class="cbui-table-cell flex-grow-half">
+            <span
+               ng-if="role.includes.length"
+               class="relative"
+               tooltip-trigger="mouseenter"
+               tooltip-append-to-body="true"
+               tooltip-placement="auto top"
+               ng-click="$event.stopPropagation()"
+               uib-tooltip="{{role.privileges.length}} of its own, the rest through {{role.includedNames.join(', ')}}">
+              {{role.effectivePrivileges}}
+            </span>
+            <span ng-if="!role.includes.length && role.privileges.length">{{role.privileges.length}}</span>
+            <span class="grayblack-3"
+                  ng-if="!role.includes.length && !role.privileges.length">&mdash;</span>
+          </span>
+          <span class="cbui-table-cell flex-grow-half">
+            <span ng-if="role.members.length">{{role.members.length}}</span>
+            <span class="grayblack-3" ng-if="!role.members.length">&mdash;</span>
+          </span>
+          <span class="cbui-table-cell flex-grow-1-5"></span>
+        </div>
+
+        <div
+           class="cbui-tablerow-expanded"
+           ng-if="rbacCtl.openRoles[role.name]"
+           ng-click="$event.stopPropagation()">
+
+          <p class="text-smaller margin-bottom-half" ng-if="role.builtIn">
+            A built-in role. Its privileges are fixed and it cannot be dropped;
+            it can still be granted to users.
+          </p>
+
+          <div class="cbui-table margin-bottom-half" ng-if="role.allPrivileges.length">
+            <div class="cbui-table-header padding-left">
+              <span class="cbui-table-cell">privilege</span>
+              <span class="cbui-table-cell flex-grow-2">on</span>
+              <span class="cbui-table-cell flex-grow-half">through</span>
+              <span class="cbui-table-cell flex-grow-half"></span>
+            </div>
+            <section ng-repeat="held in role.allPrivileges track by $index">
+              <div class="cbui-tablerow padding-left">
+                <span class="cbui-table-cell">{{held.grant.Privilege}}</span>
+                <span class="cbui-table-cell flex-grow-2 wrap">{{rbacCtl.describeTarget(held.grant)}}</span>
+                <span class="cbui-table-cell flex-grow-half">
+                  <span ng-if="held.via">{{held.via}}</span>
+                  <span class="grayblack-3" ng-if="!held.via">&mdash;</span>
+                </span>
+                <span class="cbui-table-cell flex-grow-half">
+                  <!-- Only a grant this role holds itself can be revoked from
+                       it; an inherited one has to go from the role it came
+                       through. -->
+                  <a ng-if="rbacCtl.canManage && !role.builtIn && !held.via"
+                     ng-click="rbacCtl.revokeGrant(role.name, held.grant)">revoke</a>
+                </span>
+              </div>
+            </section>
+          </div>
+
+          <p class="text-smaller" ng-if="role.includes.length">
+            <strong>includes:</strong>
+            <span ng-repeat="name in role.includedNames track by $index">{{name}}<span
+               ng-if="!$last">, </span></span>
+            &mdash; whose privileges are listed above, and are revoked there.
+          </p>
+
+          <p class="text-smaller" ng-if="!role.allPrivileges.length">
+            No privileges granted to this role yet.
+          </p>
+
+          <p class="text-smaller" ng-if="role.members.length">
+            <strong>granted to:</strong>
+            <span ng-repeat="member in role.members track by $index">{{member.name}}<span
+               ng-if="member.type === 'ROLE'"> (role)</span><span ng-if="!$last">, </span></span>
+          </p>
+
+          <div class="row min-height-4 items-bottom">
+            <p class="text-smaller grayblack-3">
+              Ownership, which the engine records for whoever created an object, is not listed here.
+            </p>
+            <span ng-if="rbacCtl.canManage">
+              <button
+                 class="outline"
+                 ng-if="!role.builtIn"
+                 ng-click="rbacCtl.dropRole(role)">Drop Role</button>
+              <button
+                 ng-if="!role.builtIn"
+                 ng-click="rbacCtl.grantToRole(role)">Grant Privilege</button>
+            </span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="zero-content margin-top-1" ng-if="!rbacCtl.roles.length">
+      <span ng-if="rbacCtl.canManage">No service roles to display. Use ADD
+        SERVICE ROLE above to create one.</span>
+      <span ng-if="!rbacCtl.canManage">No service roles to display. There may be
+        roles you are not entitled to see.</span>
+    </div>
+
+    <!-- USERS ------------------------------------------------------------ -->
+    <h4 class="margin-top-1 margin-bottom-half">Users</h4>
+    <p class="text-small grayblack-3 margin-bottom-half">
+      Cluster users, with the roles and privileges they hold. Create and
+      delete the users themselves on the Users &amp; Groups tab.
+    </p>
+    <p class="text-small grayblack-3 margin-bottom-half" ng-if="!rbacCtl.usersReadable">
+      The cluster's user list could not be read, by either route this page has
+      for it, so this shows only you and the grantees named in the service's own
+      metadata. Other users exist and are not listed here, and a grant left
+      behind by a deleted user cannot be told apart from a live one.
+    </p>
+
+    <div class="row resp-sml margin-bottom-half">
+      <div
+         class="row"
+         mn-placeholder="filter by username..."
+         mn-hide-button="true"
+         mn-search="rbacCtl.userFilter">
+      </div>
+    </div>
+
+    <div class="cbui-table" ng-if="rbacCtl.users.length">
+      <div class="cbui-table-header padding-left">
+        <span class="cbui-table-cell">username</span>
+        <span class="cbui-table-cell flex-grow-half">domain</span>
+        <span class="cbui-table-cell flex-grow-2">service roles</span>
+        <span class="cbui-table-cell flex-grow-half">direct privileges</span>
+      </div>
+
+      <section
+         class="has-hover"
+         ng-repeat="user in rbacCtl.users | filter:{id: rbacCtl.userFilter} track by user.key"
+         ng-click="rbacCtl.toggleUser(user)">
+        <div class="cbui-tablerow padding-left resp-sml">
+          <span class="cbui-table-cell">
+            {{user.id}}
+            <span ng-if="user.self" class="label neutral">you</span>
+            <span ng-if="user.unknown && !user.superseded" class="label warning">orphaned</span>
+            <span ng-if="user.superseded" class="label warning">former account</span>
+          </span>
+          <span class="cbui-table-cell flex-grow-half">
+            {{user.domain === 'local' ? 'Couchbase' : 'External'}}
+          </span>
+          <span class="cbui-table-cell flex-grow-2 wrap">
+            <span ng-repeat="role in user.roles track by $index">{{role}}<span ng-if="!$last">, </span></span>
+            <span class="grayblack-3" ng-if="!user.roles.length">&mdash;</span>
+          </span>
+          <span class="cbui-table-cell flex-grow-half">
+            <span ng-if="user.privileges.length">{{user.privileges.length}}</span>
+            <span class="grayblack-3" ng-if="!user.privileges.length">&mdash;</span>
+          </span>
+        </div>
+
+        <div
+           class="cbui-tablerow-expanded"
+           ng-if="rbacCtl.openUsers[user.key]"
+           ng-click="$event.stopPropagation()">
+
+          <p class="text-smaller margin-bottom-half" ng-if="user.unknown && !user.superseded">
+            No cluster user matches this grantee. A user is identified by id
+            rather than by name, so the rows below are orphaned: they grant
+            nothing, and a new user of the same name does not inherit them. The
+            engine discards them when it next encounters that name.
+          </p>
+
+          <p class="text-smaller margin-bottom-half" ng-if="user.superseded">
+            These were granted to an earlier account of this name, which has
+            since been deleted. The user called {{user.id}} today is a different
+            account and does not hold them, so they grant nothing. Purging names
+            the account they were granted to, so it removes these and leaves the
+            current {{user.id}} untouched.
+          </p>
+
+          <p class="text-smaller" ng-if="user.name"><strong>full name:</strong> {{user.name}}</p>
+
+          <div class="cbui-table margin-bottom-half" ng-if="user.roles.length">
+            <div class="cbui-table-header padding-left">
+              <span class="cbui-table-cell">role</span>
+              <span class="cbui-table-cell flex-grow-half"></span>
+            </div>
+            <section ng-repeat="role in user.roles track by $index">
+              <div class="cbui-tablerow padding-left">
+                <span class="cbui-table-cell">{{role}}</span>
+                <span class="cbui-table-cell flex-grow-half">
+                  <a ng-if="rbacCtl.canManage && !user.unknown"
+                     ng-click="rbacCtl.revokeRoleFromUser(user, role)">revoke</a>
+                </span>
+              </div>
+            </section>
+          </div>
+
+          <div class="cbui-table margin-bottom-half" ng-if="user.privileges.length">
+            <div class="cbui-table-header padding-left">
+              <span class="cbui-table-cell">privilege granted directly</span>
+              <span class="cbui-table-cell flex-grow-2">on</span>
+              <span class="cbui-table-cell flex-grow-half"></span>
+            </div>
+            <section ng-repeat="grant in user.privileges track by $index">
+              <div class="cbui-tablerow padding-left">
+                <span class="cbui-table-cell">{{grant.Privilege}}</span>
+                <span class="cbui-table-cell flex-grow-2 wrap">{{rbacCtl.describeTarget(grant)}}</span>
+                <span class="cbui-table-cell flex-grow-half">
+                  <a ng-if="rbacCtl.canManage && !user.unknown"
+                     ng-click="rbacCtl.revokeGrant(user.id, grant)">revoke</a>
+                </span>
+              </div>
+            </section>
+          </div>
+
+          <div class="row min-height-4 items-bottom">
+            <p class="text-smaller grayblack-3">
+              A privilege granted straight to a user applies only to them. Where
+              several users need the same thing, granting it to a role they hold
+              keeps it in one place.
+            </p>
+            <span ng-if="rbacCtl.canManage && !user.unknown">
+              <button class="outline" ng-click="rbacCtl.grantToUser(user)">Grant Privilege</button>
+              <button ng-click="rbacCtl.editUserRoles(user)">Edit Service Roles</button>
+            </span>
+            <span ng-if="rbacCtl.canManage && user.unknown && user.uuid">
+              <button ng-click="rbacCtl.purgeOrphanedGrants(user)">Purge Orphaned Grants</button>
+            </span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="zero-content margin-top-1" ng-if="!rbacCtl.users.length">
+      No users to display.
+    </div>
+
+  </div>
+</div>

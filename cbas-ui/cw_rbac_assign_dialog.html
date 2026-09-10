@@ -1,0 +1,46 @@
+<!--
+Copyright 2026-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<div class="dialog-med">
+  <div class="panel-header">
+    <h2>Service Roles for {{user.id}}</h2>
+  </div>
+  <form class="forms" name="rbacAssignForm">
+    <div class="panel-content">
+      <div class="formrow">
+        <label>Roles</label>
+        <div ng-repeat="role in roles track by role.name">
+          <input
+             type="checkbox"
+             id="rbac_assign_{{role.name}}"
+             ng-model="options.selected[role.name]">
+          <label for="rbac_assign_{{role.name}}">
+            {{role.name}}
+            <span class="text-smaller grayblack-3" ng-if="role.builtIn">&mdash; built-in</span>
+            <span class="text-smaller grayblack-3" ng-if="!role.builtIn">&mdash;
+              {{role.privileges.length}} privilege(s)</span>
+          </label>
+        </div>
+        <div class="desc" ng-if="!roles.length">
+          There are no service roles yet.
+        </div>
+      </div>
+
+      <div class="formrow" ng-if="statement()">
+        <label>Statement</label>
+        <pre id="rbac_assign_statement" class="text-smaller">{{statement()}}</pre>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <a ng-click="$dismiss('cancel')">Cancel</a>
+      <button type="submit" ng-disabled="!isValid()" ng-click="$close('ok')">Save</button>
+    </div>
+  </form>
+</div>

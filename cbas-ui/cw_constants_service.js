@@ -59,6 +59,14 @@ function getCwConstantsService() {
   // URL to use to get AWS supported regions
   cwConstantsService.awsRegionsURL = "../_p/cbas/api/v1/link/enum/s3/region";
 
+  // Base of the grantee-scoped RBAC purge: DELETE <base>/<domain>/<grantee>/<uuid>.
+  // The grantee rides in path segments rather than parameters because neither
+  // alternative survives the trip - a DELETE's query string is discarded before
+  // the servlet sees it, and ns_server's proxy claims `uuid` for its own
+  // cluster-uuid guard. DELETE of the base itself purges the whole instance,
+  // which is not something this UI ever asks for.
+  cwConstantsService.rbacPurgeURL = "../_p/cbas/api/v1/internal/rbac";
+
   // Catalog sources that can vend storage credentials. Vending is part of the Iceberg REST protocol, so a
   // non-REST source can never offer it and the server rejects the property outright. Keep this in step with
   // IcebergUtils#supportsVendedCredentials on the server.

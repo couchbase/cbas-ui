@@ -1,0 +1,44 @@
+<!--
+Copyright 2026-Present Couchbase, Inc.
+
+Use of this software is governed by the Business Source License included in
+the file licenses/BSL-Couchbase.txt.  As of the Change Date specified in that
+file, in accordance with the Business Source License, use of this software will
+be governed by the Apache License, Version 2.0, included in the file
+licenses/APL2.txt.
+-->
+
+<div class="dialog-small">
+  <div class="panel-header">
+    <h2>Add Service Role</h2>
+  </div>
+  <form class="forms" name="rbacRoleForm">
+    <div class="panel-content">
+      <div class="formrow">
+        <label for="rbac_role_name">Role Name</label>
+        <input
+           id="rbac_role_name"
+           ng-model="options.roleName"
+           type="text"
+           autocorrect="off"
+           spellcheck="false"
+           autocapitalize="off"
+           placeholder="Role Name"
+           required>
+        <div class="error error-field" ng-show="isTaken(options.roleName)">
+          A role with this name already exists.
+        </div>
+        <div class="desc">
+          The role starts with no privileges. Grant them from the role's row once it exists.
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <a ng-click="$dismiss('cancel')">Cancel</a>
+      <button
+         type="submit"
+         ng-disabled="!options.roleName || isTaken(options.roleName)"
+         ng-click="$close('ok')">Add Role</button>
+    </div>
+  </form>
+</div>
