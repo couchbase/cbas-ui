@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Enterprise Analytics Administration REST APIs
+  title: Operational Insights Administration REST APIs
   version: '2.2'
   description: |
-    These APIs enable you to manage and monitor the Enterprise Analytics Service.
+    These APIs enable you to manage and monitor the Operational Insights Service.
 
 servers:
   - url: '{scheme}://{host}:{port}'
@@ -23,7 +23,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enterprise Analytics Service REST port.
+          The service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -131,7 +131,7 @@ paths:
     get:
       operationId: service_status
       summary: Service Status
-      description: Shows various details about the current status of the Enterprise Analytics Service, such as the service state, and the state of each node partition.
+      description: Shows various details about the current status of the service, such as its state, and the state of each node partition.
       security:
         - ClusterReadPoolsRead: []
       responses:
@@ -152,7 +152,7 @@ paths:
     post:
       operationId: restart_service
       summary: Service Restart
-      description: Restarts the Enterprise Analytics Service in all nodes in the cluster.
+      description: Restarts the service on all nodes in the cluster.
       security:
         - AnalyticsManage: []
       responses:
@@ -173,7 +173,7 @@ paths:
     post:
       operationId: restart_node
       summary: Node Restart
-      description: Restarts the Enterprise Analytics Service on the target node.
+      description: Restarts the service on the target node.
       security:
         - AnalyticsManage: []
       responses:
@@ -215,7 +215,7 @@ paths:
     get:
       operationId: health_check
       summary: Health Check
-      description: Shows if the node is healthy and part of an Enterprise Analytics cluster.
+      description: Shows if the node is healthy and part of an Operational Insights cluster.
       parameters:
         - name: uuid
           in: query
@@ -237,7 +237,7 @@ paths:
 components:
  schemas:
   Status:
-    description: An object giving information about the status of the Enterprise Analytics Service.
+    description: An object giving information about the status of the service.
     type: object
     properties:
       authorizedNodes:
@@ -256,34 +256,34 @@ components:
         example: 86586a966202b5aa4aed31633f330aba
       nodeConfigUri:
         type: string
-        description: The path of the Enterprise Analytics Service Node Configuration REST API.
+        description: The path of the Node Configuration REST API.
         x-has-example: true
         example: /api/v1/config/node
       nodeDiagnosticsUri:
         type: string
         description: >
-          The path of the Enterprise Analytics Node Diagnostics REST API.
+          The path of the Node Diagnostics REST API.
           For internal use only.
         x-has-example: true
         example: /api/v1/node/diagnostics
       nodeRestartUri:
         type: string
-        description: The path of the Enterprise Analytics Node Restart REST API.
+        description: The path of the Node Restart REST API.
         x-has-example: true
         example: /api/v1/node/restart
       serviceRequestUri:
         type: string
-        description: The path of the Enterprise Analytics Service Request REST API.
+        description: The path of the Service Request REST API.
         x-has-example: true
         example: /api/v1/request
       serviceConfigUri:
         type: string
-        description: The path of the Enterprise Analytics Service Configuration REST API.
+        description: The path of the Service Configuration REST API.
         x-has-example: true
         example: /api/v1/config/service
       serviceRestartUri:
         type: string
-        description: The path of the Enterprise Analytics Service Restart REST API.
+        description: The path of the Service Restart REST API.
         x-has-example: true
         example: /api/v1/service/restart
       state:
@@ -292,7 +292,7 @@ components:
           - ACTIVE
           - UNUSABLE
           - SHUTTING_DOWN
-        description: The state of the Enterprise Analytics Service.
+        description: The state of the service.
         x-has-example: true
         example: ACTIVE
       nodes:
@@ -314,12 +314,12 @@ components:
           properties:
             apiBase:
               type: string
-              description: The URI scheme, host, and port for HTTP access to Enterprise Analytics REST APIs on this node.
+              description: The URI scheme, host, and port for HTTP access to Operational Insights REST APIs on this node.
               x-has-example: true
               example: http://192.168.8.101:8095
             apiBaseHttps:
               type: string
-              description: The URI scheme, host, and port for secure HTTPS access to Enterprise Analytics REST APIs on this node.
+              description: The URI scheme, host, and port for secure HTTPS access to Operational Insights REST APIs on this node.
               x-has-example: true
               example: https://192.168.8.101:18095
             nodeId:
@@ -840,8 +840,8 @@ components:
 
       * Full Admin
       * Cluster Admin
-      * Enterprise Analytics Admin
-      * Enterprise Analytics Access
+      * Operational Insights Admin
+      * Operational Insights Access
 
   ClusterReadPoolsRead:
     type: http
@@ -852,7 +852,7 @@ components:
       * Full Admin
       * Cluster Admin
       * Read-Only Admin
-      * Enterprise Analytics Admin
+      * Operational Insights Admin
 
   AnalyticsManage:
     type: http
@@ -862,4 +862,4 @@ components:
 
       * Full Admin
       * Cluster Admin
-      * Enterprise Analytics Admin
+      * Operational Insights Admin

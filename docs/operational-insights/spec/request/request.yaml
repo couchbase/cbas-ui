@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Enterprise Analytics Request REST API
+  title: Operational Insights Request REST API
   version: '2.2'
   description: |
-    This API enables you to run Enterprise Analytics Service requests and set request-level parameters.
+    This API enables you to run Operational Insights Service requests and set request-level parameters.
 
 servers:
   - url: '{scheme}://{host}:{port}'
@@ -23,7 +23,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enterprise Analytics Service REST port.
+          The service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -35,7 +35,7 @@ paths:
       operationId: post_service
       summary: Request
       description: >
-        Enables you to execute a SQL\+\+ for Enterprise Analytics statement.
+        Enables you to execute a SQL\+\+ for Operational Insights statement.
         This method allows you to run queries and modifying statements, and specify query parameters.
       requestBody:
        required: true
@@ -60,7 +60,7 @@ paths:
       operationId: get_service
       summary: Read-Only Request
       description: >
-        Enables you to execute a SQL\+\+ for Enterprise Analytics statement.
+        Enables you to execute a SQL\+\+ for Operational Insights statement.
         This method only allows you to run queries and specify query parameters.
         It does not allow you to run modifying statements.
 
@@ -160,7 +160,7 @@ components:
     properties:
       statement:
         type: string
-        description: Specifies at least one valid SQL\+\+ for Enterprise Analytics statement to run.
+        description: Specifies at least one valid SQL\+\+ for Operational Insights statement to run.
       client_context_id:
         type: string
         description: >
@@ -668,5 +668,5 @@ components:
 
       * Full Admin
       * Cluster Admin
-      * Enterprise Analytics Admin
-      * Enterprise Analytics Access
+      * Operational Insights Admin
+      * Operational Insights Access

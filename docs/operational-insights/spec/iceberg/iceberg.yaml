@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Enterprise Analytics Iceberg REST API
+  title: Operational Insights Iceberg REST API
   version: '2.2'
   description: |-
-    This API enables you to browse Iceberg catalogs and metadata used by Enterprise Analytics.
+    This API enables you to browse Iceberg catalogs and metadata used by Operational Insights.
 
 servers:
   - url: '{scheme}://{host}:{port}'
@@ -23,7 +23,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enterprise Analytics Service REST port.
+          The service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -38,7 +38,7 @@ paths:
     get:
       operationId: list_iceberg_catalogs
       summary: List Catalogs
-      description: Returns all Iceberg catalogs created in Enterprise Analytics.
+      description: Returns all Iceberg catalogs created in Operational Insights.
       tags:
         - Iceberg
       security:
@@ -133,7 +133,7 @@ paths:
       operationId: list_iceberg_snapshots
       summary: List Snapshots
       description: >
-        Returns snapshots for the specified iceberg table (Enterprise Analytics iceberg collection).
+        Returns snapshots for the specified iceberg table (Operational Insights iceberg collection).
       tags:
         - Iceberg
       parameters:
@@ -310,5 +310,5 @@ components:
 
         * Full Admin
         * Cluster Admin
-        * Enterprise Analytics Admin
-        * Enterprise Analytics Access
+        * Operational Insights Admin
+        * Operational Insights Access

@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Enterprise Analytics Links REST API
+  title: Operational Insights Links REST API
   version: '2.2'
   description: |-
     This API enables you to manage the links to remote Couchbase clusters and external data sources.
@@ -24,7 +24,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enterprise Analytics Service REST port.
+          The service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -1390,7 +1390,7 @@ components:
 
       * Full Admin
       * Cluster Admin
-      * Enterprise Analytics Admin
+      * Operational Insights Admin
 
   DescribeLink:
     type: http

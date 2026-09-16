@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Enterprise Analytics Logging REST API
+  title: Operational Insights Logging REST API
   version: '2.2'
   description: |
-    This API enables you to view and modify the log levels of individual Enterprise Analytics loggers at runtime,
+    This API enables you to view and modify the log levels of individual Operational Insights loggers at runtime,
     without restarting the service.
 
     Changes made through this API are applied immediately, broadcast to all active nodes in the cluster, and
@@ -32,7 +32,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enterprise Analytics Service REST port.
+          The service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -255,4 +255,4 @@ components:
 
       * Full Admin
       * Cluster Admin
-      * Enterprise Analytics Admin
+      * Operational Insights Admin

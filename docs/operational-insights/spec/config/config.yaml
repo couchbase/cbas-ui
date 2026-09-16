@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Enterprise Analytics Configuration REST API
+  title: Operational Insights Configuration REST API
   version: '2.2'
   description: |
-    This API enables you to configure Enterprise Analytics Service.
+    This API enables you to configure Operational Insights Service.
 
 servers:
   - url: '{scheme}://{host}:{port}'
@@ -23,7 +23,7 @@ servers:
       port:
         default: "8095"
         description: |-
-          The Enterprise Analytics Service REST port.
+          The service REST port.
           Use `18095` for secure access.
         enum:
           - "8095"
@@ -55,7 +55,7 @@ paths:
         Modifies service-level parameters, which apply to all nodes.
 
         IMPORTANT: For the configuration changes to take effect,
-        you must restart the Enterprise Analytics Service using the [Service Restart API][1].
+        you must restart the service using the [Service Restart API][1].
 
         [1]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_service
       requestBody:
@@ -103,7 +103,7 @@ paths:
 
         IMPORTANT: For the configuration changes to take effect,
         you must restart the node using the [Node Restart API][1],
-        or restart the Enterprise Analytics Service using the [Service Restart API][2].
+        or restart the service using the [Service Restart API][2].
 
         [1]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_node
         [2]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_service
@@ -328,7 +328,7 @@ components:
         description: |-
           The time (in seconds) after which an idle cloud connection will be closed. (0 == unlimited idle)
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
         type: integer
         format: int32
         x-has-default: true
@@ -337,7 +337,7 @@ components:
         description: |-
           The time (in seconds) after which a cloud connection will no longer be reused. (0 == unlimited lifetime)
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
         type: integer
         format: int32
         x-has-default: true
@@ -476,7 +476,7 @@ components:
         description: |-
           Rewrite disjunctions to joins in query plans.
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
           The default is `false` for clusters provisioned from 2.1.1 onwards.
           Clusters upgraded to 2.1.1 have this set to `true` to preserve pre-upgrade behavior.
         type: boolean
@@ -486,7 +486,7 @@ components:
         description: |-
           The number of disjunctions after which a hash-based approach is used for evaluating OR operations. -1 disables the hash-based approach.
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
         type: integer
         format: int32
         x-has-default: true
@@ -508,7 +508,7 @@ components:
         description: |-
           The maximum number of common expressions to extract.
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
           The default is `100` for clusters provisioned from 2.1.1 onwards.
           Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
         type: integer
@@ -595,7 +595,7 @@ components:
           Avoid costly O(N^2) expression optimization passes (e.g. constant folding, CSE) on large IN-list queries
           when the number of OR/AND function arguments is greater than or equal to the specified value.
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
           The default is `200` for clusters provisioned from 2.1.1 onwards.
           Clusters upgraded to 2.1.1 have this set to `2147483647` (unlimited) to preserve pre-upgrade behavior.
         type: integer
@@ -1342,4 +1342,4 @@ components:
 
       * Full Admin
       * Cluster Admin
-      * Enterprise Analytics Admin
+      * Operational Insights Admin

@@ -3,7 +3,7 @@ info:
   title: Cluster Settings REST API
   version: '2.2'
   description: |
-    This API enables you to view or set cluster-level Enterprise Analytics settings.
+    This API enables you to view or set cluster-level Operational Insights settings.
 
 servers:
   - url: '{scheme}://{host}:{port}'
@@ -26,7 +26,7 @@ servers:
           The Cluster administration REST port.
           Use `18091` for secure access.
 
-          Note that the port numbers for this REST API are different to the port numbers used by the other Enterprise Analytics Service REST APIs.
+          Note that the port numbers for this REST API are different to the port numbers used by the other service REST APIs.
         enum:
           - "8091"
           - "18091"
@@ -35,7 +35,7 @@ paths:
   /settings/analytics:
     get:
       operationId: get_settings
-      summary: View Enterprise Analytics Settings
+      summary: View Operational Insights Settings
       description: >
         Retrieves cluster-level Analytics settings.
       security:
@@ -47,7 +47,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
     post:
       operationId: post_settings
-      summary: Modify Enterprise Analytics Settings
+      summary: Modify Operational Insights Settings
       description: >
         Sets cluster-level Analytics settings.
       requestBody:
@@ -86,9 +86,9 @@ components:
       blobStorageBucket:
         type: string
         description: |
-          The name of the blob storage bucket (S3) or container (Azure Blob Storage) where Enterprise Analytics will store its data.
+          The name of the blob storage bucket (S3) or container (Azure Blob Storage) where Operational Insights will store its data.
         x-has-example: true
-        example: enterprise-analytics-bucket
+        example: operational-insights-bucket
       blobStorageRegion:
         type: string
         description: |
@@ -98,7 +98,7 @@ components:
       blobStoragePrefix:
         type: string
         description: |
-          Optional. The path prefix within the bucket (S3) or container (Azure Blob Storage) where Enterprise Analytics will store its data. If not specified, the data is stored in the root of the bucket /
+          Optional. The path prefix within the bucket (S3) or container (Azure Blob Storage) where Operational Insights will store its data. If not specified, the data is stored in the root of the bucket /
         x-has-example: true
         example: analytics-data/
       blobStorageAnonymousAuth:
@@ -155,7 +155,7 @@ components:
           (e.g., for self-signed or private/internal CA certificates).
           Multiple certificates can be provided to support certificate rotation.
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
         x-has-example: true
         example:
           - "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
@@ -167,7 +167,7 @@ components:
           If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
           See also `blobStorageAnonymousAuth` for anonymous access.
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
         x-has-example: true
         example: AKIAIOSFODNN7EXAMPLE
       blobStorageSecretAccessKey:
@@ -178,7 +178,7 @@ components:
           If omitted, the Standard Credential Chain is used (instance profile, environment variables, etc.) to obtain credentials automatically.
           On input, supply the actual secret value. In logs and in responses from the API this value is masked as `***` for security reasons.
 
-          **Available from Enterprise Analytics 2.1.1.**
+          **Available from Operational Insights 2.1.1.**
         x-has-example: true
         example: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
       blobStorageChecksumBehavior:
@@ -281,7 +281,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [View Enterprise Analytics Settings](#operation/get_settings) operation, users must have one of the following RBAC roles:
+      For the [View Operational Insights Settings](#operation/get_settings) operation, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
@@ -291,7 +291,7 @@ components:
     type: http
     scheme: basic
     description: |
-      For the [Modify Enterprise Analytics Settings](#operation/post_settings) operation, users must have one of the following RBAC roles:
+      For the [Modify Operational Insights Settings](#operation/post_settings) operation, users must have one of the following RBAC roles:
 
       * Full Admin
       * Cluster Admin
