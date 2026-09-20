@@ -59,7 +59,8 @@ export const PRIVILEGES = {
   COPY_FROM: "COPY FROM",
   CREATE_COLLECTION: "CREATE COLLECTION",
   CREATE_CATALOG: "CREATE CATALOG",
-  DESCRIBE: "DESCRIBE"
+  DESCRIBE: "DESCRIBE",
+  USAGE: "USAGE"
 };
 
 // What may be said about each kind of object, mirroring ObjectType.getPrivileges
@@ -133,6 +134,19 @@ export const OBJECT_TYPES = [
     ddl: [PRIVILEGES.CREATE, PRIVILEGES.DROP],
     object: [PRIVILEGES.EXECUTE],
     ddlTargets: ["ANY", "DATABASE", "SCOPE"],
+    objectTargets: ["ANY", "DATABASE", "SCOPE", "OBJECT"]
+  },
+  {
+    // USAGE is what lets a function be written against the library; it is read
+    // when the function is created and never again, so revoking it leaves the
+    // functions already defined against the library running. Uploading and
+    // dropping a library stays admin-only over the REST API, which is why there
+    // is no DDL privilege on one to grant.
+    key: "LIBRARY",
+    label: "Library",
+    ddl: [],
+    object: [PRIVILEGES.USAGE],
+    ddlTargets: [],
     objectTargets: ["ANY", "DATABASE", "SCOPE", "OBJECT"]
   },
   {
