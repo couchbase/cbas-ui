@@ -175,7 +175,6 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
 
     qc.mapCollections = mapCollections;
     qc.createNewDataset = createNewDataset;
-    qc.editDataset = editDataset;
     qc.dropDataset = dropDataset;
     qc.dropCatalog = dropCatalog;
     qc.dropView = dropView;
@@ -2656,50 +2655,6 @@ function createNewCollection(database, dataverse) {
                 });
           }
         }, function no() {return Promise.resolve("no")});
-    }
-
-    function editDataset(link, dataset) {
-      dataset_options.clusterBuckets = null;
-      dataset_options.selected_bucket = dataset.bucketName;
-      dataset_options.selected_scope = dataset.scopeName;
-      dataset_options.selected_collection = dataset.collectionName;
-      dataset_options.link_name = link.LinkName;
-      dataset_options.is_new = false;
-      dataset_options.dataset_name = dataset.id;
-      dataset_options.where = dataset.filter || "   ";
-      dataset_options.bucket_name = dataset.bucketName;
-
-      datasetDialogScope.options = dataset_options;
-
-      // bring up the dialog
-      $uibModal.open({
-        template: cwCbasDatasetDialogTemplate,
-        scope: datasetDialogScope
-      }).result
-        .then(function success(resp) {
-          //console.log("showed dataset, got resp: " + resp);
-          if (resp == "drop") {
-            cwQueryService.showConfirmationDialog("Confirm Drop Analytics Collection",
-              "Warning, this will drop the Enterprise Analytics collection ", [link.DVName + "." + dataset.id])
-              .then(function yes(resp) {
-                if (resp == "ok") {
-                  var queryText = "drop dataset " + dataset.dataverseQueryName + ".`" + dataset_options.dataset_name + "`";
-
-                  cwQueryService.executeQueryUtil(queryText, scopesSource, false, false)
-                    .then(function success() {
-                        qc.updateBuckets();
-                      },
-                      function error(resp) {
-                        //console.log("Got drop dataset error: " + JSON.stringify(resp));
-                        var errorStr = "Error dropping collection: " + (resp.data.errors ? JSON.stringify(resp.data.errors) : JSON.stringify(resp.data));
-                        cwQueryService.showErrorDialog(errorStr);
-                      });
-
-                }
-              });
-          }
-        }, function error(resp) {
-        });
     }
 
     function dropDatabase(database) {

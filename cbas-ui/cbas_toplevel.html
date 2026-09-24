@@ -26,15 +26,19 @@ licenses/APL2.txt.
   </mn-element-cargo>
 
   <div class="margin-top-1" ng-if="qc.validated.inProgress() && !qc.validated.valid()">
-    <p>Contacting Enterprise Analytics node...</p>
+    <p>Contacting the Request API...</p>
   </div>
 
   <div ng-if="!qc.validated.inProgress() && !qc.validated.valid()" class="margin-top-half">
     <div ng-if="qc.validNodes.length">
-      <span ng-if="qc.validated.otherStatus() != 404">
-        <p class="error">Received error {{qc.validated.otherStatus()}} when contacting the
-        Enterprise Analytics service. Try refreshing the browser, as errors may occur if the Enterprise Analytics service
-        is still warming up or suffering a transient error.</p>
+      <span ng-if="qc.validated.otherStatus() <= 0">
+        <p class="error">Unable to reach the Request API. Check your network connection, then
+        try refreshing the browser.</p>
+      </span>
+      <span ng-if="qc.validated.otherStatus() > 0 && qc.validated.otherStatus() != 404">
+        <p class="error">Received error {{qc.validated.otherStatus()}} from the Request API. Try
+        refreshing the browser, as errors may occur while the service is still warming up or
+        suffering a transient error.</p>
       </span>
     </div>
 <!--
