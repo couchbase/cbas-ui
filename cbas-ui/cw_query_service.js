@@ -1483,7 +1483,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               data.statements.forEach(function (s) {
                 if (_.isArray(s.warnings))
                   s.warnings.forEach(function (warning) {
-                    statementWarnings.push({statementid: s.statement, warning: warning});
+                    statementWarnings.push({statementId: s.statementId, warning: warning});
                   });
               });
               if (statementWarnings.length > 0) {
@@ -1495,7 +1495,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               // what each statement did; its plan and metrics are reported elsewhere
               var cleanedStatements = _.map(data.statements, function (s) {
                 return {
-                  statementid: s.statement,
+                  statementId: s.statementId,
                   status: s.status,
                   results: s.results,
                   errors: s.errors
@@ -1506,7 +1506,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               data.statements.forEach(function (s) {
                 var plan = s.plans && s.plans.optimizedLogicalPlan;
                 if (plan)
-                  statementPlans.push({statementid: s.statement, plan: plan});
+                  statementPlans.push({statementId: s.statementId, plan: plan});
               });
               if (statementPlans.length > 0)
                 newResult.explainResultText = JSON.stringify(statementPlans, null, '  ');
