@@ -12,7 +12,7 @@ info:
 
     The root logger cannot be modified through this API.
 
-    [1]: /enterprise-analytics/current/analytics-rest-config/index.html
+    [1]: /operational-insights/current/analytics-rest-config/index.html
 
 servers:
   - url: '{scheme}://{host}:{port}'

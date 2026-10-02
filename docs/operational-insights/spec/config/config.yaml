@@ -57,7 +57,7 @@ paths:
         IMPORTANT: For the configuration changes to take effect,
         you must restart the service using the [Service Restart API][1].
 
-        [1]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_service
+        [1]: /operational-insights/current/analytics-rest-admin/index.html#operation/restart_service
       requestBody:
         description: An object specifying one or more of the configurable service-level parameters.
         content:
@@ -105,8 +105,8 @@ paths:
         you must restart the node using the [Node Restart API][1],
         or restart the service using the [Service Restart API][2].
 
-        [1]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_node
-        [2]: /enterprise-analytics/current/analytics-rest-admin/index.html#operation/restart_service
+        [1]: /operational-insights/current/analytics-rest-admin/index.html#operation/restart_node
+        [2]: /operational-insights/current/analytics-rest-admin/index.html#operation/restart_service
       requestBody:
         description: An object specifying one or more of the configurable node-level parameters on this node.
         content:
@@ -886,7 +886,7 @@ components:
           Note that JVM arguments are generally not secure, and are exposed by [cbcollect_info][1] and the [System Event][2] log.
           To pass arguments opaquely, you may use [Java command-line argument files][3].
 
-          [1]: /enterprise-analytics/current/cli/cbcollect-info-tool.html
+          [1]: /operational-insights/current/cli/cbcollect-info-tool.html
           [2]: /server/7.6/learn/clusters-and-availability/system-events.html
           [3]: https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
         type: string
@@ -903,7 +903,7 @@ components:
         description: |-
           The default logging level for the master and worker processes (e.g., `WARN`, `INFO`, `DEBUG`).
           This applies to loggers that have not been explicitly configured via the
-          [Logging REST API](/enterprise-analytics/current/analytics-rest-logging/index.html),
+          [Logging REST API](/operational-insights/current/analytics-rest-logging/index.html),
           which can override the level of individual loggers at runtime.
         type: string
         x-has-default: true
