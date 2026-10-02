@@ -219,7 +219,7 @@ components:
     required: false
     description: >
       The type of the link.
-      If this parameter is omitted, all link types are retrieved, excluding the `Local` link.
+      If this parameter is omitted, all link types are retrieved.
 
  schemas:
 
