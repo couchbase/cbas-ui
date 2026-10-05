@@ -20,7 +20,9 @@ licenses/APL2.txt.
     </div>
   </div>
   <div class="panel-footer">
-    <a ng-click="$dismiss('cancel')">Cancel</a>
-    <button ng-click="$close('ok')">{{options.confirmLabel}}</button>
+    <!-- With nothing to confirm, the dialog only explains why not. -->
+    <a ng-if="options.confirmLabel" ng-click="$dismiss('cancel')">Cancel</a>
+    <button ng-if="options.confirmLabel" ng-click="$close('ok')">{{options.confirmLabel}}</button>
+    <button ng-if="!options.confirmLabel" ng-click="$dismiss('close')">Close</button>
   </div>
 </div>

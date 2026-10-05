@@ -249,6 +249,20 @@ function cwRbacController($scope, $rootScope, $q, $uibModal, cwRbacService) {
         });
       });
       role.effectivePrivileges = role.allPrivileges.length;
+      // The roles it was granted itself, which a drop deletes with it; those
+      // further down stay granted to the role they were granted to.
+      role.holds = (includedByRole && includedByRole[role.name]) || [];
+      // A built-in role owns no privilege rows, so holding one - at any depth -
+      // conveys privileges the count above cannot see.
+      role.heldBuiltIns = role.includes.filter(function (name) {
+        var included = byKey[granteeKey(name, "ROLE")];
+        return included ? included.builtIn : !!cwRbacService.roleDisplayName(name);
+      });
+      // The engine refuses to drop a role that is both held and conveys
+      // something, rather than strip it from its holders, so this has to agree
+      // with it to avoid offering a drop that will only fail.
+      role.inUse = role.members.length > 0 &&
+        (role.allPrivileges.length > 0 || role.heldBuiltIns.length > 0);
     });
 
     return roles.sort(cwRbacService.compareRoles);
@@ -427,15 +441,41 @@ function cwRbacController($scope, $rootScope, $q, $uibModal, cwRbacService) {
   }
 
   function dropRole(role) {
+    // The engine is still the authority - a grant made since the page was read
+    // gets the same refusal back from it, through run() - but a confirmation
+    // for a drop that is already known to fail is only a slower way to say no.
+    if (role.inUse) {
+      confirm({
+        title: "Drop Role",
+        message: "Role " + role.name + " cannot be dropped: it is granted to " +
+          plural(role.members.length, "user or role", "users or roles") + " (" +
+          role.members.map(function (member) { return member.name; }).join(", ") +
+          "), who would lose " + conveyed(role) + ". Revoke it from them, or " +
+          "revoke the privileges and roles it holds, first.",
+        confirmLabel: "",
+        statement: ""
+      });
+      return;
+    }
+
+    var removed = [];
+    if (role.privileges.length) {
+      removed.push(plural(role.privileges.length, "privilege", "privileges") + " granted to it");
+    }
+    if (role.members.length) {
+      removed.push("its grant to " +
+        plural(role.members.length, "user or role", "users or roles"));
+    }
+    if (role.holds.length) {
+      removed.push("its hold on the " + (role.holds.length === 1 ? "role " : "roles ") +
+        role.holds.join(", "));
+    }
     confirm({
       title: "Drop Role",
-      // Dropping a role takes its privileges away from everyone holding it, and
-      // the grants are gone with it - so the count is the warning.
       message: "Drop role " + role.name + "? " +
-        (role.members.length
-          ? role.members.length + " user(s) or role(s) will lose the " +
-            role.privileges.length + " privilege(s) it carries."
-          : "It carries " + role.privileges.length + " privilege(s)."),
+        (removed.length
+          ? "This also removes " + joinAnd(removed) + "."
+          : "Nothing has been granted to it or from it."),
       confirmLabel: "Drop Role",
       statement: cwRbacService.buildDropRole(role.name)
     }).then(function (confirmed) {
@@ -443,6 +483,30 @@ function cwRbacController($scope, $rootScope, $q, $uibModal, cwRbacService) {
         run(cwRbacService.buildDropRole(role.name), "Dropping the role");
       }
     });
+  }
+
+  // What a held role passes on, in the terms the engine refuses it on: stored
+  // privileges, its own or inherited, and built-in roles, which store none.
+  function conveyed(role) {
+    var parts = [];
+    if (role.allPrivileges.length) {
+      parts.push(plural(role.allPrivileges.length, "privilege", "privileges"));
+    }
+    if (role.heldBuiltIns.length) {
+      parts.push("the built-in " + (role.heldBuiltIns.length === 1 ? "role " : "roles ") +
+        role.heldBuiltIns.join(", "));
+    }
+    return joinAnd(parts);
+  }
+
+  function plural(count, one, many) {
+    return count + " " + (count === 1 ? one : many);
+  }
+
+  function joinAnd(parts) {
+    return parts.length > 1
+      ? parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1]
+      : parts.join("");
   }
 
   // A privilege can be granted to a role or straight to a user - the engine
