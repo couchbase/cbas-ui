@@ -1594,12 +1594,14 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
           is_client_certificate_password: false,
           client_certificate_password: "",
           auth_type: "anonymous",
-          endpoint: ""
+          endpoint: "",
+          disable_ssl_verify: false
         },
         gcs_link: {
           auth_type: "anonymous",
           json_credentials: "",
-          endpoint: ""
+          endpoint: "",
+          disable_ssl_verify: false
         },
         kafka_link: {
           vendor: "CONFLUENT",
@@ -1650,6 +1652,16 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
         linkDialogScope.options.s3_link.path_style_addressing = true;
       }
       linkDialogScope.s3EndpointIsHttp = val && val.toLowerCase().startsWith('http://');
+    });
+
+    linkDialogScope.azureEndpointIsHttp = false;
+    linkDialogScope.$watch('options.azure_link.endpoint', function(val) {
+      linkDialogScope.azureEndpointIsHttp = val && val.toLowerCase().startsWith('http://');
+    });
+
+    linkDialogScope.gcsEndpointIsHttp = false;
+    linkDialogScope.$watch('options.gcs_link.endpoint', function(val) {
+      linkDialogScope.gcsEndpointIsHttp = val && val.toLowerCase().startsWith('http://');
     });
 
     linkDialogScope.change_encryption = function() {

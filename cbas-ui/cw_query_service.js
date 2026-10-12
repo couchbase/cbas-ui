@@ -3314,6 +3314,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       }
     } else if (scope.link_type === "azureblob" || scope.link_type === "azuredatalake") {
         formData.endpoint = scope.azure_link.endpoint;
+        formData.disableSslVerify = scope.azure_link.disable_ssl_verify;
 
         if (scope.azure_link.auth_type === "sharedkey") {
             formData.accountName = scope.azure_link.account_name;
@@ -3338,9 +3339,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
     } else if (scope.link_type === "gcs") {
         if (scope.gcs_link.auth_type === "applicationdefaultcredentials") {
-          // MB-72371: applicationDefaultCredentials should be a boolean (like disableSslVerify), but the
-          // service currently only accepts the string "true". Send the boolean once MB-72371 is fixed.
-          formData.applicationDefaultCredentials = "true"
+          formData.applicationDefaultCredentials = true;
         }
         else if (scope.gcs_link.auth_type === "jsoncredentials") {
           formData.jsonCredentials = scope.gcs_link.json_credentials;
@@ -3349,6 +3348,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       if (scope.gcs_link.endpoint) {
         formData.endpoint = scope.gcs_link.endpoint;
       }
+      formData.disableSslVerify = scope.gcs_link.disable_ssl_verify;
     } else if (scope.link_type === "kafka") {
       formData = setKafkaLinkApiParams(scope);
     } else if (scope.link_type === "http") {
@@ -3479,7 +3479,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       scope.s3_link.override_change_detection_mode = !!apiData.changeDetectionMode;
       scope.s3_link.change_detection_mode = scope.s3_link.override_change_detection_mode
           ? apiData.changeDetectionMode : "none";
-      scope.s3_link.disable_ssl_verify = apiData.disableSslVerify;
+      scope.s3_link.disable_ssl_verify = !!apiData.disableSslVerify;
       scope.s3_link.endpoint = apiData.serviceEndpoint;
       scope.s3_link.certificates = (apiData.certificates && apiData.certificates.length > 0)
           ? apiData.certificates.slice() : [""];
@@ -3503,6 +3503,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       }
 
       scope.azure_link.endpoint = apiData.endpoint;
+      scope.azure_link.disable_ssl_verify = !!apiData.disableSslVerify;
       scope.azure_link.account_name = apiData.accountName;
       scope.azure_link.account_key = "";
       scope.azure_link.shared_access_signature = "";
@@ -3522,6 +3523,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       }
 
       scope.gcs_link.endpoint = apiData.endpoint;
+      scope.gcs_link.disable_ssl_verify = !!apiData.disableSslVerify;
       scope.gcs_link.json_credentials = "";
     } else if (apiData.type === "kafka") {
       if (apiData.kafkaClusterDetails) {
