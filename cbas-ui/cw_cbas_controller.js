@@ -97,6 +97,10 @@ function cbasController($rootScope, $stateParams, $uibModal, $timeout, cwQuerySe
     qc.getCatalogs = getCatalogs;
     qc.getLocalLink = getLocalLink;
     qc.getDatasetsInLink = getDatasetsInLink;
+    qc.getLinkFreshness = cwQueryService.getLinkFreshness;
+    qc.freshnessTooltip = "How long ago the oldest change in KV that analytics has not yet ingested was made. " +
+      "It is sampled from KV every <code>dcpFreshnessSampleInterval</code> seconds (5 by default), so it can read " +
+      "short by up to that interval, and it is not shown while the link is disconnected.";
     qc.getDatasetsInScope = getDatasetsInScope;
     qc.isGlobalLinks = isGlobalLinks;
     qc.isIcebergTable = cwConstantsService.isIcebergTable;

@@ -208,6 +208,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   cwQueryService.bucket_names = [];
   cwQueryService.clusterBuckets = [];
   cwQueryService.shadows = [];
+  cwQueryService.linkFreshness = {};
+  cwQueryService.getLinkFreshness = getLinkFreshness;
+  cwQueryService.applyShadowingStats = applyShadowingStats;
   cwQueryService.indexes = [];
   cwQueryService.dataverses = [];
   cwQueryService.databases = [];
@@ -2379,8 +2382,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     cwQueryService.fetchingStats = true;
     var stats = getAnalyticsStats();
     if (stats) stats.then(function (resp) {
-      var shadowsStats = extractShadowingStats(resp.data);
-      updateDatasetShadowingProgress(shadowsStats);
+      applyShadowingStats(resp.data);
     }, function (resp) {
       // ignore stats failure, will be retried
     }).finally(function () {
@@ -2395,6 +2397,10 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       headers: {'Content-Type': 'application/json', 'ignore-401': 'true', 'Analytics-Priority': '-1'}
     };
     return ($http(statsRequest));
+  }
+
+  function applyShadowingStats(statsJson) {
+    updateDatasetShadowingProgress(extractShadowingStats(statsJson));
   }
 
   function extractShadowingStats(statsJson) {
@@ -2423,12 +2429,19 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
   function parseState(state, collectionsStats) {
     if ('scopes' in state) {
       let scopes = state['scopes'];
-      let ingestionState = { "progress": round(state.progress * 100, 1), "timeLag" : timeForHumans(state.timeLag)};
+      let progress = round(state.progress * 100, 1);
+      let timeLag = timeForHumans(state.timeLag);
       for (let i = 0; i < scopes.length; i++) {
         let scopeName = scopes[i].name;
         let collections = scopes[i].collections;
         for(let j = 0; j < collections.length; j++) {
-          collectionsStats[scopeName + "." + collections[j].name] = ingestionState;
+          // freshnessLag is per collection, in milliseconds, and absent while unknown (MB-75322)
+          let freshnessLag = collections[j].freshnessLag;
+          collectionsStats[scopeName + "." + collections[j].name] = {
+            "progress": progress,
+            "timeLag": timeLag,
+            "freshnessLag": (typeof freshnessLag === "number" && freshnessLag >= 0) ? freshnessLag : null
+          };
         }
       }
     }
@@ -2459,7 +2472,49 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
     }
   }
 
+  // how stale a collection's data is, as opposed to timeLag, which estimates how long a backlog will take to drain
+  function freshnessForHumans(millis) {
+    if (millis === null || millis === undefined) {
+      return null;
+    }
+    if (millis === 0) {
+      return "up to date";
+    }
+    return (millis < 1000 ? "< 1s" : timeForHumans(millis)) + " behind";
+  }
+
+  function linkFreshnessKey(linkName, dataverseName) {
+    return dataverseName === undefined ? String(linkName) : String(dataverseName) + "\u0000" + String(linkName);
+  }
+
+  function addToLinkFreshness(linkFreshness, key, freshnessLag) {
+    let summary = linkFreshness[key];
+    if (!summary) {
+      summary = linkFreshness[key] = {worstLag: 0, behind: 0, known: 0};
+    }
+    summary.known++;
+    summary.worstLag = Math.max(summary.worstLag, freshnessLag);
+    if (freshnessLag > 0) {
+      summary.behind++;
+    }
+    summary.worst = freshnessForHumans(summary.worstLag);
+  }
+
+  /**
+   * @return the worst freshness lag of a link's collections and how many are behind, counted as the
+   *   cbas_link_dcp_freshness_* metrics count them; or null while no collection's lag is known. With a
+   *   dataverse, only that dataverse's collections count, for the views that list a link per dataverse.
+   */
+  function getLinkFreshness(link, dataverse) {
+    if (!link) {
+      return null;
+    }
+    let key = linkFreshnessKey(link.LinkName, dataverse ? dataverse.DataverseName : undefined);
+    return cwQueryService.linkFreshness[key] || null;
+  }
+
   function updateDatasetShadowingProgress(shadowingStats) {
+    let linkFreshness = {};
     for (var i = 0; i < cwQueryService.shadows.length; i++) {
       var shadow = cwQueryService.shadows[i];
       if (!shadow.external) {
@@ -2468,12 +2523,22 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           if (collectionStats != null) {
             shadow.progress = collectionStats.progress;
             shadow.timeLag = collectionStats.timeLag;
+            shadow.freshnessLag = collectionStats.freshnessLag;
+            shadow.freshness = freshnessForHumans(collectionStats.freshnessLag);
+            if (shadow.freshnessLag !== null) {
+              addToLinkFreshness(linkFreshness, linkFreshnessKey(shadow.LinkName), shadow.freshnessLag);
+              addToLinkFreshness(linkFreshness, linkFreshnessKey(shadow.LinkName, shadow.DataverseName),
+                  shadow.freshnessLag);
+            }
             shadow.remaining = shadow.progress === 100 ? 0 : 1;
             if (shadow.link)
               shadow.link.remaining = shadow.remaining;
             continue;
           }
         }
+        // the server stops reporting a lag while the link is down, so neither is shown
+        shadow.freshnessLag = null;
+        shadow.freshness = null;
         shadow.remaining = cwQueryService.datasetDisconnectedState;
         var globalLinks = cwQueryService.global_links;
         if (globalLinks) {
@@ -2495,6 +2560,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         }
       }
     }
+    cwQueryService.linkFreshness = linkFreshness;
   }
 
   function round(value, precision) {
