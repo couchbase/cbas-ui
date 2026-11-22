@@ -582,9 +582,9 @@ licenses/APL2.txt.
                             <span ng-show="shadow.mutationsPerSecond > 0 || shadow.seqnoLag > 0"> | </span>
                             progress {{shadow.progress}}%
                           </span>
-                          <span ng-show="shadow.remaining > 0">
+                          <span ng-show="shadow.itemsRemaining > 0">
                             <span ng-show="shadow.mutationsPerSecond > 0 || shadow.seqnoLag > 0 || shadow.progress >= 0"> | </span>
-                            {{shadow.remaining | humanNumber}} item<span ng-show="shadow.remaining > 1">s</span> remaining
+                            {{shadow.itemsRemaining | humanNumber}} item<span ng-show="shadow.itemsRemaining > 1">s</span> remaining
                           </span>
                           <span ng-show="shadow.timeLag">
                             <span ng-show="shadow.remaining > 0 || shadow.mutationsPerSecond > 0 || shadow.seqnoLag > 0"> | </span>
@@ -768,9 +768,9 @@ licenses/APL2.txt.
                             <span ng-show="shadow.mutationsPerSecond > 0 || shadow.seqnoLag >= 0"> | </span>
                             progress {{shadow.progress}}%
                           </span>
-                          <span ng-show="shadow.remaining > 0">
+                          <span ng-show="shadow.itemsRemaining > 0">
                             <span ng-show="shadow.mutationsPerSecond > 0 || shadow.seqnoLag >= 0 || shadow.progress >= 0"> | </span>
-                            {{shadow.remaining | humanNumber}} item<span ng-show="shadow.remaining > 1">s</span> remaining
+                            {{shadow.itemsRemaining | humanNumber}} item<span ng-show="shadow.itemsRemaining > 1">s</span> remaining
                           </span>
                           <span ng-show="shadow.timeLag">
                             <span ng-show="shadow.remaining > 0 || shadow.mutationsPerSecond > 0 || shadow.seqnoLag >= 0"> | </span>
@@ -852,9 +852,9 @@ licenses/APL2.txt.
                           <span ng-show="shadow.mutationsPerSecond > 0 || shadow.seqnoLag >= 0"> | </span>
                           progress {{shadow.progress}}%
                         </span>
-                        <span ng-show="shadow.remaining > 0">
+                        <span ng-show="shadow.itemsRemaining > 0">
                           <span ng-show="shadow.mutationsPerSecond > 0 || shadow.seqnoLag >= 0 || shadow.progress >= 0"> | </span>
-                          {{shadow.remaining | humanNumber}} item<span ng-show="shadow.remaining > 1">s</span> remaining
+                          {{shadow.itemsRemaining | humanNumber}} item<span ng-show="shadow.itemsRemaining > 1">s</span> remaining
                         </span>
                         <span ng-show="shadow.timeLag">
                           <span ng-show="shadow.remaining > 0 || shadow.mutationsPerSecond > 0 || shadow.seqnoLag >= 0"> | </span>

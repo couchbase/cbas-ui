@@ -2431,6 +2431,9 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
       let scopes = state['scopes'];
       let progress = round(state.progress * 100, 1);
       let timeLag = timeForHumans(state.timeLag);
+      // only reported while a collection backfills from seqno 0; otherwise there is no count to show (MB-75527)
+      let itemsRemaining = (typeof state.itemsRemaining === "number" && state.itemsRemaining > 0)
+          ? state.itemsRemaining : null;
       for (let i = 0; i < scopes.length; i++) {
         let scopeName = scopes[i].name;
         let collections = scopes[i].collections;
@@ -2440,6 +2443,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
           collectionsStats[scopeName + "." + collections[j].name] = {
             "progress": progress,
             "timeLag": timeLag,
+            "itemsRemaining": itemsRemaining,
             "freshnessLag": (typeof freshnessLag === "number" && freshnessLag >= 0) ? freshnessLag : null
           };
         }
@@ -2530,6 +2534,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
               addToLinkFreshness(linkFreshness, linkFreshnessKey(shadow.LinkName, shadow.DataverseName),
                   shadow.freshnessLag);
             }
+            shadow.itemsRemaining = collectionStats.itemsRemaining;
             shadow.remaining = shadow.progress === 100 ? 0 : 1;
             if (shadow.link)
               shadow.link.remaining = shadow.remaining;
@@ -2539,6 +2544,7 @@ function cwQueryServiceFactory($rootScope, $q, $uibModal, $timeout, $http, valid
         // the server stops reporting a lag while the link is down, so neither is shown
         shadow.freshnessLag = null;
         shadow.freshness = null;
+        shadow.itemsRemaining = null;
         shadow.remaining = cwQueryService.datasetDisconnectedState;
         var globalLinks = cwQueryService.global_links;
         if (globalLinks) {
